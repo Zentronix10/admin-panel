@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zentronix Bank | Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0b1e 0%, #1a1b3a 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: rgba(0,0,0,0.8);
+        }
+        .login-box {
+            background: rgba(26,27,58,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            width: 350px;
+            text-align: center;
+            border: 1px solid #00f2ff;
+            box-shadow: 0 0 30px rgba(0,242,255,0.2);
+        }
+        .login-box h2 {
+            color: #00f2ff;
+            margin-bottom: 20px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0d1117;
+            border: 1px solid #bc13fe;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(95deg, #bc13fe, #00f2ff);
+            border: none;
+            border-radius: 8px;
+            color: #0a0b1e;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .login-box button:hover { opacity: 0.9; transform: scale(1.02); }
+        .error-msg { color: #ff4466; margin-top: 10px; font-size: 14px; }
+        
+        /* Dashboard */
+        .dashboard { display: none; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .header { background: rgba(26,27,58,0.8); padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: rgba(26,27,58,0.6); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #00f2ff30; }
+        .stat-card h3 { font-size: 14px; opacity: 0.7; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: #00f2ff; }
+        .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px,1fr)); gap: 20px; }
+        .panel { background: rgba(26,27,58,0.5); padding: 20px; border-radius: 15px; border: 1px solid #bc13fe30; }
+        .panel h2 { color: #bc13fe; margin-bottom: 15px; font-size: 18px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #2a2b4e; font-size: 14px; }
+        th { color: #00f2ff; }
+        input, select { background: #0d1117; border: 1px solid #bc13fe; color: white; padding: 8px; border-radius: 6px; margin: 5px 0; width: 100%; }
+        button { background: linear-gradient(95deg, #bc13fe, #00f2ff); border: none; padding: 8px 16px; border-radius: 6px; color: #0a0b1e; font-weight: bold; cursor: pointer; margin: 2px; }
+        button.danger { background: #ff4466; color: white; }
+        button.secondary { background: #2a2b4e; color: #00f2ff; border: 1px solid #00f2ff; }
+        .loan-card { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 3px solid #ffaa00; }
+        .loan-card.approved { border-left-color: #00ff88; }
+        .loan-card.rejected { border-left-color: #ff4466; opacity: 0.7; }
+        .status-pending { color: #ffaa00; }
+        .status-approved { color: #00ff88; }
+        .status-rejected { color: #ff4466; }
+        @media (max-width: 800px) { .panels { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div id="loginArea" class="login-container">
+    <div class="login-box">
+        <h2>🔐 ZENTRONIX ADMIN</h2>
+        <input type="text" id="adminUser" placeholder="Usuário">
+        <input type="password" id="adminPass" placeholder="Senha">
+        <button onclick="doLogin()">ENTRAR</button>
+        <div class="error-msg" id="loginError"></div>
+        <div style="margin-top: 20px; font-size: 12px; opacity: 0.6;">admin / Zentronix@Admin2025</div>
+    </div>
+</div>
+
+<div id="dashboardArea" class="dashboard">
+    <div class="header">
+        <h2>🏦 ZENTRONIX BANK - PAINEL ADMINISTRATIVO</h2>
+        <button onclick="doLogout()" class="danger">SAIR</button>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-card"><h3>💰 TOTAL DE CLIENTES</h3><div class="value" id="totalClients">0</div></div>
+        <div class="stat-card"><h3>💵 SALDO TOTAL (USD)</h3><div class="value" id="totalBalance">$0</div></div>
+        <div class="stat-card"><h3>📋 EMPRÉSTIMOS PENDENTES</h3><div class="value" id="pendingLoans">0</div></div>
+        <div class="stat-card"><h3>👥 FUNCIONÁRIOS</h3><div class="value" id="totalStaff">0</div></div>
+    </div>
+    
+    <div class="panels">
+        <div class="panel">
+            <h2>👥 FUNCIONÁRIOS</h2>
+            <input type="text" id="newStaffName" placeholder="Nome">
+            <input type="password" id="newStaffPass" placeholder="Senha">
+            <select id="newStaffRole"><option value="admin">Admin</option><option value="viewer">Visualizador</option></select>
+            <button onclick="addStaff()">+ ADICIONAR</button>
+            <div style="max-height: 250px; overflow-y: auto; margin-top: 10px;">
+                <table><thead><tr><th>Nome</th><th>Cargo</th><th>Ações</th></tr></thead><tbody id="staffList"></tbody></table>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>👤 CLIENTES</h2>
+            <input type="text" id="clientName" placeholder="Nome">
+            <input type="email" id="clientEmail" placeholder="Email">
+            <input type="number" id="clientBalance" placeholder="Saldo USD" value="0">
+            <select id="clientKyc"><option value="Aprovado">KYC Aprovado</option><option value="Pendente">KYC Pendente</option></select>
+            <button onclick="addClient()">+ CRIAR CLIENTE</button>
+            <div style="max-height: 250px; overflow-y: auto; margin-top: 10px;">
+                <table><thead><tr><th>Nome</th><th>Saldo</th><th>KYC</th><th>Ações</th></tr></thead><tbody id="clientsList"></tbody></table>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📋 EMPRÉSTIMOS</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button onclick="filterLoans('pending')" id="filterPending">⏳ Pendentes</button>
+                <button onclick="filterLoans('approved')" id="filterApproved">✅ Aprovados</button>
+                <button onclick="filterLoans('rejected')" id="filterRejected">❌ Rejeitados</button>
+            </div>
+            <div id="loansList" style="max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dados iniciais
+    let staffList = JSON.parse(localStorage.getItem('zentronix_staff')) || [
+        { id: 1, name: "Master Admin", username: "admin", password: "Zentronix@Admin2025", role: "admin" }
+    ];
+    let clientsList = JSON.parse(localStorage.getItem('zentronix_clients')) || [
+        { id: 1, name: "Alexander Vance", email: "alexander@zentronix.com", balance_usd: 25000, kyc_status: "Aprovado" },
+        { id: 2, name: "Sarah Chen", email: "sarah@offshore.com", balance_usd: 128000, kyc_status: "Aprovado" }
+    ];
+    let loanRequests = JSON.parse(localStorage.getItem('zentronix_loans')) || [
+        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Expansão de negócios" },
+        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Aquisição de propriedade" }
+    ];
+    
+    let currentUser = null;
+    let currentFilter = 'pending';
+    
+    function saveStaff() { localStorage.setItem('zentronix_staff', JSON.stringify(staffList)); updateStats(); renderStaff(); }
+    function saveClients() { localStorage.setItem('zentronix_clients', JSON.stringify(clientsList)); updateStats(); renderClients(); }
+    function saveLoans() { localStorage.setItem('zentronix_loans', JSON.stringify(loanRequests)); updateStats(); renderLoans(); }
+    
+    function updateStats() {
+        document.getElementById('totalClients').innerText = clientsList.length;
+        let total = clientsList.reduce((s,c) => s + (c.balance_usd||0), 0);
+        document.getElementById('totalBalance').innerHTML = `$${total.toLocaleString()}`;
+        let pending = loanRequests.filter(l => l.status === 'pending').length;
+        document.getElementById('pendingLoans').innerHTML = pending;
+        document.getElementById('totalStaff').innerHTML = staffList.length;
+    }
+    
+    function renderStaff() {
+        let html = '';
+        staffList.forEach(s => {
+            if(s.username === currentUser?.username) return;
+            html += `<tr><td>${s.name}</td><td>${s.role === 'admin' ? 'Admin' : 'Visual'}</td><td><button class="secondary" onclick="editStaff(${s.id})">✏️</button> <button class="danger" onclick="deleteStaff(${s.id})">🗑️</button></td></tr>`;
+        });
+        document.getElementById('staffList').innerHTML = html;
+    }
+    
+    function renderClients() {
+        let html = '';
+        clientsList.forEach(c => {
+            html += `<tr><td>${c.name}</td><td>$${(c.balance_usd||0).toLocaleString()}</td><td style="color:${c.kyc_status === 'Aprovado' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td><td><button class="secondary" onclick="editClient(${c.id})">✏️</button> <button class="danger" onclick="deleteClient(${c.id})">🗑️</button> <button class="secondary" onclick="adjustBalance(${c.id})">💰</button></td></tr>`;
+        });
+        document.getElementById('clientsList').innerHTML = html;
+    }
+    
+    function renderLoans() {
+        let filtered = loanRequests.filter(l => l.status === currentFilter);
+        if(filtered.length === 0) {
+            document.getElementById('loansList').innerHTML = '<div style="text-align:center; padding:20px;">Nenhum empréstimo encontrado</div>';
+            return;
+        }
+        let html = '';
+        filtered.forEach(l => {
+            html += `<div class="loan-card ${l.status}">
+                        <div><strong>${l.clientName}</strong> - $${l.amount.toLocaleString()} - ${l.term} meses</div>
+                        <div style="font-size:12px;">Motivo: ${l.purpose}</div>
+                        <div style="font-size:12px;">Status: <span class="status-${l.status}">${l.status === 'pending' ? '⏳ Pendente' : l.status === 'approved' ? '✅ Aprovado' : '❌ Rejeitado'}</span></div>
+                        ${l.status === 'pending' ? `<div style="margin-top:8px;"><button onclick="approveLoan(${l.id})" style="background:#00ff88; color:#000;">APROVAR</button> <button onclick="rejectLoan(${l.id})" class="danger">REJEITAR</button></div>` : ''}
+                    </div>`;
+        });
+        document.getElementById('loansList').innerHTML = html;
+    }
+    
+    function approveLoan(id) {
+        let loan = loanRequests.find(l => l.id === id);
+        if(loan && confirm(`Aprovar empréstimo de $${loan.amount.toLocaleString()} para ${loan.clientName}?`)) {
+            loan.status = 'approved';
+            let client = clientsList.find(c => c.id === loan.clientId);
+            if(client) client.balance_usd += loan.amount;
+            saveClients();
+            saveLoans();
+        }
+    }
+    
+    function rejectLoan(id) {
+        let reason = prompt("Motivo da rejeição:");
+        if(reason !== null) {
+            let loan = loanRequests.find(l => l.id === id);
+            if(loan) {
+                loan.status = 'rejected';
+                loan.rejectionReason = reason;
+                saveLoans();
+            }
+        }
+    }
+    
+    function filterLoans(filter) {
+        currentFilter = filter;
+        renderLoans();
+        ['Pending','Approved','Rejected'].forEach(f => {
+            let btn = document.getElementById(`filter${f}`);
+            if(btn) btn.style.opacity = filter === f.toLowerCase() ? '1' : '0.5';
+        });
+    }
+    
+    function addStaff() {
+        let name = document.getElementById('newStaffName').value;
+        let pass = document.getElementById('newStaffPass').value;
+        let role = document.getElementById('newStaffRole').value;
+        if(!name || !pass) return alert("Preencha nome e senha");
+        staffList.push({ id: Date.now(), name, username: name.toLowerCase().replace(/\s/g,''), password: pass, role });
+        saveStaff();
+        document.getElementById('newStaffName').value = '';
+        document.getElementById('newStaffPass').value = '';
+    }
+    
+    function editStaff(id) {
+        let staff = staffList.find(s => s.id === id);
+        let newName = prompt("Novo nome:", staff.name);
+        if(newName) { staff.name = newName; staff.username = newName.toLowerCase().replace(/\s/g,''); saveStaff(); }
+    }
+    
+    function deleteStaff(id) {
+        if(confirm("Remover funcionário?")) { staffList = staffList.filter(s => s.id !== id); saveStaff(); }
+    }
+    
+    function addClient() {
+        let name = document.getElementById('clientName').value;
+        let email = document.getElementById('clientEmail').value;
+        let balance = parseFloat(document.getElementById('clientBalance').value);
+        let kyc = document.getElementById('clientKyc').value;
+        if(!name || !email) return alert("Nome e email obrigatórios");
+        clientsList.push({ id: Date.now(), name, email, balance_usd: isNaN(balance)?0:balance, kyc_status: kyc });
+        saveClients();
+        document.getElementById('clientName').value = '';
+        document.getElementById('clientEmail').value = '';
+        document.getElementById('clientBalance').value = '0';
+    }
+    
+    function editClient(id) {
+        let client = clientsList.find(c => c.id === id);
+        let newName = prompt("Nome:", client.name);
+        let newEmail = prompt("Email:", client.email);
+        if(newName) client.name = newName;
+        if(newEmail) client.email = newEmail;
+        saveClients();
+    }
+    
+    function deleteClient(id) {
+        if(confirm("Excluir cliente?")) { clientsList = clientsList.filter(c => c.id !== id); saveClients(); }
+    }
+    
+    function adjustBalance(id) {
+        let client = clientsList.find(c => c.id === id);
+        let amount = parseFloat(prompt("Valor para adicionar ao saldo (USD):", "1000"));
+        if(!isNaN(amount) && amount !== 0) {
+            client.balance_usd += amount;
+            saveClients();
+        }
+    }
+    
+    function doLogin() {
+        let user = document.getElementById('adminUser').value;
+        let pass = document.getElementById('adminPass').value;
+        let found = staffList.find(s => s.username === user && s.password === pass);
+        if(found) {
+            currentUser = found;
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('dashboardArea').style.display = 'block';
+            updateStats();
+            renderStaff();
+            renderClients();
+            renderLoans();
+        } else {
+            document.getElementById('loginError').innerText = 'Usuário ou senha inválidos!';
+        }
+    }
+    
+    function doLogout() {
+        currentUser = null;
+        document.getElementById('loginArea').style.display = 'flex';
+        document.getElementById('dashboardArea').style.display = 'none';
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+        document.getElementById('loginError').innerText = '';
+    }
+    
+    window.onload = () => {
+        updateStats();
+    };
+</script>
+</body>
+</html>
