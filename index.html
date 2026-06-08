@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentronix Bank | Admin Panel Pro</title>
+    <title>Zentronix Bank | Admin Dashboard Pro - API Ready</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,12 +13,6 @@
             color: #fff;
             min-height: 100vh;
         }
-        body.rtl { direction: rtl; text-align: right; }
-        body.rtl .user-info, body.rtl .quick-actions, body.rtl .stats, body.rtl .panels { direction: rtl; }
-        body.rtl .loan-card { border-left: none; border-right: 3px solid #ffaa00; }
-        body.rtl .loan-card.approved { border-right-color: #00ff88; }
-        body.rtl .loan-card.rejected { border-right-color: #ff4466; }
-        
         .login-container {
             display: flex;
             justify-content: center;
@@ -75,37 +69,18 @@
             gap: 10px;
         }
         .header h2 { color: #00f2ff; font-size: 18px; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .user-info span { color: #bc13fe; font-weight: bold; }
-        
-        .lang-selector {
-            display: flex;
-            gap: 5px;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 10px;
-            border-radius: 30px;
-        }
-        .lang-btn {
-            background: transparent;
-            border: 1px solid #00f2ff30;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .lang-btn:hover { background: #00f2ff20; border-color: #00f2ff; }
-        .lang-btn.active { background: linear-gradient(95deg, #bc13fe, #00f2ff); color: #0a0b1e; border-color: transparent; }
         
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
         .stat-card {
             background: rgba(26,27,58,0.7);
-            padding: 15px;
+            padding: 12px;
             border-radius: 15px;
             text-align: center;
             border: 1px solid #00f2ff30;
@@ -113,13 +88,12 @@
             cursor: pointer;
         }
         .stat-card:hover { transform: translateY(-3px); border-color: #00f2ff; box-shadow: 0 0 20px rgba(0,242,255,0.2); }
-        .stat-card h3 { font-size: 12px; opacity: 0.7; }
-        .stat-card .value { font-size: 24px; font-weight: bold; color: #00f2ff; }
-        .stat-card .trend { font-size: 11px; margin-top: 5px; }
+        .stat-card h3 { font-size: 10px; opacity: 0.7; }
+        .stat-card .value { font-size: 18px; font-weight: bold; color: #00f2ff; }
         
         .panels {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 20px;
         }
         .panel {
@@ -136,9 +110,9 @@
             padding-bottom: 10px;
         }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #2a2b4e; font-size: 13px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #2a2b4e; font-size: 12px; }
         th { color: #00f2ff; }
-        input, select {
+        input, select, textarea {
             background: #0d1117;
             border: 1px solid #bc13fe;
             color: white;
@@ -164,6 +138,8 @@
         button.secondary { background: #2a2b4e; color: #00f2ff; border: 1px solid #00f2ff; }
         button.success { background: #00ff88; color: #0a0b1e; }
         button.warning { background: #ffaa00; color: #0a0b1e; }
+        button.crypto { background: linear-gradient(95deg, #7c3aed, #ec489a); color: white; }
+        button.api { background: linear-gradient(95deg, #06b6d4, #3b82f6); color: white; }
         
         .loan-card {
             background: rgba(0,0,0,0.4);
@@ -172,29 +148,32 @@
             margin-bottom: 10px;
             border-left: 3px solid #ffaa00;
         }
-        .loan-card.approved { border-left-color: #00ff88; }
+        .loan-card.approved, .loan-card.active { border-left-color: #00ff88; }
         .loan-card.rejected { border-left-color: #ff4466; opacity: 0.7; }
         .status-pending { color: #ffaa00; }
-        .status-approved { color: #00ff88; }
+        .status-approved, .status-active { color: #00ff88; }
         .status-rejected { color: #ff4466; }
         
-        .api-section {
-            background: rgba(0,0,0,0.3);
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 10px;
+        .reserve-card {
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #00f2ff30;
         }
-        .api-status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .reserve-card .currency { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
+        .reserve-card .amount { font-size: 24px; font-weight: bold; }
+        .reserve-card .amount.usd { color: #00ff88; }
+        .reserve-card .amount.eur { color: #00f2ff; }
+        .reserve-card .amount.brl { color: #ffaa00; }
+        .reserve-card .sub { font-size: 10px; opacity: 0.5; margin-top: 5px; }
+        
+        .reserve-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        .api-status.online { background: #00ff88; box-shadow: 0 0 5px #00ff88; }
-        .api-status.offline { background: #ff4466; }
-        .api-status.checking { background: #ffaa00; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         .modal-overlay {
             display: none;
@@ -214,21 +193,21 @@
             border: 2px solid #00f2ff;
             border-radius: 20px;
             padding: 25px;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
             text-align: center;
+            max-height: 85vh;
+            overflow-y: auto;
         }
         .modal-content h3 { color: #00f2ff; margin-bottom: 20px; }
-        .modal-content .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .modal-content .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         
-        @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2,1fr); } }
-        
-        .search-box {
-            margin-bottom: 15px;
+        .quick-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
         }
-        .search-box input { flex: 1; }
         
         .activity-log {
             max-height: 200px;
@@ -242,1012 +221,761 @@
             justify-content: space-between;
         }
         
-        .notification-badge {
-            background: #ff4466;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 10px;
-            margin-left: 5px;
-        }
-        
-        .quick-actions {
+        .search-box {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
+        
+        .sync-status {
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .sync-status.success { background: rgba(0,255,136,0.2); border: 1px solid #00ff88; color: #00ff88; }
+        .sync-status.error { background: rgba(255,68,102,0.2); border: 1px solid #ff4466; color: #ff4466; }
+        .sync-status.pending { background: rgba(255,170,0,0.2); border: 1px solid #ffaa00; color: #ffaa00; }
+        
+        .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .account-id { font-family: monospace; background: #2a2b4e; padding: 2px 8px; border-radius: 20px; font-size: 11px; color: #00f2ff; }
+        
+        @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } .reserve-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- LOGOUT CONFIRM MODAL -->
-<div id="logoutConfirmModal" class="modal-overlay">
+<!-- MODALS -->
+<div id="approveLoanModal" class="modal-overlay">
     <div class="modal-content">
-        <h3 id="logoutModalTitle"><i class="fas fa-sign-out-alt"></i> Exit Dashboard</h3>
-        <p id="logoutModalMsg">Are you sure you want to leave the admin panel?</p>
-        <div class="modal-buttons">
-            <button onclick="confirmLogout()" class="danger" id="logoutYesBtn">YES, EXIT</button>
-            <button onclick="closeLogoutModal()" class="secondary" id="logoutNoBtn">NO, CANCEL</button>
+        <h3><i class="fas fa-check-circle"></i> Approve & Disburse Loan</h3>
+        <div style="text-align: left;">
+            <p><strong>Customer:</strong> <span id="approveLoanCustomer"></span></p>
+            <p><strong>Requested Amount:</strong> <span id="approveLoanRequestedAmount"></span></p>
+            <div style="margin: 15px 0;"><label>💰 Disbursement Amount:</label><input type="number" id="disbursementAmount" step="0.01"></div>
+            <div style="margin: 15px 0;"><label>🌍 Currency:</label><select id="loanCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+            <div style="margin: 15px 0;"><label>📝 Admin Notes:</label><textarea id="approveLoanNotes" rows="2"></textarea></div>
+            <div class="sync-status" id="syncStatusMsg" style="display:none;"></div>
         </div>
+        <div class="modal-buttons"><button onclick="confirmApproveLoan()" class="success">✅ APPROVE</button><button onclick="closeApproveLoanModal()" class="secondary">CANCEL</button></div>
     </div>
 </div>
 
-<!-- LOAN DETAILS MODAL -->
 <div id="loanDetailsModal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 550px; max-height: 80vh; overflow-y: auto;">
-        <h3 id="loanDetailsTitle"><i class="fas fa-file-invoice-dollar"></i> Loan Application Details</h3>
-        <div id="loanDetailsContent" style="text-align: left;"></div>
-        <div class="modal-buttons" style="margin-top: 20px;">
-            <button onclick="closeLoanDetailsModal()" class="secondary" id="loanDetailsCloseBtn">Close</button>
-        </div>
-    </div>
+    <div class="modal-content"><h3>Loan Details</h3><div id="loanDetailsContent"></div><div class="modal-buttons"><button onclick="closeLoanDetailsModal()" class="secondary">Close</button></div></div>
 </div>
 
-<!-- SEND NOTIFICATION MODAL -->
-<div id="notificationModal" class="modal-overlay">
-    <div class="modal-content">
-        <h3 id="notificationModalTitle"><i class="fas fa-bell"></i> Send Notification</h3>
-        <textarea id="notificationMessage" rows="4" style="width:100%; background:#0d1117; border:1px solid #bc13fe; color:white; padding:10px; border-radius:8px;" placeholder="Type your message here..."></textarea>
-        <div class="modal-buttons">
-            <button onclick="sendNotification()" class="success" id="notificationSendBtn">SEND</button>
-            <button onclick="closeNotificationModal()" class="secondary" id="notificationCancelBtn">CANCEL</button>
-        </div>
-    </div>
+<div id="clientHistoryModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 700px;"><h3><i class="fas fa-history"></i> Client Bank Statement</h3><div id="clientHistoryContent" style="max-height: 500px; overflow-y: auto;"></div><div class="modal-buttons"><button onclick="closeClientHistoryModal()" class="secondary">Close</button></div></div>
 </div>
 
+<div id="logoutConfirmModal" class="modal-overlay">
+    <div class="modal-content"><h3>Exit Dashboard</h3><p>Are you sure?</p><div class="modal-buttons"><button onclick="confirmLogout()" class="danger">YES</button><button onclick="closeLogoutModal()" class="secondary">CANCEL</button></div></div>
+</div>
+
+<!-- LOGIN -->
 <div id="loginArea" class="login-container">
     <div class="login-box">
-        <h2>🏦 ZENTRONIX ADMIN</h2>
+        <h2>🏦 ZENTRONIX BANK</h2>
         <input type="text" id="adminUser" placeholder="Username">
         <input type="password" id="adminPass" placeholder="Password">
         <button onclick="doLogin()">LOGIN</button>
         <div class="error-msg" id="loginError"></div>
-        <div style="margin-top: 20px; font-size: 12px; opacity: 0.6;">
-            <i class="fas fa-shield-alt"></i> admin / Zentronix@Admin2025
-        </div>
+        <div style="margin-top: 20px; font-size: 12px;">admin / admin123</div>
     </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboardArea" class="dashboard">
     <div class="header">
-        <h2 id="dashboardTitle"><i class="fas fa-chalkboard-user"></i> ZENTRONIX BANK - PROFESSIONAL ADMIN PANEL</h2>
+        <h2><i class="fas fa-chalkboard-user"></i> ZENTRONIX BANK - ADMIN DASHBOARD PRO</h2>
         <div class="user-info">
-            <div class="lang-selector">
-                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
-                <button class="lang-btn" data-lang="pt" onclick="setLanguage('pt')">🇧🇷 PT</button>
-                <button class="lang-btn" data-lang="es" onclick="setLanguage('es')">🇪🇸 ES</button>
-                <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')">🇸🇦 AR</button>
-            </div>
             <span id="currentAdminName">Admin</span>
-            <button onclick="showNotifications()" class="secondary" id="notificationsBtn"><i class="fas fa-bell"></i> <span id="notificationsText">Notifications</span> <span id="notificationCount" class="notification-badge">0</span></button>
-            <button onclick="showLogoutConfirm()" class="danger" id="exitBtn"><i class="fas fa-sign-out-alt"></i> <span id="exitText">EXIT</span></button>
+            <button onclick="syncAllWithBankSite()" class="success" style="background:#00f2ff;"><i class="fas fa-sync-alt"></i> SYNC BANK SITE</button>
+            <button onclick="showLogoutConfirm()" class="danger"><i class="fas fa-sign-out-alt"></i> EXIT</button>
         </div>
     </div>
     
     <div class="stats">
-        <div class="stat-card" onclick="scrollToPanel('clients')">
-            <h3 id="statTotalCustomers">💰 TOTAL CUSTOMERS</h3>
-            <div class="value" id="totalClients">0</div>
-            <div class="trend"><i class="fas fa-users"></i> <span id="statRegistered">Registered</span></div>
-        </div>
-        <div class="stat-card" onclick="scrollToPanel('clients')">
-            <h3 id="statTotalBalance">💵 TOTAL BALANCE (USD)</h3>
-            <div class="value" id="totalBalance">$0</div>
-            <div class="trend"><i class="fas fa-chart-line"></i> <span id="statInCustody">In custody</span></div>
-        </div>
-        <div class="stat-card" onclick="scrollToPanel('loans')">
-            <h3 id="statPendingLoans">📋 PENDING LOANS</h3>
-            <div class="value" id="pendingLoans">0</div>
-            <div class="trend"><i class="fas fa-clock"></i> <span id="statAwaiting">Awaiting review</span></div>
-        </div>
-        <div class="stat-card" onclick="scrollToPanel('staff')">
-            <h3 id="statActiveStaff">👥 ACTIVE STAFF</h3>
-            <div class="value" id="totalStaff">0</div>
-            <div class="trend"><i class="fas fa-user-check"></i> <span id="statInSystem">In system</span></div>
-        </div>
-        <div class="stat-card" onclick="scrollToPanel('clients')">
-            <h3 id="statKycApproved">✅ KYC APPROVED</h3>
-            <div class="value" id="kycApproved">0</div>
-            <div class="trend"><i class="fas fa-id-card"></i> <span id="statVerified">Verified</span></div>
-        </div>
-        <div class="stat-card">
-            <h3 id="statApiStatus">🌐 API STATUS</h3>
-            <div class="value" id="apiStatusDisplay"><span class="api-status checking"></span> <span id="apiCheckingText">Checking</span></div>
-            <div class="trend"><i class="fas fa-sync-alt"></i> <span id="apiLastCheck">-</span></div>
-        </div>
-        <div class="stat-card">
-            <h3 id="statTotalApprovedLoans">💰 TOTAL APPROVED LOANS</h3>
-            <div class="value" id="totalApprovedLoans">$0</div>
-            <div class="trend"><i class="fas fa-hand-holding-usd"></i> <span id="statDisbursed">Disbursed</span></div>
-        </div>
-    </div>
-    
-    <!-- QUICK ACTIONS BAR -->
-    <div class="quick-actions">
-        <button onclick="generateReport('clients')" class="secondary" id="exportClientsBtn"><i class="fas fa-file-csv"></i> <span id="exportClientsText">Export Clients</span></button>
-        <button onclick="generateReport('loans')" class="secondary" id="exportLoansBtn"><i class="fas fa-file-csv"></i> <span id="exportLoansText">Export Loans</span></button>
-        <button onclick="syncWithBankSite()" class="success" id="syncAllBtn"><i class="fas fa-sync-alt"></i> <span id="syncAllText">Sync All Data</span></button>
-        <button onclick="showGlobalNotification()" class="warning" id="broadcastBtn"><i class="fas fa-bullhorn"></i> <span id="broadcastText">Broadcast Message</span></button>
-        <button onclick="viewAuditLog()" class="secondary" id="auditLogBtn"><i class="fas fa-history"></i> <span id="auditLogText">Audit Log</span></button>
+        <div class="stat-card"><h3>💰 TOTAL CUSTOMERS</h3><div class="value" id="totalClients">0</div></div>
+        <div class="stat-card"><h3>💵 USD RESERVE</h3><div class="value" id="statUSDReserve">$900T</div></div>
+        <div class="stat-card"><h3>🇪🇺 EUR RESERVE</h3><div class="value" id="statEURReserve">€900T</div></div>
+        <div class="stat-card"><h3>🇧🇷 BRL RESERVE</h3><div class="value" id="statBRLReserve">R$900T</div></div>
+        <div class="stat-card"><h3>📋 PENDING LOANS</h3><div class="value" id="pendingLoans">0</div></div>
+        <div class="stat-card"><h3>✅ TOTAL DISBURSED</h3><div class="value" id="totalDisbursedStat">$0</div></div>
     </div>
     
     <div class="panels">
-        <!-- STAFF MANAGEMENT PANEL -->
-        <div class="panel" id="staffPanel">
-            <h2 id="staffPanelTitle"><i class="fas fa-users-gear"></i> STAFF MANAGEMENT</h2>
-            <div class="search-box">
-                <input type="text" id="searchStaff" placeholder="🔍 Search staff..." onkeyup="filterStaff()">
+        <!-- RESERVES PANEL -->
+        <div class="panel">
+            <h2><i class="fas fa-piggy-bank"></i> 💰 BANK RESERVES (900T per Currency)</h2>
+            <div class="reserve-grid">
+                <div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div>
             </div>
-            <input type="text" id="newStaffName" placeholder="Full name">
-            <input type="email" id="newStaffEmail" placeholder="Email">
-            <input type="password" id="newStaffPass" placeholder="Password">
-            <select id="newStaffRole">
-                <option value="admin">Administrator</option>
-                <option value="manager">Manager</option>
-                <option value="viewer">Viewer</option>
-                <option value="analyst">Credit Analyst</option>
-            </select>
-            <button onclick="addStaff()" id="addStaffBtn"><i class="fas fa-plus"></i> ADD STAFF</button>
-            <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
-                <table style="width:100%">
-                    <thead><tr><th id="staffNameHeader">Name</th><th id="staffEmailHeader">Email</th><th id="staffRoleHeader">Role</th><th id="staffActionsHeader">Actions</th></tr></thead>
-                    <tbody id="staffList"></tbody>
-                </table>
-            </div>
+            <div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div>
         </div>
         
-        <!-- CUSTOMER MANAGEMENT PANEL -->
-        <div class="panel" id="clientsPanel">
-            <h2 id="customersPanelTitle"><i class="fas fa-user-plus"></i> CUSTOMER MANAGEMENT</h2>
-            <div class="search-box">
-                <input type="text" id="searchClient" placeholder="🔍 Search customer..." onkeyup="filterClients()">
-                <button onclick="syncWithBankSite()" class="secondary" id="syncBtn"><i class="fas fa-sync-alt"></i> Sync</button>
+        <!-- API VERIFICATION PANEL - MELISSA & ABSTRACT -->
+        <div class="panel">
+            <h2><i class="fas fa-shield-alt"></i> 🔐 API VERIFICATION (Melissa & Abstract)</h2>
+            <div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; margin-bottom:15px;">
+                <h4><i class="fas fa-id-card"></i> Melissa API - Identity Verification</h4>
+                <div class="flex-row"><input type="text" id="melissaDoc" placeholder="Document (CPF/SSN/Passport)" style="flex:2;"><input type="text" id="melissaName" placeholder="Full Name" style="flex:2;"><button onclick="verifyWithMelissa()" class="api"><i class="fas fa-check-circle"></i> VERIFY</button></div>
+                <div id="melissaResult" style="font-size:12px; margin-top:8px;"></div>
             </div>
+            <div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px;">
+                <h4><i class="fas fa-map-marker-alt"></i> Abstract API - Address Validation</h4>
+                <div class="flex-row"><input type="text" id="abstractAddress" placeholder="Full address (Street, City, Zip, Country)" style="flex:3;"><button onclick="validateWithAbstract()" class="api"><i class="fas fa-map-pin"></i> VALIDATE</button></div>
+                <div id="abstractResult" style="font-size:12px; margin-top:8px;"></div>
+            </div>
+            <div class="api-note" style="margin-top:10px; font-size:10px; opacity:0.5; text-align:center;">Note: Demo mode - Replace with actual API keys for production</div>
+        </div>
+        
+        <!-- CUSTOMER MANAGEMENT with ACCOUNT ID -->
+        <div class="panel">
+            <h2><i class="fas fa-users"></i> 👥 CUSTOMER MANAGEMENT</h2>
+            <div class="search-box"><input type="text" id="searchClient" placeholder="🔍 Search by name, email or Account ID..."><button onclick="filterClients()" class="secondary">Search</button></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="text" id="clientName" placeholder="Full name">
                 <input type="email" id="clientEmail" placeholder="Email">
-                <input type="number" id="clientBalance" placeholder="USD Balance" value="0">
-                <select id="clientKyc">
-                    <option value="Approved">✅ KYC Approved</option>
-                    <option value="Pending">⏳ KYC Pending</option>
-                    <option value="Rejected">❌ KYC Rejected</option>
-                </select>
-                <select id="clientStatus">
-                    <option value="ACTIVE">🟢 Active Account</option>
-                    <option value="BLOCKED">🔴 Blocked Account</option>
-                    <option value="PENDING">🟡 Pending</option>
-                </select>
-                <button onclick="addClient()" id="createCustomerBtn"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
+                <input type="text" id="clientDocument" placeholder="Document (CPF/SSN)">
+                <input type="text" id="clientAddress" placeholder="Address">
+                <input type="number" id="clientBalanceUSD" placeholder="USD Balance" value="0">
+                <input type="number" id="clientBalanceEUR" placeholder="EUR Balance" value="0">
+                <input type="number" id="clientBalanceBRL" placeholder="BRL Balance" value="0">
+                <select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ KYC Pending</option><option value="Rejected">❌ KYC Rejected</option></select>
+                <button onclick="addClient()" class="success" style="grid-column: span 2;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
             </div>
-            <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
-                <table style="width:100%; font-size:12px;">
-                    <thead><tr><th id="customerNameHeader">Name</th><th id="customerBalanceHeader">Balance</th><th id="customerKycHeader">KYC</th><th id="customerStatusHeader">Status</th><th id="customerActionsHeader">Actions</th></tr></thead>
+            <div style="max-height: 350px; overflow-y: auto; margin-top: 15px;">
+                <table style="width:100%; font-size:11px;">
+                    <thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>KYC</th><th>Actions</th></tr></thead>
                     <tbody id="clientsList"></tbody>
                 </table>
             </div>
         </div>
         
-        <!-- LOAN MANAGEMENT PANEL -->
-        <div class="panel" id="loansPanel">
-            <h2 id="loanPanelTitle"><i class="fas fa-hand-holding-usd"></i> LOAN MANAGEMENT</h2>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                <button onclick="filterLoans('pending')" id="filterPending" class="secondary">⏳ <span id="pendingFilterText">Pending</span> (<span id="pendingCount">0</span>)</button>
-                <button onclick="filterLoans('approved')" id="filterApproved" class="secondary">✅ <span id="approvedFilterText">Approved</span></button>
-                <button onclick="filterLoans('rejected')" id="filterRejected" class="secondary">❌ <span id="rejectedFilterText">Rejected</span></button>
-                <button onclick="exportLoansReport()" class="success" id="exportLoansReportBtn"><i class="fas fa-file-excel"></i> <span id="exportReportText">Export</span></button>
-                <button onclick="bulkLoanAction()" class="warning" id="bulkActionBtn"><i class="fas fa-layer-group"></i> <span id="bulkActionText">Bulk Action</span></button>
-            </div>
-            <div id="loansList" style="max-height: 350px; overflow-y: auto;"></div>
+        <!-- LOAN MANAGEMENT -->
+        <div class="panel">
+            <h2><i class="fas fa-hand-holding-usd"></i> 📋 LOAN MANAGEMENT</h2>
+            <div class="flex-row"><button onclick="filterLoans('pending')" class="secondary">⏳ Pending (<span id="pendingCount">0</span>)</button><button onclick="filterLoans('active')" class="secondary">🟢 Active</button><button onclick="filterLoans('rejected')" class="secondary">❌ Rejected</button><button onclick="bulkLoanAction()" class="warning"><i class="fas fa-layer-group"></i> Bulk</button></div>
+            <div id="loansList" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div>
         </div>
         
-        <!-- API INTEGRATION PANEL -->
+        <!-- MULTI-CURRENCY TRANSFER + CRYPTO + SWIFT -->
         <div class="panel">
-            <h2 id="apiPanelTitle"><i class="fas fa-plug"></i> API INTEGRATIONS</h2>
-            <div class="api-section">
-                <h4 id="melissaTitle"><i class="fas fa-id-card"></i> Melissa API - Identity Verification</h4>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="melissaDoc" placeholder="Document (CPF/SSN)" style="flex:1">
-                    <button onclick="verifyWithMelissa()" class="secondary" id="verifyBtn">Verify</button>
-                </div>
-                <div id="melissaResult" style="font-size: 12px; margin-top: 8px;"></div>
-            </div>
-            <div class="api-section">
-                <h4 id="abstractTitle"><i class="fas fa-shield-alt"></i> Abstract API - Address Validation</h4>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="abstractAddress" placeholder="Full address" style="flex:1">
-                    <button onclick="validateWithAbstract()" class="secondary" id="validateBtn">Validate</button>
-                </div>
-                <div id="abstractResult" style="font-size: 12px; margin-top: 8px;"></div>
-            </div>
-            <div class="api-section">
-                <h4 id="integrationTitle"><i class="fas fa-link"></i> Bank Website Integration</h4>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="bankSiteUrl" placeholder="Bank website URL" value="https://zentronix10.github.io/" style="flex:1">
-                    <button onclick="syncWithBankSite()" class="success" id="syncNowBtn">Sync Now</button>
-                </div>
-                <div id="syncResult" style="font-size: 12px; margin-top: 8px;"></div>
-                <div id="clientRegistrations" style="margin-top: 10px; max-height: 100px; overflow-y: auto;"></div>
-            </div>
+            <h2><i class="fas fa-exchange-alt"></i> 💸 MULTI-CURRENCY OPERATIONS</h2>
+            <div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+            <input type="number" id="transferAmount" placeholder="Amount">
+            <input type="text" id="transferReason" placeholder="Reason / Reference">
+            <div class="flex-row"><button onclick="quickTransfer()" class="success"><i class="fas fa-paper-plane"></i> SEND TRANSFER</button><button onclick="showSwapCryptoModal()" class="crypto"><i class="fas fa-coins"></i> SWAP TO CRYPTO</button><button onclick="initiateSWIFT()" class="warning"><i class="fas fa-globe"></i> SWIFT</button></div>
+            <div id="transferResultMsg" class="sync-status" style="display:none;"></div>
         </div>
         
-        <!-- ACTIVITY LOG PANEL -->
+        <!-- ACTIVITY LOG -->
         <div class="panel">
-            <h2 id="activityPanelTitle"><i class="fas fa-history"></i> ACTIVITY LOG</h2>
-            <div class="activity-log" id="activityLog">
-                <div class="activity-item"><span>📋 System started</span><span>--</span></div>
-            </div>
-            <button onclick="clearActivityLog()" class="secondary" style="margin-top: 10px; width: 100%;" id="clearLogBtn">Clear Log</button>
+            <h2><i class="fas fa-history"></i> 📝 ACTIVITY LOG</h2>
+            <div class="activity-log" id="activityLog"></div>
+            <button onclick="clearActivityLog()" class="secondary" style="margin-top:10px; width:100%;">CLEAR LOG</button>
         </div>
         
-        <!-- REPORTS & ANALYTICS PANEL -->
+        <!-- STATISTICS -->
         <div class="panel">
-            <h2 id="reportsPanelTitle"><i class="fas fa-chart-simple"></i> REPORTS & ANALYTICS</h2>
-            <div class="api-section">
-                <h4 id="loanStatsTitle">📊 Loan Statistics</h4>
-                <div style="margin-top: 10px;">
-                    <div>✅ <span id="approvedStatsText">Approved</span>: <strong id="statApproved">0</strong></div>
-                    <div>⏳ <span id="pendingStatsText">Pending</span>: <strong id="statPending">0</strong></div>
-                    <div>❌ <span id="rejectedStatsText">Rejected</span>: <strong id="statRejected">0</strong></div>
-                    <div>💰 <span id="totalDisbursedText">Total Disbursed</span>: <strong id="statDisbursed">$0</strong></div>
-                </div>
-            </div>
-            <button onclick="generateReport('clients')" class="secondary" style="width: 100%; margin-bottom: 8px;" id="customerReportBtn"><i class="fas fa-users"></i> Customer Report</button>
-            <button onclick="generateReport('loans')" class="secondary" style="width: 100%; margin-bottom: 8px;" id="loanReportBtn"><i class="fas fa-chart-line"></i> Loan Report</button>
-            <button onclick="generateReport('financial')" class="secondary" style="width: 100%;" id="financialReportBtn"><i class="fas fa-dollar-sign"></i> Financial Report</button>
-        </div>
-        
-        <!-- QUICK TRANSFER PANEL -->
-        <div class="panel">
-            <h2 id="quickTransferTitle"><i class="fas fa-exchange-alt"></i> QUICK TRANSFER</h2>
-            <select id="transferClient" style="margin-bottom: 10px;">
-                <option value="" id="selectCustomerOption">Select Customer</option>
-            </select>
-            <input type="number" id="transferAmount" placeholder="Amount (USD)">
-            <input type="text" id="transferReason" placeholder="Reason">
-            <button onclick="quickTransfer()" class="success" id="sendTransferBtn"><i class="fas fa-paper-plane"></i> SEND TRANSFER</button>
+            <h2><i class="fas fa-chart-line"></i> 📊 STATISTICS</h2>
+            <div>✅ Active Loans: <strong id="statActive">0</strong></div><div>⏳ Pending Loans: <strong id="statPending">0</strong></div><div>❌ Rejected Loans: <strong id="statRejected">0</strong></div><hr><div>💰 Total Disbursed: <strong id="statTotalDisbursed">$0</strong></div>
+            <div>🏦 USD Reserve: <strong id="statReserveUSD">$900T</strong></div><div>🇪🇺 EUR Reserve: <strong id="statReserveEUR">€900T</strong></div><div>🇧🇷 BRL Reserve: <strong id="statReserveBRL">R$900T</strong></div>
         </div>
     </div>
 </div>
 
+<!-- CRYPTO SWAP MODAL -->
+<div id="cryptoSswapModal" class="modal-overlay">
+    <div class="modal-content"><h3><i class="fas fa-coins"></i> Swap Fiat to Crypto</h3>
+        <div style="text-align:left;"><p><strong>Customer:</strong> <span id="swapCustomerName"></span></p>
+        <div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+        <div style="margin:10px 0;"><label>Amount:</label><input type="number" id="swapAmount" step="0.01"></div>
+        <div style="margin:10px 0;"><label>To Cryptocurrency:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div>
+        <div id="cryptoSwapResult" class="sync-status" style="display:none;"></div></div>
+        <div class="modal-buttons"><button onclick="confirmSwapToCrypto()" class="crypto">CONFIRM SWAP</button><button onclick="closeSwapModal()" class="secondary">CANCEL</button></div>
+    </div>
+</div>
+
 <script>
-    // Translation System
-    const translations = {
-        en: {
-            dashboardTitle: "ZENTRONIX BANK - PROFESSIONAL ADMIN PANEL",
-            exitText: "EXIT", notificationsText: "Notifications",
-            statTotalCustomers: "💰 TOTAL CUSTOMERS", statTotalBalance: "💵 TOTAL BALANCE (USD)",
-            statPendingLoans: "📋 PENDING LOANS", statActiveStaff: "👥 ACTIVE STAFF",
-            statKycApproved: "✅ KYC APPROVED", statApiStatus: "🌐 API STATUS",
-            statTotalApprovedLoans: "💰 TOTAL APPROVED LOANS", statRegistered: "Registered",
-            statInCustody: "In custody", statAwaiting: "Awaiting review",
-            statInSystem: "In system", statVerified: "Verified", statDisbursed: "Disbursed",
-            exportClientsText: "Export Clients", exportLoansText: "Export Loans",
-            syncAllText: "Sync All Data", broadcastText: "Broadcast Message",
-            auditLogText: "Audit Log", staffPanelTitle: "STAFF MANAGEMENT",
-            customersPanelTitle: "CUSTOMER MANAGEMENT", loanPanelTitle: "LOAN MANAGEMENT",
-            apiPanelTitle: "API INTEGRATIONS", activityPanelTitle: "ACTIVITY LOG",
-            reportsPanelTitle: "REPORTS & ANALYTICS", quickTransferTitle: "QUICK TRANSFER",
-            pendingFilterText: "Pending", approvedFilterText: "Approved",
-            rejectedFilterText: "Rejected", exportReportText: "Export",
-            bulkActionText: "Bulk Action", addStaffBtn: "ADD STAFF",
-            createCustomerBtn: "CREATE CUSTOMER", logoutModalTitle: "Exit Dashboard",
-            logoutModalMsg: "Are you sure you want to leave the admin panel?",
-            logoutYesBtn: "YES, EXIT", logoutNoBtn: "NO, CANCEL",
-            apiCheckingText: "Checking", pendingStatsText: "Pending",
-            rejectedStatsText: "Rejected", totalDisbursedText: "Total Disbursed",
-            customerReportBtn: "Customer Report", loanReportBtn: "Loan Report",
-            financialReportBtn: "Financial Report", sendTransferBtn: "SEND TRANSFER"
-        },
-        pt: {
-            dashboardTitle: "ZENTRONIX BANK - PAINEL ADMINISTRATIVO PROFISSIONAL",
-            exitText: "SAIR", notificationsText: "Notificações",
-            statTotalCustomers: "💰 TOTAL DE CLIENTES", statTotalBalance: "💵 SALDO TOTAL (USD)",
-            statPendingLoans: "📋 EMPRÉSTIMOS PENDENTES", statActiveStaff: "👥 FUNCIONÁRIOS ATIVOS",
-            statKycApproved: "✅ KYC APROVADOS", statApiStatus: "🌐 STATUS DA API",
-            statTotalApprovedLoans: "💰 TOTAL DE EMPRÉSTIMOS APROVADOS", statRegistered: "Cadastrados",
-            statInCustody: "Em custódia", statAwaiting: "Aguardando análise",
-            statInSystem: "No sistema", statVerified: "Verificados", statDisbursed: "Desembolsado",
-            exportClientsText: "Exportar Clientes", exportLoansText: "Exportar Empréstimos",
-            syncAllText: "Sincronizar Dados", broadcastText: "Mensagem em Massa",
-            auditLogText: "Registro de Atividades", staffPanelTitle: "GERENCIAR FUNCIONÁRIOS",
-            customersPanelTitle: "GERENCIAR CLIENTES", loanPanelTitle: "GERENCIAR EMPRÉSTIMOS",
-            apiPanelTitle: "INTEGRAÇÕES API", activityPanelTitle: "REGISTRO DE ATIVIDADES",
-            reportsPanelTitle: "RELATÓRIOS", quickTransferTitle: "TRANSFERÊNCIA RÁPIDA",
-            pendingFilterText: "Pendentes", approvedFilterText: "Aprovados",
-            rejectedFilterText: "Rejeitados", exportReportText: "Exportar",
-            bulkActionText: "Ação em Lote", addStaffBtn: "ADICIONAR FUNCIONÁRIO",
-            createCustomerBtn: "CRIAR CLIENTE", logoutModalTitle: "Sair do Painel",
-            logoutModalMsg: "Tem certeza que deseja sair do painel administrativo?",
-            logoutYesBtn: "SIM, SAIR", logoutNoBtn: "NÃO, CANCELAR",
-            apiCheckingText: "Verificando", pendingStatsText: "Pendentes",
-            rejectedStatsText: "Rejeitados", totalDisbursedText: "Total Desembolsado",
-            customerReportBtn: "Relatório de Clientes", loanReportBtn: "Relatório de Empréstimos",
-            financialReportBtn: "Relatório Financeiro", sendTransferBtn: "ENVIAR TRANSFERÊNCIA"
-        },
-        es: {
-            dashboardTitle: "ZENTRONIX BANK - PANEL ADMINISTRATIVO PROFESIONAL",
-            exitText: "SALIR", notificationsText: "Notificaciones",
-            statTotalCustomers: "💰 TOTAL DE CLIENTES", statTotalBalance: "💵 SALDO TOTAL (USD)",
-            statPendingLoans: "📋 PRÉSTAMOS PENDIENTES", statActiveStaff: "👥 PERSONAL ACTIVO",
-            statKycApproved: "✅ KYC APROBADOS", statApiStatus: "🌐 ESTADO DE API",
-            statTotalApprovedLoans: "💰 TOTAL PRÉSTAMOS APROBADOS", statRegistered: "Registrados",
-            statInCustody: "En custodia", statAwaiting: "Esperando revisión",
-            statInSystem: "En sistema", statVerified: "Verificados", statDisbursed: "Desembolsado",
-            exportClientsText: "Exportar Clientes", exportLoansText: "Exportar Préstamos",
-            syncAllText: "Sincronizar Datos", broadcastText: "Mensaje Masivo",
-            auditLogText: "Registro de Actividades", staffPanelTitle: "GESTIÓN DE PERSONAL",
-            customersPanelTitle: "GESTIÓN DE CLIENTES", loanPanelTitle: "GESTIÓN DE PRÉSTAMOS",
-            apiPanelTitle: "INTEGRACIONES API", activityPanelTitle: "REGISTRO DE ACTIVIDADES",
-            reportsPanelTitle: "REPORTES", quickTransferTitle: "TRANSFERENCIA RÁPIDA",
-            pendingFilterText: "Pendientes", approvedFilterText: "Aprobados",
-            rejectedFilterText: "Rechazados", exportReportText: "Exportar",
-            bulkActionText: "Acción Masiva", addStaffBtn: "AGREGAR PERSONAL",
-            createCustomerBtn: "CREAR CLIENTE", logoutModalTitle: "Salir del Panel",
-            logoutModalMsg: "¿Estás seguro de que quieres salir del panel de administración?",
-            logoutYesBtn: "SÍ, SALIR", logoutNoBtn: "NO, CANCELAR",
-            apiCheckingText: "Verificando", pendingStatsText: "Pendientes",
-            rejectedStatsText: "Rechazados", totalDisbursedText: "Total Desembolsado",
-            customerReportBtn: "Reporte de Clientes", loanReportBtn: "Reporte de Préstamos",
-            financialReportBtn: "Reporte Financiero", sendTransferBtn: "ENVIAR TRANSFERENCIA"
-        },
-        ar: {
-            dashboardTitle: "بنك زينترونيكس - لوحة التحكم الإدارية الاحترافية",
-            exitText: "خروج", notificationsText: "الإشعارات",
-            statTotalCustomers: "💰 إجمالي العملاء", statTotalBalance: "💵 إجمالي الرصيد (دولار)",
-            statPendingLoans: "📋 القروض المعلقة", statActiveStaff: "👥 الموظفين النشطين",
-            statKycApproved: "✅ التحقق المعتمد", statApiStatus: "🌐 حالة واجهة برمجة التطبيقات",
-            statTotalApprovedLoans: "💰 إجمالي القروض المعتمدة", statRegistered: "مسجل",
-            statInCustody: "تحت الحراسة", statAwaiting: "في انتظار المراجعة",
-            statInSystem: "في النظام", statVerified: "تم التحقق", statDisbursed: "تم الصرف",
-            exportClientsText: "تصدير العملاء", exportLoansText: "تصدير القروض",
-            syncAllText: "مزامنة جميع البيانات", broadcastText: "رسالة جماعية",
-            auditLogText: "سجل النشاطات", staffPanelTitle: "إدارة الموظفين",
-            customersPanelTitle: "إدارة العملاء", loanPanelTitle: "إدارة القروض",
-            apiPanelTitle: "تكامل واجهة برمجة التطبيقات", activityPanelTitle: "سجل النشاطات",
-            reportsPanelTitle: "التقارير", quickTransferTitle: "تحويل سريع",
-            pendingFilterText: "معلق", approvedFilterText: "معتمد",
-            rejectedFilterText: "مرفوض", exportReportText: "تصدير",
-            bulkActionText: "إجراء جماعي", addStaffBtn: "إضافة موظف",
-            createCustomerBtn: "إنشاء عميل", logoutModalTitle: "الخروج من لوحة التحكم",
-            logoutModalMsg: "هل أنت متأكد من رغبتك في مغادرة لوحة التحكم؟",
-            logoutYesBtn: "نعم، خروج", logoutNoBtn: "لا، إلغاء",
-            apiCheckingText: "جاري التحقق", pendingStatsText: "معلق",
-            rejectedStatsText: "مرفوض", totalDisbursedText: "إجمالي المدفوعات",
-            customerReportBtn: "تقرير العملاء", loanReportBtn: "تقرير القروض",
-            financialReportBtn: "تقرير مالي", sendTransferBtn: "إرسال تحويل"
-        }
-    };
+    // ============ BANK RESERVES ============
+    let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000 };
+    let totalDisbursedAmountUSDEquivalent = 0;
     
-    let currentLang = localStorage.getItem('admin_lang') || 'en';
+    // ============ DATA STORES ============
+    let staffList = [ { id: 1, name: "Master Admin", username: "admin", password: "admin123", role: "admin" } ];
     
-    function setLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('admin_lang', lang);
-        applyTranslations();
-        document.body.classList.toggle('rtl', lang === 'ar');
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === lang);
-        });
-    }
+    // Generate unique Account ID (format: ZNX-XXXXXX)
+    function generateAccountId() { return "ZNX-" + Math.floor(100000 + Math.random() * 900000).toString(); }
     
-    function applyTranslations() {
-        const t = translations[currentLang];
-        if (!t) return;
-        document.querySelectorAll('[id]').forEach(el => {
-            if (t[el.id]) el.innerText = t[el.id];
-        });
-        document.querySelectorAll('[id]').forEach(el => {
-            if (t[el.id]) el.innerText = t[el.id];
-        });
-        document.getElementById('dashboardTitle').innerHTML = `<i class="fas fa-chalkboard-user"></i> ${t.dashboardTitle}`;
-        document.getElementById('staffPanelTitle').innerHTML = `<i class="fas fa-users-gear"></i> ${t.staffPanelTitle}`;
-        document.getElementById('customersPanelTitle').innerHTML = `<i class="fas fa-user-plus"></i> ${t.customersPanelTitle}`;
-        document.getElementById('loanPanelTitle').innerHTML = `<i class="fas fa-hand-holding-usd"></i> ${t.loanPanelTitle}`;
-        document.getElementById('apiPanelTitle').innerHTML = `<i class="fas fa-plug"></i> ${t.apiPanelTitle}`;
-        document.getElementById('activityPanelTitle').innerHTML = `<i class="fas fa-history"></i> ${t.activityPanelTitle}`;
-        document.getElementById('reportsPanelTitle').innerHTML = `<i class="fas fa-chart-simple"></i> ${t.reportsPanelTitle}`;
-        document.getElementById('quickTransferTitle').innerHTML = `<i class="fas fa-exchange-alt"></i> ${t.quickTransferTitle}`;
-        document.getElementById('staffNameHeader').innerText = 'Name';
-        document.getElementById('staffEmailHeader').innerText = 'Email';
-        document.getElementById('staffRoleHeader').innerText = 'Role';
-        document.getElementById('staffActionsHeader').innerText = 'Actions';
-        document.getElementById('customerNameHeader').innerText = 'Name';
-        document.getElementById('customerBalanceHeader').innerText = 'Balance';
-        document.getElementById('customerKycHeader').innerText = 'KYC';
-        document.getElementById('customerStatusHeader').innerText = 'Status';
-        document.getElementById('customerActionsHeader').innerText = 'Actions';
-        document.getElementById('selectCustomerOption').innerText = 'Select Customer';
-    }
-    
-    // Configuration
-    const RENDER_API_URL = 'https://api-zentronix.onrender.com';
-    
-    // Data stores
-    let staffList = JSON.parse(localStorage.getItem('zentronix_staff')) || [
-        { id: 1, name: "Master Admin", email: "admin@zentronix.com", username: "admin", password: "Zentronix@Admin2025", role: "admin", lastLogin: new Date().toISOString() }
+    let clientsList = [
+        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York, NY 10005, USA", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
+        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore 018983", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
+        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo - SP, Brazil", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
     ];
-    let clientsList = JSON.parse(localStorage.getItem('zentronix_clients')) || [
-        { id: 1, name: "Alexander Vance", email: "alexander@zentronix.com", balance_usd: 25000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-01-15", phone: "+1 555-0101" },
-        { id: 2, name: "Sarah Chen", email: "sarah@offshore.com", balance_usd: 128000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-02-20", phone: "+1 555-0102" },
-        { id: 3, name: "João Silva", email: "joao@email.com", balance_usd: 5000, kyc_status: "Pending", account_status: "PENDING", createdAt: "2025-01-10", phone: "+55 11 91234-5678" }
+    
+    // Initialize transaction history for existing clients
+    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5, currency: "USD", description: "Initial account deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 } ]; });
+    
+    let loanRequests = [
+        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", monthlyPayment: 2185.50, requestedCurrency: "USD" },
+        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Property Acquisition", monthlyPayment: 4250.75, requestedCurrency: "USD" },
+        { id: 103, clientId: 3, clientName: "João Silva", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-17", purpose: "Investment", monthlyPayment: 2185.50, requestedCurrency: "BRL" }
     ];
-    let loanRequests = JSON.parse(localStorage.getItem('zentronix_loans')) || [
-        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business expansion", monthlyPayment: 2185.50, interestRate: 1.5, annualIncome: 250000, creditScore: 750 },
-        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Property acquisition", monthlyPayment: 4250.75, interestRate: 1.2, annualIncome: 500000, creditScore: 800 }
-    ];
-    let activityLogs = JSON.parse(localStorage.getItem('zentronix_activity')) || [
-        { action: "System started", timestamp: new Date().toISOString(), user: "System" }
-    ];
-    let notifications = JSON.parse(localStorage.getItem('zentronix_notifications')) || [];
+    
+    let activityLogs = [ { action: "System started - Professional Dashboard with API Integration", timestamp: new Date().toISOString(), user: "System" } ];
     
     let currentUser = null;
     let currentFilter = 'pending';
-    let currentNotificationTarget = null;
+    let currentLoanToApprove = null;
+    let currentSwapClient = null;
     
-    // Helper functions
-    function saveStaff() { localStorage.setItem('zentronix_staff', JSON.stringify(staffList)); updateStats(); renderStaff(); addActivity(`Staff updated by ${currentUser?.name || 'Admin'}`); }
-    function saveClients() { localStorage.setItem('zentronix_clients', JSON.stringify(clientsList)); updateStats(); renderClients(); updateTransferSelect(); addActivity(`Customers updated by ${currentUser?.name || 'Admin'}`); }
-    function saveLoans() { localStorage.setItem('zentronix_loans', JSON.stringify(loanRequests)); updateStats(); renderLoans(); updateLoanStats(); }
-    function saveNotifications() { localStorage.setItem('zentronix_notifications', JSON.stringify(notifications)); updateNotificationCount(); }
-    
-    function addActivity(action) { 
-        activityLogs.unshift({ action, timestamp: new Date().toISOString(), user: currentUser?.name || 'System' });
-        if(activityLogs.length > 50) activityLogs.pop();
+    // ============ HELPER FUNCTIONS ============
+    function saveData() {
+        localStorage.setItem('zentronix_clients', JSON.stringify(clientsList));
+        localStorage.setItem('zentronix_loans', JSON.stringify(loanRequests));
         localStorage.setItem('zentronix_activity', JSON.stringify(activityLogs));
+        localStorage.setItem('zentronix_reserves', JSON.stringify(bankReserves));
+        localStorage.setItem('zentronix_total_disbursed', totalDisbursedAmountUSDEquivalent);
+        // Also save for bank site sync
+        localStorage.setItem('zentronix_bank_clients', JSON.stringify(clientsList));
+        localStorage.setItem('zentronix_bank_reserves', JSON.stringify(bankReserves));
+        localStorage.setItem('zentronix_last_sync', new Date().toISOString());
+    }
+    
+    function loadData() {
+        let savedClients = localStorage.getItem('zentronix_clients');
+        let savedLoans = localStorage.getItem('zentronix_loans');
+        let savedActivity = localStorage.getItem('zentronix_activity');
+        let savedReserves = localStorage.getItem('zentronix_reserves');
+        let savedTotal = localStorage.getItem('zentronix_total_disbursed');
+        if (savedClients) clientsList = JSON.parse(savedClients);
+        if (savedLoans) loanRequests = JSON.parse(savedLoans);
+        if (savedActivity) activityLogs = JSON.parse(savedActivity);
+        if (savedReserves) bankReserves = JSON.parse(savedReserves);
+        if (savedTotal) totalDisbursedAmountUSDEquivalent = parseFloat(savedTotal);
+    }
+    
+    function addTransaction(client, type, amount, currency, description) {
+        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 };
+        client.transactionHistory.unshift(tx);
+        if(client.transactionHistory.length > 100) client.transactionHistory.pop();
+    }
+    
+    function addActivity(action) {
+        let logEntry = { action: action, timestamp: new Date().toISOString(), user: currentUser?.name || 'System' };
+        activityLogs.unshift(logEntry);
+        if(activityLogs.length > 50) activityLogs.pop();
+        saveData();
         renderActivityLog();
     }
     
-    function addNotification(message, type = 'info') {
-        notifications.unshift({ id: Date.now(), message, type, timestamp: new Date().toISOString(), read: false });
-        saveNotifications();
-        updateNotificationCount();
-    }
+    function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+    function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
     
-    function updateNotificationCount() {
-        let unread = notifications.filter(n => !n.read).length;
-        let countSpan = document.getElementById('notificationCount');
-        if(countSpan) countSpan.innerText = unread;
-    }
-    
-    function updateLoanStats() {
-        let approved = loanRequests.filter(l => l.status === 'approved').length;
-        let pending = loanRequests.filter(l => l.status === 'pending').length;
-        let rejected = loanRequests.filter(l => l.status === 'rejected').length;
-        let totalDisbursed = loanRequests.filter(l => l.status === 'approved').reduce((s,l) => s + l.amount, 0);
+    // ============ SYNC WITH BANK SITE (postMessage & localStorage) ============
+    async function syncAllWithBankSite() {
+        addActivity(`🔄 Syncing with bank site...`);
+        saveData(); // Refresh all data in localStorage
         
-        document.getElementById('statApproved').innerHTML = approved;
-        document.getElementById('statPending').innerHTML = pending;
-        document.getElementById('statRejected').innerHTML = rejected;
-        document.getElementById('statDisbursed').innerHTML = `$${totalDisbursed.toLocaleString()}`;
-        document.getElementById('totalApprovedLoans').innerHTML = `$${totalDisbursed.toLocaleString()}`;
-        document.getElementById('pendingCount').innerHTML = pending;
-    }
-    
-    function renderActivityLog() {
-        let html = '';
-        activityLogs.slice(0, 15).forEach(log => {
-            let time = new Date(log.timestamp).toLocaleString();
-            html += `<div class="activity-item"><span>${log.action}</span><span style="font-size:10px;">${time}</span></div>`;
-        });
-        document.getElementById('activityLog').innerHTML = html;
-    }
-    
-    function clearActivityLog() {
-        if(confirm("Clear all activity logs?")) {
-            activityLogs = [{ action: "Log cleared", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }];
-            localStorage.setItem('zentronix_activity', JSON.stringify(activityLogs));
-            renderActivityLog();
-        }
-    }
-    
-    function updateStats() {
-        document.getElementById('totalClients').innerText = clientsList.length;
-        let total = clientsList.reduce((s,c) => s + (c.balance_usd||0), 0);
-        document.getElementById('totalBalance').innerHTML = `$${total.toLocaleString()}`;
-        let pending = loanRequests.filter(l => l.status === 'pending').length;
-        document.getElementById('pendingLoans').innerHTML = pending;
-        document.getElementById('totalStaff').innerHTML = staffList.length;
-        let kycApproved = clientsList.filter(c => c.kyc_status === 'Approved').length;
-        document.getElementById('kycApproved').innerHTML = kycApproved;
-        updateLoanStats();
-    }
-    
-    function updateTransferSelect() {
-        let select = document.getElementById('transferClient');
-        if(!select) return;
-        select.innerHTML = '<option value="">Select Customer</option>';
-        clientsList.forEach(c => {
-            select.innerHTML += `<option value="${c.id}">${c.name} ($${c.balance_usd.toLocaleString()})</option>`;
-        });
-    }
-    
-    function quickTransfer() {
-        let clientId = document.getElementById('transferClient').value;
-        let amount = parseFloat(document.getElementById('transferAmount').value);
-        let reason = document.getElementById('transferReason').value;
+        // Broadcast to any open bank site windows
+        try {
+            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
+        } catch(e) { console.log("PostMessage error:", e); }
         
-        if(!clientId || isNaN(amount) || amount <= 0) {
-            alert("Please select a customer and enter a valid amount");
-            return;
-        }
-        
-        let client = clientsList.find(c => c.id == clientId);
-        if(confirm(`Transfer $${amount.toLocaleString()} to ${client.name}?\nReason: ${reason || 'No reason provided'}`)) {
-            client.balance_usd += amount;
-            saveClients();
-            addActivity(`💰 TRANSFER: $${amount.toLocaleString()} added to ${client.name} (${reason || 'Quick transfer'})`);
-            addNotification(`$${amount.toLocaleString()} has been added to your account. Reason: ${reason || 'Deposit'}`, 'success');
-            alert(`✅ Transfer completed!\n$${amount.toLocaleString()} added to ${client.name}'s balance.`);
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('transferReason').value = '';
-        }
+        alert(`✅ Sync completed!\n\n${clientsList.length} customers synced.\nBank site can access data via localStorage key 'zentronix_bank_clients' or postMessage.`);
+        addActivity(`✅ Sync completed: ${clientsList.length} customers synced.`);
+        return true;
     }
     
-    // LOAN APPROVAL WITH AUTO-DISBURSEMENT
-    function approveLoan(id) {
-        let loan = loanRequests.find(l => l.id === id);
-        if(loan && confirm(`✅ APPROVE LOAN\n\nCustomer: ${loan.clientName}\nAmount: $${loan.amount.toLocaleString()}\nTerm: ${loan.term} months\nMonthly Payment: $${loan.monthlyPayment?.toLocaleString()}\n\nThe amount will be automatically added to the customer's balance. Continue?`)) {
-            loan.status = 'approved';
+    // Listen for messages from bank site
+    window.addEventListener('message', (event) => {
+        if(event.data && event.data.type === 'ZENTRONIX_REQUEST_SYNC') {
+            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
+            addActivity(`📡 Bank site requested sync - data sent via postMessage`);
+        }
+    });
+    
+    // ============ API VERIFICATION (Melissa & Abstract) ============
+    async function verifyWithMelissa() {
+        let doc = document.getElementById('melissaDoc').value;
+        let name = document.getElementById('melissaName').value;
+        let resultDiv = document.getElementById('melissaResult');
+        
+        if(!doc && !name) { alert("Enter document number or name to verify"); return; }
+        
+        resultDiv.innerHTML = '<span class="api-status pending"></span> Verifying with Melissa API...';
+        resultDiv.style.color = '#ffaa00';
+        
+        // DEMO: Simulate API call - Replace with actual Melissa API endpoint
+        // Actual API: https://api.melissa.com/v2/ (requires API key)
+        setTimeout(() => {
+            let isValid = (doc && doc.length >= 5) || (name && name.length >= 3);
+            let confidence = Math.floor(Math.random() * 30) + 70;
+            
+            if(isValid) {
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Identity Verified! (Confidence: ${confidence}%)<br>Document: ${doc || 'Not provided'}<br>Name: ${name || 'Not provided'}`;
+                resultDiv.style.color = '#00ff88';
+                addActivity(`Melissa API: Identity verified for ${name || doc} (Confidence: ${confidence}%)`);
+            } else {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Identity Verification Failed! Please check the information.`;
+                resultDiv.style.color = '#ff4466';
+                addActivity(`Melissa API: Identity verification failed for ${name || doc}`);
+            }
+        }, 1500);
+    }
+    
+    async function validateWithAbstract() {
+        let address = document.getElementById('abstractAddress').value;
+        let resultDiv = document.getElementById('abstractResult');
+        
+        if(!address) { alert("Enter address to validate"); return; }
+        
+        resultDiv.innerHTML = '<span class="api-status pending"></span> Validating address with Abstract API...';
+        resultDiv.style.color = '#ffaa00';
+        
+        // DEMO: Simulate API call - Replace with actual Abstract API endpoint
+        // Actual API: https://api.abstractapi.com/v1/ (requires API key)
+        setTimeout(() => {
+            let isValid = address.length >= 10;
+            let components = { street: "Main St", city: "New York", zip: "10001", country: "USA" };
+            
+            if(isValid) {
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Address Validated!<br>${address}<br>Components: Street: ${components.street}, City: ${components.city}, ZIP: ${components.zip}`;
+                resultDiv.style.color = '#00ff88';
+                addActivity(`Abstract API: Address validated successfully`);
+            } else {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Address Validation Failed! Please check the address format.`;
+                resultDiv.style.color = '#ff4466';
+                addActivity(`Abstract API: Address validation failed`);
+            }
+        }, 1500);
+    }
+    
+    // ============ RESERVE FUNCTIONS ============
+    function refreshReserves() {
+        document.getElementById('reserveUSD').innerHTML = `$ ${formatNumber(bankReserves.USD)}`;
+        document.getElementById('reserveEUR').innerHTML = `€ ${formatNumber(bankReserves.EUR)}`;
+        document.getElementById('reserveBRL').innerHTML = `R$ ${formatNumber(bankReserves.BRL)}`;
+        document.getElementById('statUSDReserve').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
+        document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
+        document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
+        document.getElementById('statReserveUSD').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
+        document.getElementById('statReserveEUR').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
+        document.getElementById('statReserveBRL').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
+        saveData();
+    }
+    
+    function exportReserveReport() {
+        let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nTotal Disbursed (USD Eqv)," + totalDisbursedAmountUSDEquivalent;
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `reserve_report_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        addActivity(`Reserve report exported`);
+    }
+    
+    // ============ LOAN FUNCTIONS ============
+    function showApproveLoanModal(loan) {
+        currentLoanToApprove = loan;
+        document.getElementById('approveLoanCustomer').innerText = loan.clientName;
+        document.getElementById('approveLoanRequestedAmount').innerHTML = `<strong>${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(loan.amount)}</strong> (${loan.requestedCurrency})`;
+        document.getElementById('disbursementAmount').value = loan.amount;
+        document.getElementById('loanCurrency').value = loan.requestedCurrency || 'USD';
+        document.getElementById('approveLoanNotes').value = '';
+        document.getElementById('syncStatusMsg').style.display = 'none';
+        document.getElementById('approveLoanModal').classList.add('active');
+    }
+    
+    function closeApproveLoanModal() { document.getElementById('approveLoanModal').classList.remove('active'); currentLoanToApprove = null; }
+    
+    async function confirmApproveLoan() {
+        if (!currentLoanToApprove) return;
+        let loan = currentLoanToApprove;
+        let disbursementAmount = parseFloat(document.getElementById('disbursementAmount').value);
+        let selectedCurrency = document.getElementById('loanCurrency').value;
+        let adminNotes = document.getElementById('approveLoanNotes').value;
+        let syncStatusDiv = document.getElementById('syncStatusMsg');
+        
+        if (isNaN(disbursementAmount) || disbursementAmount <= 0) disbursementAmount = loan.amount;
+        if (disbursementAmount > bankReserves[selectedCurrency]) { alert(`❌ Insufficient reserve in ${selectedCurrency}!`); return; }
+        if (!confirm(`✅ APPROVE LOAN\n\nCustomer: ${loan.clientName}\nDisbursing: ${selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(disbursementAmount)}\n\nContinue?`)) return;
+        
+        syncStatusDiv.style.display = 'block';
+        syncStatusDiv.className = 'sync-status pending';
+        syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing loan...';
+        
+        try {
+            bankReserves[selectedCurrency] -= disbursementAmount;
+            let usdEquivalent = selectedCurrency === 'USD' ? disbursementAmount : (selectedCurrency === 'EUR' ? disbursementAmount * 1.08 : disbursementAmount / 5.5);
+            totalDisbursedAmountUSDEquivalent += usdEquivalent;
+            loan.status = 'active';
+            loan.disbursedAmount = disbursementAmount;
+            loan.disbursedCurrency = selectedCurrency;
             loan.approvedDate = new Date().toISOString();
             loan.approvedBy = currentUser?.name || 'Admin';
+            loan.adminNotes = adminNotes;
             
             let client = clientsList.find(c => c.id === loan.clientId);
-            if(client) {
-                client.balance_usd += loan.amount;
-                addActivity(`✅ LOAN APPROVED & DISBURSED: $${loan.amount.toLocaleString()} for ${client.name}. New balance: $${client.balance_usd.toLocaleString()}`);
-                addNotification(`🎉 Congratulations! Your loan of $${loan.amount.toLocaleString()} has been approved and deposited to your account.`, 'success');
+            if (client) {
+                if (selectedCurrency === 'USD') client.balance_usd += disbursementAmount;
+                else if (selectedCurrency === 'EUR') client.balance_eur += disbursementAmount;
+                else if (selectedCurrency === 'BRL') client.balance_brl += disbursementAmount;
+                addTransaction(client, "LOAN_DISBURSEMENT", disbursementAmount, selectedCurrency, `Loan ${loan.id} approved and disbursed - ${adminNotes || 'No notes'}`);
+                addActivity(`✅ LOAN APPROVED: ${selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(disbursementAmount)} for ${client.name}`);
+                syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Loan disbursed and synced!';
+                syncStatusDiv.classList.add('success');
             }
-            saveClients();
-            saveLoans();
-            alert(`✅ LOAN APPROVED & DISBURSED!\n\n$${loan.amount.toLocaleString()} has been added to ${loan.clientName}'s balance.\nNew balance: $${client?.balance_usd.toLocaleString()}`);
-        }
+            saveData();
+            refreshReserves();
+            updateUI();
+            syncAllWithBankSite();
+            setTimeout(() => { closeApproveLoanModal(); alert(`✅ Loan approved! Amount sent to ${loan.clientName}.`); }, 1500);
+        } catch (error) { syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error processing loan.'; syncStatusDiv.classList.add('error'); }
     }
     
+    function approveLoan(id) { let loan = loanRequests.find(l => l.id === id); if(loan && loan.status === 'pending') showApproveLoanModal(loan); }
     function rejectLoan(id) {
         let reason = prompt("Reason for rejection:");
-        if(reason !== null) {
+        if(reason) {
             let loan = loanRequests.find(l => l.id === id);
-            if(loan) {
+            if(loan && loan.status === 'pending') {
                 loan.status = 'rejected';
                 loan.rejectionReason = reason;
-                loan.rejectedDate = new Date().toISOString();
-                loan.rejectedBy = currentUser?.name || 'Admin';
-                addActivity(`❌ LOAN REJECTED: $${loan.amount.toLocaleString()} for ${loan.clientName} - Reason: ${reason}`);
-                addNotification(`Your loan request for $${loan.amount.toLocaleString()} has been rejected. Reason: ${reason}`, 'error');
-                saveLoans();
-                alert(`❌ Loan rejected for ${loan.clientName}.`);
+                addActivity(`❌ LOAN REJECTED for ${loan.clientName}`);
+                saveData();
+                updateUI();
+                alert(`Loan rejected.`);
             }
         }
     }
     
     function bulkLoanAction() {
         let pendingLoans = loanRequests.filter(l => l.status === 'pending');
-        if(pendingLoans.length === 0) {
-            alert("No pending loans to process");
-            return;
-        }
-        
-        let action = confirm(`Process ${pendingLoans.length} pending loans?\n\nClick OK to approve ALL pending loans.\nClick CANCEL to reject ALL pending loans.`);
-        
+        if(pendingLoans.length === 0) { alert("No pending loans"); return; }
+        let action = confirm(`Process ${pendingLoans.length} pending loans?\nOK = Approve All, CANCEL = Reject All`);
         if(action) {
             pendingLoans.forEach(loan => {
-                loan.status = 'approved';
-                loan.approvedDate = new Date().toISOString();
-                loan.approvedBy = currentUser?.name || 'Admin (Bulk)';
-                let client = clientsList.find(c => c.id === loan.clientId);
-                if(client) {
-                    client.balance_usd += loan.amount;
-                }
+                let currency = loan.requestedCurrency || 'USD';
+                let amount = loan.amount;
+                if (amount <= bankReserves[currency]) {
+                    bankReserves[currency] -= amount;
+                    totalDisbursedAmountUSDEquivalent += currency === 'USD' ? amount : (currency === 'EUR' ? amount * 1.08 : amount / 5.5);
+                    loan.status = 'active';
+                    loan.disbursedAmount = amount;
+                    let client = clientsList.find(c => c.id === loan.clientId);
+                    if(client) {
+                        if (currency === 'USD') client.balance_usd += amount;
+                        else if (currency === 'EUR') client.balance_eur += amount;
+                        else if (currency === 'BRL') client.balance_brl += amount;
+                        addTransaction(client, "LOAN_DISBURSEMENT", amount, currency, `Bulk loan approval`);
+                    }
+                } else { loan.status = 'rejected'; loan.rejectionReason = `Insufficient ${currency} reserve`; }
             });
-            saveClients();
-            saveLoans();
-            addActivity(`📋 BULK ACTION: ${pendingLoans.length} loans approved via bulk action`);
-            alert(`✅ ${pendingLoans.length} loans approved and disbursed!`);
+            saveData();
+            refreshReserves();
+            addActivity(`📋 BULK ACTION: ${pendingLoans.length} loans processed`);
+            alert(`Bulk action completed!`);
         } else {
-            let reason = prompt("Enter reason for bulk rejection:");
+            let reason = prompt("Reason for bulk rejection:");
             if(reason) {
-                pendingLoans.forEach(loan => {
-                    loan.status = 'rejected';
-                    loan.rejectionReason = reason;
-                    loan.rejectedDate = new Date().toISOString();
-                    loan.rejectedBy = currentUser?.name || 'Admin (Bulk)';
-                });
-                saveLoans();
-                addActivity(`📋 BULK ACTION: ${pendingLoans.length} loans rejected - Reason: ${reason}`);
-                alert(`❌ ${pendingLoans.length} loans rejected.`);
+                pendingLoans.forEach(loan => { loan.status = 'rejected'; loan.rejectionReason = reason; });
+                saveData();
+                addActivity(`📋 BULK REJECTION: ${pendingLoans.length} loans rejected`);
+                alert(`${pendingLoans.length} loans rejected.`);
             }
         }
-        renderLoans();
-        updateStats();
+        updateUI();
+        syncAllWithBankSite();
     }
     
     function showLoanDetails(loan) {
-        let detailsHtml = `
-            <p><strong>Customer:</strong> ${loan.clientName}</p>
-            <p><strong>Amount Requested:</strong> $${loan.amount.toLocaleString()}</p>
-            <p><strong>Term:</strong> ${loan.term} months</p>
-            <p><strong>Monthly Payment:</strong> $${loan.monthlyPayment?.toLocaleString() || 'Calculating'}</p>
-            <p><strong>Interest Rate:</strong> ${loan.interestRate}% per month</p>
-            <p><strong>Purpose:</strong> ${loan.purpose}</p>
-            <p><strong>Request Date:</strong> ${loan.requestedDate}</p>
-            <p><strong>Annual Income:</strong> $${(loan.annualIncome || 0).toLocaleString()}</p>
-            <p><strong>Credit Score:</strong> ${loan.creditScore || 'N/A'}</p>
-            <p><strong>Status:</strong> <span class="status-${loan.status}">${loan.status.toUpperCase()}</span></p>
-            ${loan.status === 'approved' ? `<p><strong>Approved By:</strong> ${loan.approvedBy || 'N/A'}</p><p><strong>Approved Date:</strong> ${loan.approvedDate || 'N/A'}</p>` : ''}
-            ${loan.status === 'rejected' ? `<p><strong>Rejected By:</strong> ${loan.rejectedBy || 'N/A'}</p><p><strong>Rejection Reason:</strong> ${loan.rejectionReason || 'N/A'}</p>` : ''}
-            ${loan.status === 'pending' ? `
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button onclick="approveLoanFromModal(${loan.id})" class="success" style="flex:1"><i class="fas fa-check"></i> APPROVE & DISBURSE</button>
-                    <button onclick="rejectLoanFromModal(${loan.id})" class="danger" style="flex:1"><i class="fas fa-times"></i> REJECT LOAN</button>
-                </div>
-            ` : ''}
-        `;
-        document.getElementById('loanDetailsContent').innerHTML = detailsHtml;
+        let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : 'R$');
+        let html = `<p><strong>Customer:</strong> ${loan.clientName}</p><p><strong>Requested:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Disbursed:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Term:</strong> ${loan.term} months</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>${loan.approvedBy ? `<p><strong>Approved By:</strong> ${loan.approvedBy}</p>` : ''}${loan.rejectionReason ? `<p><strong>Reason:</strong> ${loan.rejectionReason}</p>` : ''}`;
+        document.getElementById('loanDetailsContent').innerHTML = html;
         document.getElementById('loanDetailsModal').classList.add('active');
     }
-    
-    function approveLoanFromModal(id) {
-        closeLoanDetailsModal();
-        approveLoan(id);
-    }
-    
-    function rejectLoanFromModal(id) {
-        closeLoanDetailsModal();
-        let reason = prompt("Reason for rejection:");
-        if(reason !== null) rejectLoan(id);
-    }
-    
-    function closeLoanDetailsModal() {
-        document.getElementById('loanDetailsModal').classList.remove('active');
-    }
+    function closeLoanDetailsModal() { document.getElementById('loanDetailsModal').classList.remove('active'); }
+    function filterLoans(filter) { currentFilter = filter; renderLoans(); }
     
     function renderLoans() {
         let filtered = loanRequests.filter(l => l.status === currentFilter);
-        if(filtered.length === 0) {
-            document.getElementById('loansList').innerHTML = '<div style="text-align:center; padding:20px;">No loans found</div>';
-            return;
-        }
+        if(filtered.length === 0) { document.getElementById('loansList').innerHTML = '<div style="text-align:center; padding:20px;">No loans found</div>'; return; }
         let html = '';
         filtered.forEach(l => {
-            let statusText = { pending: '⏳ Pending', approved: '✅ Approved', rejected: '❌ Rejected' }[l.status];
-            html += `<div class="loan-card ${l.status}">
-                        <div><strong>${l.clientName}</strong> - <span style="color:#00f2ff;">$${l.amount.toLocaleString()}</span> - ${l.term} months</div>
-                        <div style="font-size:12px;">📝 Purpose: ${l.purpose}</div>
-                        <div style="font-size:12px;">📅 Requested: ${l.requestedDate}</div>
-                        <div style="font-size:12px;">💵 Monthly: $${l.monthlyPayment?.toLocaleString() || 'Calculating'}</div>
-                        <div>Status: <span class="status-${l.status}">${statusText}</span></div>
-                        ${l.status === 'pending' ? `<div style="margin-top:8px;">
-                            <button onclick="approveLoan(${l.id})" class="success"><i class="fas fa-check"></i> APPROVE & DISBURSE</button>
-                            <button onclick="rejectLoan(${l.id})" class="danger"><i class="fas fa-times"></i> REJECT</button>
-                            <button onclick="showLoanDetails(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="secondary"><i class="fas fa-info-circle"></i> DETAILS</button>
-                        </div>` : `<div style="margin-top:8px;"><button onclick="showLoanDetails(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="secondary"><i class="fas fa-info-circle"></i> VIEW DETAILS</button></div>`}
-                    </div>`;
+            let statusText = { pending: '⏳ Pending', rejected: '❌ Rejected', active: '🟢 Active' }[l.status] || l.status;
+            html += `<div class="loan-card ${l.status}"><div><strong>${l.clientName}</strong> - $${formatNumber(l.amount)} - ${l.term} months</div><div>Status: ${statusText}</div>${l.status === 'pending' ? `<div><button onclick="approveLoan(${l.id})" class="success">APPROVE</button><button onclick="rejectLoan(${l.id})" class="danger">REJECT</button><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>` : `<div><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>`}</div>`;
         });
         document.getElementById('loansList').innerHTML = html;
     }
     
-    function filterLoans(filter) {
-        currentFilter = filter;
-        renderLoans();
-        ['Pending','Approved','Rejected'].forEach(f => {
-            let btn = document.getElementById(`filter${f}`);
-            if(btn) btn.style.opacity = filter === f.toLowerCase() ? '1' : '0.5';
-        });
-    }
-    
-    // Staff CRUD
-    function addStaff() {
-        let name = document.getElementById('newStaffName').value;
-        let email = document.getElementById('newStaffEmail').value;
-        let pass = document.getElementById('newStaffPass').value;
-        let role = document.getElementById('newStaffRole').value;
-        if(!name || !pass) return alert("Please fill in name and password");
-        staffList.push({ id: Date.now(), name, email, username: name.toLowerCase().replace(/\s/g,''), password: pass, role, createdAt: new Date().toISOString() });
-        saveStaff();
-        document.getElementById('newStaffName').value = '';
-        document.getElementById('newStaffEmail').value = '';
-        document.getElementById('newStaffPass').value = '';
-    }
-    
-    function editStaff(id) {
-        let staff = staffList.find(s => s.id === id);
-        let newName = prompt("New name:", staff.name);
-        if(newName) { staff.name = newName; staff.username = newName.toLowerCase().replace(/\s/g,''); saveStaff(); }
-    }
-    
-    function deleteStaff(id) {
-        if(confirm("Remove staff member permanently?")) { staffList = staffList.filter(s => s.id !== id); saveStaff(); }
-    }
-    
-    function renderStaff(list = staffList) {
-        let html = '';
-        list.forEach(s => {
-            if(s.username === currentUser?.username && s.id === currentUser?.id) return;
-            let roleName = { admin: 'Admin', manager: 'Manager', viewer: 'Viewer', analyst: 'Analyst' }[s.role] || s.role;
-            html += `<tr><td>${s.name}</td><td>${s.email || '-'}</td><td>${roleName}</td><td><button class="secondary" onclick="editStaff(${s.id})"><i class="fas fa-edit"></i></button> <button class="danger" onclick="deleteStaff(${s.id})"><i class="fas fa-trash"></i></button></td></tr>`;
-        });
-        document.getElementById('staffList').innerHTML = html;
-    }
-    
-    function filterStaff() {
-        let search = document.getElementById('searchStaff').value.toLowerCase();
-        renderStaff(staffList.filter(s => s.name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search)));
-    }
-    
-    // Client CRUD
+    // ============ CLIENT FUNCTIONS with ACCOUNT ID ============
     function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
-        let balance = parseFloat(document.getElementById('clientBalance').value);
+        let documentNum = document.getElementById('clientDocument').value;
+        let address = document.getElementById('clientAddress').value;
+        let balanceUSD = parseFloat(document.getElementById('clientBalanceUSD').value);
+        let balanceEUR = parseFloat(document.getElementById('clientBalanceEUR').value);
+        let balanceBRL = parseFloat(document.getElementById('clientBalanceBRL').value);
         let kyc = document.getElementById('clientKyc').value;
-        let status = document.getElementById('clientStatus').value;
-        if(!name || !email) return alert("Name and email are required");
-        clientsList.push({ id: Date.now(), name, email, balance_usd: isNaN(balance)?0:balance, kyc_status: kyc, account_status: status, createdAt: new Date().toISOString(), phone: "", address: "" });
-        saveClients();
-        document.getElementById('clientName').value = '';
-        document.getElementById('clientEmail').value = '';
-        document.getElementById('clientBalance').value = '0';
+        
+        if(!name || !email) return alert("Name and email required");
+        
+        let newClient = { 
+            id: Date.now(), 
+            accountId: generateAccountId(),
+            name: name, 
+            email: email, 
+            document: documentNum || '',
+            address: address || '',
+            balance_usd: isNaN(balanceUSD) ? 0 : balanceUSD, 
+            balance_eur: isNaN(balanceEUR) ? 0 : balanceEUR, 
+            balance_brl: isNaN(balanceBRL) ? 0 : balanceBRL, 
+            kyc_status: kyc, 
+            account_status: "ACTIVE",
+            createdAt: new Date().toISOString().slice(0,10),
+            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
+            transactionHistory: [{ date: new Date().toISOString(), type: "ACCOUNT_OPENING", amount: (balanceUSD + balanceEUR*1.08 + balanceBRL/5.5), currency: "USD", description: "Initial deposit", balance: balanceUSD + balanceEUR*1.08 + balanceBRL/5.5 }]
+        };
+        clientsList.push(newClient);
+        saveData();
+        // Clear form
+        document.getElementById('clientName').value = ''; document.getElementById('clientEmail').value = '';
+        document.getElementById('clientDocument').value = ''; document.getElementById('clientAddress').value = '';
+        document.getElementById('clientBalanceUSD').value = '0'; document.getElementById('clientBalanceEUR').value = '0'; document.getElementById('clientBalanceBRL').value = '0';
+        addActivity(`New customer created: ${name} (Account: ${newClient.accountId})`);
+        alert(`✅ Customer ${name} created!\nAccount ID: ${newClient.accountId}`);
+        updateUI();
+        syncAllWithBankSite();
     }
+    
+    function showClientHistory(client) {
+        let html = `<div style="margin-bottom:15px;"><strong>Account ID:</strong> <span class="account-id">${client.accountId}</span><br><strong>Name:</strong> ${client.name}<br><strong>Email:</strong> ${client.email}<br><strong>Document:</strong> ${client.document || 'Not provided'}<br><strong>Address:</strong> ${client.address || 'Not provided'}<br><strong>Created:</strong> ${client.createdAt}</div>`;
+        html += `<h4>Transaction History</h4><table style="width:100%; font-size:11px;"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Currency</th><th>Description</th><th>Balance (USD Eqv)</th></tr></thead><tbody>`;
+        if(client.transactionHistory && client.transactionHistory.length > 0) {
+            client.transactionHistory.slice(0, 30).forEach(tx => {
+                let amountStr = tx.amount ? (tx.amount > 0 ? `+${formatNumber(tx.amount)}` : formatNumber(tx.amount)) : '0';
+                html += `<tr><td>${new Date(tx.date).toLocaleString()}</td><td>${tx.type}</td><td>${amountStr}</td><td>${tx.currency}</td><td>${tx.description || '-'}</td><td>$${formatNumber(tx.balance)}</td></tr>`;
+            });
+        } else {
+            html += `<tr><td colspan="6">No transactions found</td></tr>`;
+        }
+        html += `</tbody></table>`;
+        document.getElementById('clientHistoryContent').innerHTML = html;
+        document.getElementById('clientHistoryModal').classList.add('active');
+    }
+    
+    function closeClientHistoryModal() { document.getElementById('clientHistoryModal').classList.remove('active'); }
     
     function editClient(id) {
         let client = clientsList.find(c => c.id === id);
-        let newName = prompt("Name:", client.name);
-        let newEmail = prompt("Email:", client.email);
+        let newName = prompt("New name:", client.name);
         if(newName) client.name = newName;
-        if(newEmail) client.email = newEmail;
-        saveClients();
+        saveData();
+        updateUI();
+        syncAllWithBankSite();
     }
     
     function deleteClient(id) {
-        if(confirm("Delete customer permanently?")) { clientsList = clientsList.filter(c => c.id !== id); saveClients(); }
-    }
-    
-    function adjustBalance(id) {
         let client = clientsList.find(c => c.id === id);
-        let amount = parseFloat(prompt("Amount to add to balance (USD):\nUse negative for debit", "1000"));
-        if(!isNaN(amount) && amount !== 0) {
-            client.balance_usd += amount;
-            saveClients();
-            addActivity(`Balance adjusted for ${client.name}: ${amount > 0 ? '+' : ''}$${amount.toLocaleString()}`);
+        if(confirm(`Delete ${client.name}? This action cannot be undone.`)) { 
+            clientsList = clientsList.filter(c => c.id !== id); 
+            saveData();
+            addActivity(`Customer deleted: ${client.name} (${client.accountId})`);
+            updateUI();
+            syncAllWithBankSite();
         }
     }
     
-    function toggleBlockClient(id) {
+    function adjustBalance(id, currency) {
         let client = clientsList.find(c => c.id === id);
-        let newStatus = client.account_status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
-        if(confirm(`${newStatus === 'BLOCKED' ? 'Block' : 'Activate'} account for ${client.name}?`)) {
-            client.account_status = newStatus;
-            saveClients();
+        let amount = parseFloat(prompt(`Amount to add to ${currency} balance for ${client.name}:`, "1000"));
+        if(!isNaN(amount) && amount !== 0) {
+            let oldBalance = currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl);
+            if (currency === 'USD') client.balance_usd += amount;
+            else if (currency === 'EUR') client.balance_eur += amount;
+            else if (currency === 'BRL') client.balance_brl += amount;
+            addTransaction(client, "ADMIN_ADJUSTMENT", amount, currency, `Balance adjustment by admin`);
+            saveData();
+            addActivity(`Balance adjusted for ${client.name} (${currency}): ${amount > 0 ? '+' : ''}${formatNumber(amount)} (${oldBalance} -> ${currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl)})`);
+            alert(`✅ New ${currency} balance: ${formatNumber(currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl))}`);
+            updateUI();
+            syncAllWithBankSite();
         }
     }
     
     function renderClients(list = clientsList) {
         let html = '';
         list.forEach(c => {
-            let statusColor = c.account_status === 'ACTIVE' ? '#00ff88' : (c.account_status === 'BLOCKED' ? '#ff4466' : '#ffaa00');
-            let kycColor = c.kyc_status === 'Approved' ? '#00ff88' : (c.kyc_status === 'Rejected' ? '#ff4466' : '#ffaa00');
-            html += `<tr>
-                        <td>${c.name}</td>
-                        <td>$${(c.balance_usd||0).toLocaleString()}</td>
-                        <td style="color:${kycColor}">${c.kyc_status}</td>
-                        <td style="color:${statusColor}">${c.account_status}</td>
-                        <td>
-                            <button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button>
-                            <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
-                            <button class="secondary" onclick="adjustBalance(${c.id})"><i class="fas fa-dollar-sign"></i></button>
-                            ${c.account_status === 'ACTIVE' ? `<button class="danger" onclick="toggleBlockClient(${c.id})"><i class="fas fa-ban"></i></button>` : `<button class="success" onclick="toggleBlockClient(${c.id})"><i class="fas fa-check"></i></button>`}
-                            <button class="secondary" onclick="showSendNotification(${c.id})"><i class="fas fa-bell"></i></button>
-                        </td>
-                    </tr>`;
+            html += `<tr><td class="account-id">${c.accountId}</td><td>${c.name}</td><td>$${formatNumber(c.balance_usd)}</td><td>€${formatNumber(c.balance_eur)}</td><td>R$${formatNumber(c.balance_brl)}</td><td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td><td><button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button> <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button> <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')" title="Add USD">💵+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')" title="Add EUR">💶+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')" title="Add BRL">💷+</button> <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})" title="View History"><i class="fas fa-history"></i></button></td></tr>`;
         });
         document.getElementById('clientsList').innerHTML = html;
     }
     
     function filterClients() {
         let search = document.getElementById('searchClient').value.toLowerCase();
-        renderClients(clientsList.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search)));
+        renderClients(clientsList.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || c.accountId.toLowerCase().includes(search)));
     }
     
-    function scrollToPanel(panel) { document.getElementById(`${panel}Panel`).scrollIntoView({ behavior: 'smooth' }); }
-    
-    // Notification functions
-    function showSendNotification(clientId) {
-        currentNotificationTarget = clientId;
-        document.getElementById('notificationModal').classList.add('active');
-    }
-    
-    function sendNotification() {
-        let message = document.getElementById('notificationMessage').value;
-        if(!message) { alert("Please enter a message"); return; }
-        let client = clientsList.find(c => c.id === currentNotificationTarget);
-        if(client) {
-            addNotification(`📧 Message from Admin: ${message}`, 'info');
-            addActivity(`Notification sent to ${client.name}: ${message.substring(0,50)}...`);
-            alert(`✅ Notification sent to ${client.name}`);
-        }
-        closeNotificationModal();
-        document.getElementById('notificationMessage').value = '';
-    }
-    
-    function showGlobalNotification() {
-        let message = prompt("Enter the broadcast message to send to all customers:");
-        if(message) {
-            addNotification(`📢 BROADCAST: ${message}`, 'warning');
-            addActivity(`Broadcast message sent to all customers: ${message.substring(0,50)}...`);
-            alert(`✅ Broadcast message sent to all ${clientsList.length} customers!`);
-        }
-    }
-    
-    function showNotifications() {
-        let msg = "📋 NOTIFICATIONS\n\n";
-        notifications.slice(0, 10).forEach(n => {
-            msg += `${n.type === 'success' ? '✅' : n.type === 'error' ? '❌' : 'ℹ️'} ${n.message}\n📅 ${new Date(n.timestamp).toLocaleString()}\n\n`;
-        });
-        if(notifications.length === 0) msg += "No notifications";
-        alert(msg);
-        notifications.forEach(n => n.read = true);
-        saveNotifications();
-    }
-    
-    function viewAuditLog() {
-        let msg = "📋 AUDIT LOG\n\n";
-        activityLogs.slice(0, 20).forEach(log => {
-            msg += `${log.action}\n👤 ${log.user} | ${new Date(log.timestamp).toLocaleString()}\n\n`;
-        });
-        alert(msg);
-    }
-    
-    function closeNotificationModal() { document.getElementById('notificationModal').classList.remove('active'); }
-    
-    // API functions
-    async function verifyWithMelissa() {
-        let doc = document.getElementById('melissaDoc').value;
-        if(!doc) { alert("Enter a document to verify"); return; }
-        document.getElementById('melissaResult').innerHTML = '<span class="api-status checking"></span> Verifying...';
-        setTimeout(() => {
-            let isValid = doc.length >= 9 && doc.length <= 14;
-            document.getElementById('melissaResult').innerHTML = isValid ? '<span style="color:#00ff88">✅ Document valid! Verification approved.</span>' : '<span style="color:#ff4466">❌ Invalid document! Verification failed.</span>';
-        }, 1500);
-    }
-    
-    async function validateWithAbstract() {
-        let address = document.getElementById('abstractAddress').value;
-        if(!address) { alert("Enter an address to validate"); return; }
-        document.getElementById('abstractResult').innerHTML = '<span class="api-status checking"></span> Validating address...';
-        setTimeout(() => {
-            document.getElementById('abstractResult').innerHTML = '<span style="color:#00ff88">✅ Address validated successfully!</span>';
-        }, 1500);
-    }
-    
-    async function syncWithBankSite() {
-        document.getElementById('syncResult').innerHTML = '<span class="api-status checking"></span> Syncing with bank website...';
-        setTimeout(() => {
-            localStorage.setItem('zentronix_clients_sync', JSON.stringify(clientsList));
-            localStorage.setItem('zentronix_sync_time', new Date().toISOString());
-            document.getElementById('syncResult').innerHTML = '<span style="color:#00ff88">✅ Sync completed! Data available for website.</span>';
-            addActivity(`Sync with bank website completed. Total of ${clientsList.length} customers synced.`);
-            
-            fetch(`${RENDER_API_URL}/health`).then(res => res.json()).then(data => {
-                if(data.status === 'ok') document.getElementById('syncResult').innerHTML += '<br>🟢 Render API connected!';
-            }).catch(() => document.getElementById('syncResult').innerHTML += '<br>🟡 Render API offline (demo mode)');
-        }, 2000);
+    // ============ MULTI-CURRENCY OPERATIONS ============
+    function quickTransfer() {
+        let clientId = document.getElementById('transferClient').value;
+        let amount = parseFloat(document.getElementById('transferAmount').value);
+        let currency = document.getElementById('transferCurrency').value;
+        let reason = document.getElementById('transferReason').value;
+        let resultDiv = document.getElementById('transferResultMsg');
         
-        let pendingRegistrations = JSON.parse(localStorage.getItem('zentronix_pending_registrations')) || [];
-        if(pendingRegistrations.length > 0) {
-            let html = '<strong>📋 Pending registrations:</strong><br>';
-            pendingRegistrations.forEach(r => html += `<div style="font-size:11px; padding:3px;">📧 ${r.email} - ${r.name}</div>`);
-            document.getElementById('clientRegistrations').innerHTML = html;
-        } else {
-            document.getElementById('clientRegistrations').innerHTML = '<div style="font-size:11px; opacity:0.6;">No pending registrations</div>';
+        if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and enter amount"); return; }
+        let client = clientsList.find(c => c.id == clientId);
+        if(!client) return;
+        
+        let balanceField = currency === 'USD' ? 'balance_usd' : (currency === 'EUR' ? 'balance_eur' : 'balance_brl');
+        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : 'R$');
+        
+        if(confirm(`Transfer ${symbol}${formatNumber(amount)} to ${client.name}?`)) {
+            client[balanceField] += amount;
+            addTransaction(client, "TRANSFER", amount, currency, `Transfer from admin: ${reason || 'No reason'}`);
+            saveData();
+            addActivity(`💰 TRANSFER: ${symbol}${formatNumber(amount)} (${currency}) to ${client.name}`);
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'sync-status success';
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} sent to ${client.name}!`;
+            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferReason').value = '';
+            updateUI();
+            syncAllWithBankSite();
         }
     }
     
-    // Report functions
-    function generateReport(type) {
-        if(type === 'clients') {
-            let csv = "Name,Email,USD Balance,KYC,Status,Created Date\n";
-            clientsList.forEach(c => csv += `"${c.name}","${c.email}",${c.balance_usd},"${c.kyc_status}","${c.account_status}","${c.createdAt}"\n`);
-            downloadCSV(csv, `customers_${new Date().toISOString().slice(0,10)}.csv`);
-            addActivity(`Customer report exported`);
-        } else if(type === 'loans') {
-            let csv = "Customer,Amount,Term,Status,Request Date,Purpose\n";
-            loanRequests.forEach(l => csv += `"${l.clientName}",${l.amount},${l.term},"${l.status}","${l.requestedDate}","${l.purpose}"\n`);
-            downloadCSV(csv, `loans_${new Date().toISOString().slice(0,10)}.csv`);
-            addActivity(`Loan report exported`);
-        } else if(type === 'financial') {
-            let totalBalance = clientsList.reduce((s,c) => s + c.balance_usd, 0);
-            let totalLoans = loanRequests.filter(l => l.status === 'approved').reduce((s,l) => s + l.amount, 0);
-            alert(`FINANCIAL SUMMARY:\n\n💰 Total balance in custody: $${totalBalance.toLocaleString()}\n📋 Total approved loans: $${totalLoans.toLocaleString()}\n👥 Total customers: ${clientsList.length}\n📅 Generated on: ${new Date().toLocaleString()}`);
+    function initiateSWIFT() {
+        let clientId = document.getElementById('transferClient').value;
+        let amount = parseFloat(document.getElementById('transferAmount').value);
+        let currency = document.getElementById('transferCurrency').value;
+        let reason = document.getElementById('transferReason').value;
+        
+        if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and enter amount for SWIFT"); return; }
+        let client = clientsList.find(c => c.id == clientId);
+        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : 'R$');
+        alert(`🌐 SWIFT TRANSFER INITIATED\n\nTo: ${client.name}\nAccount: ${client.accountId}\nAmount: ${symbol}${formatNumber(amount)}\nCurrency: ${currency}\nReference: ${reason || 'No reference'}\n\nStatus: Processing (1-3 business days)\nSWIFT Code: ZNTXUS33XXX`);
+        addActivity(`🌐 SWIFT initiated for ${client.name}: ${symbol}${formatNumber(amount)} (${currency})`);
+    }
+    
+    // ============ CRYPTO SWAP ============
+    function showSwapCryptoModal() {
+        let clientId = document.getElementById('transferClient').value;
+        if(!clientId) { alert("Select a customer first"); return; }
+        currentSwapClient = clientsList.find(c => c.id == clientId);
+        document.getElementById('swapCustomerName').innerText = currentSwapClient.name;
+        document.getElementById('swapFromCurrency').value = 'USD';
+        document.getElementById('swapAmount').value = '';
+        document.getElementById('swapToCrypto').value = 'BTC';
+        document.getElementById('cryptoSwapResult').style.display = 'none';
+        document.getElementById('cryptoSswapModal').classList.add('active');
+    }
+    
+    function closeSwapModal() { document.getElementById('cryptoSswapModal').classList.remove('active'); currentSwapClient = null; }
+    
+    function confirmSwapToCrypto() {
+        if (!currentSwapClient) return;
+        let fromCurrency = document.getElementById('swapFromCurrency').value;
+        let amount = parseFloat(document.getElementById('swapAmount').value);
+        let toCrypto = document.getElementById('swapToCrypto').value;
+        let resultDiv = document.getElementById('cryptoSwapResult');
+        
+        if (isNaN(amount) || amount <= 0) { alert("Enter valid amount"); return; }
+        
+        let balanceField = fromCurrency === 'USD' ? 'balance_usd' : (fromCurrency === 'EUR' ? 'balance_eur' : 'balance_brl');
+        let symbol = fromCurrency === 'USD' ? '$' : (fromCurrency === 'EUR' ? '€' : 'R$');
+        
+        if (currentSwapClient[balanceField] < amount) { alert(`Insufficient ${fromCurrency} balance. Available: ${symbol}${formatNumber(currentSwapClient[balanceField])}`); return; }
+        
+        const rates = { BTC: 67000, ETH: 3440, BRC: 10.5, SOL: 98, LTC: 82.5, USDT: 1, MATIC: 0.85 };
+        let cryptoAmount = amount / rates[toCrypto];
+        
+        if (confirm(`Swap ${symbol}${formatNumber(amount)} to ${cryptoAmount.toFixed(6)} ${toCrypto} for ${currentSwapClient.name}?`)) {
+            currentSwapClient[balanceField] -= amount;
+            if (!currentSwapClient.crypto_balances) currentSwapClient.crypto_balances = {};
+            currentSwapClient.crypto_balances[toCrypto] = (currentSwapClient.crypto_balances[toCrypto] || 0) + cryptoAmount;
+            addTransaction(currentSwapClient, "CRYPTO_SWAP", amount, fromCurrency, `Swapped to ${cryptoAmount.toFixed(6)} ${toCrypto}`);
+            saveData();
+            addActivity(`🔄 SWAP: ${symbol}${formatNumber(amount)} (${fromCurrency}) -> ${cryptoAmount.toFixed(6)} ${toCrypto} for ${currentSwapClient.name}`);
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'sync-status success';
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> Swapped ${symbol}${formatNumber(amount)} to ${cryptoAmount.toFixed(6)} ${toCrypto}!`;
+            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+            updateUI();
+            syncAllWithBankSite();
         }
     }
     
-    function downloadCSV(csv, filename) {
-        let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        let link = document.createElement('a');
-        let url = URL.createObjectURL(blob);
-        link.href = url;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    // ============ UI UPDATE ============
+    function updateUI() {
+        document.getElementById('totalClients').innerText = clientsList.length;
+        document.getElementById('pendingLoans').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
+        document.getElementById('totalDisbursedStat').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
+        let active = loanRequests.filter(l => l.status === 'active').length;
+        let pending = loanRequests.filter(l => l.status === 'pending').length;
+        let rejected = loanRequests.filter(l => l.status === 'rejected').length;
+        document.getElementById('statActive').innerHTML = active;
+        document.getElementById('statPending').innerHTML = pending;
+        document.getElementById('statRejected').innerHTML = rejected;
+        document.getElementById('statTotalDisbursed').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
+        document.getElementById('pendingCount').innerHTML = pending;
+        renderClients();
+        renderLoans();
+        updateTransferSelect();
+        refreshReserves();
     }
     
-    function exportLoansReport() { generateReport('loans'); }
+    function updateTransferSelect() {
+        let select = document.getElementById('transferClient');
+        if(!select) return;
+        select.innerHTML = '<option value="">Select Customer</option>';
+        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name} (USD:$${formatNumber(c.balance_usd)} | EUR:€${formatNumber(c.balance_eur)} | BRL:R$${formatNumber(c.balance_brl)})</option>`; });
+    }
     
-    // Login/Logout
-    function showLogoutConfirm() { document.getElementById('logoutConfirmModal').classList.add('active'); }
-    function closeLogoutModal() { document.getElementById('logoutConfirmModal').classList.remove('active'); }
-    function confirmLogout() { closeLogoutModal(); doLogout(); }
+    function renderActivityLog() {
+        let html = '';
+        activityLogs.slice(0, 20).forEach(log => { let time = new Date(log.timestamp).toLocaleString(); html += `<div class="activity-item"><span>${log.action}</span><span>${time}</span></div>`; });
+        document.getElementById('activityLog').innerHTML = html;
+    }
     
+    function clearActivityLog() {
+        if(confirm("Clear all logs?")) { activityLogs = [{ action: "Log cleared", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }]; saveData(); renderActivityLog(); addActivity("Activity log cleared"); }
+    }
+    
+    // ============ LOGIN/LOGOUT ============
     function doLogin() {
         let user = document.getElementById('adminUser').value;
         let pass = document.getElementById('adminPass').value;
-        let found = staffList.find(s => (s.username === user || s.email === user) && s.password === pass);
+        let found = staffList.find(s => s.username === user && s.password === pass);
         if(found) {
             currentUser = found;
-            found.lastLogin = new Date().toISOString();
-            saveStaff();
-            addActivity(`Login performed by ${found.name} (${found.role})`);
+            loadData();
+            addActivity(`Login: ${found.name}`);
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('dashboardArea').style.display = 'block';
-            document.getElementById('currentAdminName').innerHTML = `${found.name} <span style="font-size:10px;">(${found.role})</span>`;
-            updateStats();
-            renderStaff();
-            renderClients();
-            renderLoans();
-            renderActivityLog();
-            filterLoans('pending');
-            updateTransferSelect();
-            checkAPIStatus();
-            setInterval(checkAPIStatus, 30000);
-            syncWithBankSite();
-            applyTranslations();
-            setLanguage(currentLang);
-        } else {
-            document.getElementById('loginError').innerText = 'Invalid username or password!';
-        }
+            document.getElementById('currentAdminName').innerHTML = found.name;
+            updateUI();
+            syncAllWithBankSite();
+        } else { document.getElementById('loginError').innerText = 'Invalid credentials! Use admin / admin123'; }
     }
     
-    function doLogout() {
-        if(currentUser) addActivity(`Logout performed by ${currentUser.name}`);
-        currentUser = null;
-        document.getElementById('loginArea').style.display = 'flex';
-        document.getElementById('dashboardArea').style.display = 'none';
-        document.getElementById('adminUser').value = '';
-        document.getElementById('adminPass').value = '';
-        document.getElementById('loginError').innerText = '';
-    }
+    function showLogoutConfirm() { document.getElementById('logoutConfirmModal').classList.add('active'); }
+    function closeLogoutModal() { document.getElementById('logoutConfirmModal').classList.remove('active'); }
+    function confirmLogout() { closeLogoutModal(); if(currentUser) addActivity(`Logout: ${currentUser.name}`); currentUser = null; document.getElementById('loginArea').style.display = 'flex'; document.getElementById('dashboardArea').style.display = 'none'; }
     
-    async function checkAPIStatus() {
-        let statusSpan = document.getElementById('apiStatusDisplay');
-        let lastCheckSpan = document.getElementById('apiLastCheck');
-        try {
-            const response = await fetch(`${RENDER_API_URL}/health`);
-            if(response.ok) {
-                const data = await response.json();
-                statusSpan.innerHTML = '<span class="api-status online"></span> ' + (translations[currentLang]?.apiCheckingText || 'Online');
-                lastCheckSpan.innerHTML = new Date().toLocaleTimeString();
-            } else {
-                statusSpan.innerHTML = '<span class="api-status offline"></span> ' + (translations[currentLang]?.apiCheckingText || 'Offline');
-                lastCheckSpan.innerHTML = new Date().toLocaleTimeString();
-            }
-        } catch(error) {
-            statusSpan.innerHTML = '<span class="api-status offline"></span> ' + (translations[currentLang]?.apiCheckingText || 'Offline');
-            lastCheckSpan.innerHTML = new Date().toLocaleTimeString();
-        }
-    }
-    
-    // Initialization
-    window.onload = () => {
-        updateStats();
-        renderActivityLog();
-        checkAPIStatus();
-        updateNotificationCount();
-        updateTransferSelect();
-        applyTranslations();
-        setLanguage(currentLang);
-    };
+    // ============ INIT ============
+    loadData();
+    window.onload = () => { refreshReserves(); renderActivityLog(); updateTransferSelect(); };
 </script>
 </body>
 </html>
