@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentronix Bank | Admin Dashboard Pro - API Ready</title>
+    <title>Zentronix Bank | Admin Dashboard Pro - Libra Esterlina Integrada</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -166,11 +166,12 @@
         .reserve-card .amount.usd { color: #00ff88; }
         .reserve-card .amount.eur { color: #00f2ff; }
         .reserve-card .amount.brl { color: #ffaa00; }
+        .reserve-card .amount.gbp { color: #bc13fe; }
         .reserve-card .sub { font-size: 10px; opacity: 0.5; margin-top: 5px; }
         
         .reserve-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -254,7 +255,7 @@
             <p><strong>Customer:</strong> <span id="approveLoanCustomer"></span></p>
             <p><strong>Requested Amount:</strong> <span id="approveLoanRequestedAmount"></span></p>
             <div style="margin: 15px 0;"><label>💰 Disbursement Amount:</label><input type="number" id="disbursementAmount" step="0.01"></div>
-            <div style="margin: 15px 0;"><label>🌍 Currency:</label><select id="loanCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+            <div style="margin: 15px 0;"><label>🌍 Currency:</label><select id="loanCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div>
             <div style="margin: 15px 0;"><label>📝 Admin Notes:</label><textarea id="approveLoanNotes" rows="2"></textarea></div>
             <div class="sync-status" id="syncStatusMsg" style="display:none;"></div>
         </div>
@@ -302,6 +303,7 @@
         <div class="stat-card"><h3>💵 USD RESERVE</h3><div class="value" id="statUSDReserve">$900T</div></div>
         <div class="stat-card"><h3>🇪🇺 EUR RESERVE</h3><div class="value" id="statEURReserve">€900T</div></div>
         <div class="stat-card"><h3>🇧🇷 BRL RESERVE</h3><div class="value" id="statBRLReserve">R$900T</div></div>
+        <div class="stat-card"><h3>🇬🇧 GBP RESERVE</h3><div class="value" id="statGBPReserve">£900T</div></div>
         <div class="stat-card"><h3>📋 PENDING LOANS</h3><div class="value" id="pendingLoans">0</div></div>
         <div class="stat-card"><h3>✅ TOTAL DISBURSED</h3><div class="value" id="totalDisbursedStat">$0</div></div>
     </div>
@@ -314,6 +316,7 @@
                 <div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div>
                 <div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div>
                 <div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇬🇧 GBP</div><div class="amount gbp" id="reserveGBP">£900,000,000,000,000</div></div>
             </div>
             <div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div>
         </div>
@@ -346,12 +349,13 @@
                 <input type="number" id="clientBalanceUSD" placeholder="USD Balance" value="0">
                 <input type="number" id="clientBalanceEUR" placeholder="EUR Balance" value="0">
                 <input type="number" id="clientBalanceBRL" placeholder="BRL Balance" value="0">
+                <input type="number" id="clientBalanceGBP" placeholder="GBP Balance" value="0">
                 <select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ KYC Pending</option><option value="Rejected">❌ KYC Rejected</option></select>
                 <button onclick="addClient()" class="success" style="grid-column: span 2;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
             </div>
             <div style="max-height: 350px; overflow-y: auto; margin-top: 15px;">
                 <table style="width:100%; font-size:11px;">
-                    <thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>KYC</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Actions</th></tr></thead>
                     <tbody id="clientsList"></tbody>
                 </table>
             </div>
@@ -367,7 +371,7 @@
         <!-- MULTI-CURRENCY TRANSFER + CRYPTO + SWIFT -->
         <div class="panel">
             <h2><i class="fas fa-exchange-alt"></i> 💸 MULTI-CURRENCY OPERATIONS</h2>
-            <div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+            <div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div>
             <input type="number" id="transferAmount" placeholder="Amount">
             <input type="text" id="transferReason" placeholder="Reason / Reference">
             <div class="flex-row"><button onclick="quickTransfer()" class="success"><i class="fas fa-paper-plane"></i> SEND TRANSFER</button><button onclick="showSwapCryptoModal()" class="crypto"><i class="fas fa-coins"></i> SWAP TO CRYPTO</button><button onclick="initiateSWIFT()" class="warning"><i class="fas fa-globe"></i> SWIFT</button></div>
@@ -385,7 +389,7 @@
         <div class="panel">
             <h2><i class="fas fa-chart-line"></i> 📊 STATISTICS</h2>
             <div>✅ Active Loans: <strong id="statActive">0</strong></div><div>⏳ Pending Loans: <strong id="statPending">0</strong></div><div>❌ Rejected Loans: <strong id="statRejected">0</strong></div><hr><div>💰 Total Disbursed: <strong id="statTotalDisbursed">$0</strong></div>
-            <div>🏦 USD Reserve: <strong id="statReserveUSD">$900T</strong></div><div>🇪🇺 EUR Reserve: <strong id="statReserveEUR">€900T</strong></div><div>🇧🇷 BRL Reserve: <strong id="statReserveBRL">R$900T</strong></div>
+            <div>🏦 USD Reserve: <strong id="statReserveUSD">$900T</strong></div><div>🇪🇺 EUR Reserve: <strong id="statReserveEUR">€900T</strong></div><div>🇧🇷 BRL Reserve: <strong id="statReserveBRL">R$900T</strong></div><div>🇬🇧 GBP Reserve: <strong id="statReserveGBP">£900T</strong></div>
         </div>
     </div>
 </div>
@@ -394,7 +398,7 @@
 <div id="cryptoSswapModal" class="modal-overlay">
     <div class="modal-content"><h3><i class="fas fa-coins"></i> Swap Fiat to Crypto</h3>
         <div style="text-align:left;"><p><strong>Customer:</strong> <span id="swapCustomerName"></span></p>
-        <div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option></select></div>
+        <div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div>
         <div style="margin:10px 0;"><label>Amount:</label><input type="number" id="swapAmount" step="0.01"></div>
         <div style="margin:10px 0;"><label>To Cryptocurrency:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div>
         <div id="cryptoSwapResult" class="sync-status" style="display:none;"></div></div>
@@ -403,8 +407,8 @@
 </div>
 
 <script>
-    // ============ BANK RESERVES ============
-    let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000 };
+    // ============ BANK RESERVES (Adicionado GBP) ============
+    let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000, GBP: 900000000000000 };
     let totalDisbursedAmountUSDEquivalent = 0;
     
     // ============ DATA STORES ============
@@ -414,13 +418,13 @@
     function generateAccountId() { return "ZNX-" + Math.floor(100000 + Math.random() * 900000).toString(); }
     
     let clientsList = [
-        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York, NY 10005, USA", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
-        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore 018983", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
-        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo - SP, Brazil", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
+        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York, NY 10005, USA", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, balance_gbp: 15000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
+        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore 018983", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, balance_gbp: 9000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
+        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo - SP, Brazil", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, balance_gbp: 2500, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
     ];
     
-    // Initialize transaction history for existing clients
-    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5, currency: "USD", description: "Initial account deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 } ]; });
+    // Initialize transaction history
+    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 + client.balance_gbp*1.28, currency: "USD", description: "Initial account deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 + client.balance_gbp*1.28 } ]; });
     
     let loanRequests = [
         { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", monthlyPayment: 2185.50, requestedCurrency: "USD" },
@@ -428,7 +432,7 @@
         { id: 103, clientId: 3, clientName: "João Silva", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-17", purpose: "Investment", monthlyPayment: 2185.50, requestedCurrency: "BRL" }
     ];
     
-    let activityLogs = [ { action: "System started - Professional Dashboard with API Integration", timestamp: new Date().toISOString(), user: "System" } ];
+    let activityLogs = [ { action: "System started - Professional Dashboard with GBP Integration", timestamp: new Date().toISOString(), user: "System" } ];
     
     let currentUser = null;
     let currentFilter = 'pending';
@@ -442,7 +446,6 @@
         localStorage.setItem('zentronix_activity', JSON.stringify(activityLogs));
         localStorage.setItem('zentronix_reserves', JSON.stringify(bankReserves));
         localStorage.setItem('zentronix_total_disbursed', totalDisbursedAmountUSDEquivalent);
-        // Also save for bank site sync
         localStorage.setItem('zentronix_bank_clients', JSON.stringify(clientsList));
         localStorage.setItem('zentronix_bank_reserves', JSON.stringify(bankReserves));
         localStorage.setItem('zentronix_last_sync', new Date().toISOString());
@@ -462,7 +465,9 @@
     }
     
     function addTransaction(client, type, amount, currency, description) {
-        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 };
+        // Convert balance to USD equivalent for tracking
+        let conversion = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
+        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: (client.balance_usd*1) + (client.balance_eur*1.08) + (client.balance_brl*0.18) + (client.balance_gbp*1.28) };
         client.transactionHistory.unshift(tx);
         if(client.transactionHistory.length > 100) client.transactionHistory.pop();
     }
@@ -478,22 +483,18 @@
     function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
     function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
     
-    // ============ SYNC WITH BANK SITE (postMessage & localStorage) ============
+    // ============ SYNC WITH BANK SITE ============
     async function syncAllWithBankSite() {
         addActivity(`🔄 Syncing with bank site...`);
-        saveData(); // Refresh all data in localStorage
-        
-        // Broadcast to any open bank site windows
+        saveData();
         try {
             window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
         } catch(e) { console.log("PostMessage error:", e); }
-        
         alert(`✅ Sync completed!\n\n${clientsList.length} customers synced.\nBank site can access data via localStorage key 'zentronix_bank_clients' or postMessage.`);
         addActivity(`✅ Sync completed: ${clientsList.length} customers synced.`);
         return true;
     }
     
-    // Listen for messages from bank site
     window.addEventListener('message', (event) => {
         if(event.data && event.data.type === 'ZENTRONIX_REQUEST_SYNC') {
             window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
@@ -506,18 +507,12 @@
         let doc = document.getElementById('melissaDoc').value;
         let name = document.getElementById('melissaName').value;
         let resultDiv = document.getElementById('melissaResult');
-        
         if(!doc && !name) { alert("Enter document number or name to verify"); return; }
-        
         resultDiv.innerHTML = '<span class="api-status pending"></span> Verifying with Melissa API...';
         resultDiv.style.color = '#ffaa00';
-        
-        // DEMO: Simulate API call - Replace with actual Melissa API endpoint
-        // Actual API: https://api.melissa.com/v2/ (requires API key)
         setTimeout(() => {
             let isValid = (doc && doc.length >= 5) || (name && name.length >= 3);
             let confidence = Math.floor(Math.random() * 30) + 70;
-            
             if(isValid) {
                 resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Identity Verified! (Confidence: ${confidence}%)<br>Document: ${doc || 'Not provided'}<br>Name: ${name || 'Not provided'}`;
                 resultDiv.style.color = '#00ff88';
@@ -533,20 +528,13 @@
     async function validateWithAbstract() {
         let address = document.getElementById('abstractAddress').value;
         let resultDiv = document.getElementById('abstractResult');
-        
         if(!address) { alert("Enter address to validate"); return; }
-        
         resultDiv.innerHTML = '<span class="api-status pending"></span> Validating address with Abstract API...';
         resultDiv.style.color = '#ffaa00';
-        
-        // DEMO: Simulate API call - Replace with actual Abstract API endpoint
-        // Actual API: https://api.abstractapi.com/v1/ (requires API key)
         setTimeout(() => {
             let isValid = address.length >= 10;
-            let components = { street: "Main St", city: "New York", zip: "10001", country: "USA" };
-            
             if(isValid) {
-                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Address Validated!<br>${address}<br>Components: Street: ${components.street}, City: ${components.city}, ZIP: ${components.zip}`;
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Address Validated!<br>${address}`;
                 resultDiv.style.color = '#00ff88';
                 addActivity(`Abstract API: Address validated successfully`);
             } else {
@@ -557,22 +545,27 @@
         }, 1500);
     }
     
-    // ============ RESERVE FUNCTIONS ============
+    // ============ RESERVE FUNCTIONS (GBP Adicionado) ============
     function refreshReserves() {
         document.getElementById('reserveUSD').innerHTML = `$ ${formatNumber(bankReserves.USD)}`;
         document.getElementById('reserveEUR').innerHTML = `€ ${formatNumber(bankReserves.EUR)}`;
         document.getElementById('reserveBRL').innerHTML = `R$ ${formatNumber(bankReserves.BRL)}`;
+        document.getElementById('reserveGBP').innerHTML = `£ ${formatNumber(bankReserves.GBP)}`;
+        
         document.getElementById('statUSDReserve').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
         document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
         document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
+        document.getElementById('statGBPReserve').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
+        
         document.getElementById('statReserveUSD').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
         document.getElementById('statReserveEUR').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
         document.getElementById('statReserveBRL').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
+        document.getElementById('statReserveGBP').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
         saveData();
     }
     
     function exportReserveReport() {
-        let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nTotal Disbursed (USD Eqv)," + totalDisbursedAmountUSDEquivalent;
+        let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nGBP," + bankReserves.GBP + "\nTotal Disbursed (USD Eqv)," + totalDisbursedAmountUSDEquivalent;
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -581,11 +574,12 @@
         addActivity(`Reserve report exported`);
     }
     
-    // ============ LOAN FUNCTIONS ============
+    // ============ LOAN FUNCTIONS (GBP Adicionado) ============
     function showApproveLoanModal(loan) {
         currentLoanToApprove = loan;
         document.getElementById('approveLoanCustomer').innerText = loan.clientName;
-        document.getElementById('approveLoanRequestedAmount').innerHTML = `<strong>${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(loan.amount)}</strong> (${loan.requestedCurrency})`;
+        let symbol = loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'));
+        document.getElementById('approveLoanRequestedAmount').innerHTML = `<strong>${symbol}${formatNumber(loan.amount)}</strong> (${loan.requestedCurrency})`;
         document.getElementById('disbursementAmount').value = loan.amount;
         document.getElementById('loanCurrency').value = loan.requestedCurrency || 'USD';
         document.getElementById('approveLoanNotes').value = '';
@@ -604,17 +598,25 @@
         let syncStatusDiv = document.getElementById('syncStatusMsg');
         
         if (isNaN(disbursementAmount) || disbursementAmount <= 0) disbursementAmount = loan.amount;
-        if (disbursementAmount > bankReserves[selectedCurrency]) { alert(`❌ Insufficient reserve in ${selectedCurrency}!`); return; }
-        if (!confirm(`✅ APPROVE LOAN\n\nCustomer: ${loan.clientName}\nDisbursing: ${selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(disbursementAmount)}\n\nContinue?`)) return;
+        if (disbursementAmount > bankReserves[selectedCurrency]) { alert(`❌ Insufficient reserve in ${selectedCurrency}! Available: ${formatNumber(bankReserves[selectedCurrency])}`); return; }
+        
+        let symbol = selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : (selectedCurrency === 'BRL' ? 'R$' : '£'));
+        if (!confirm(`✅ APPROVE LOAN\n\nCustomer: ${loan.clientName}\nDisbursing: ${symbol}${formatNumber(disbursementAmount)}\n\nContinue?`)) return;
         
         syncStatusDiv.style.display = 'block';
         syncStatusDiv.className = 'sync-status pending';
         syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing loan...';
         
         try {
+            // Debit from Reserve
             bankReserves[selectedCurrency] -= disbursementAmount;
-            let usdEquivalent = selectedCurrency === 'USD' ? disbursementAmount : (selectedCurrency === 'EUR' ? disbursementAmount * 1.08 : disbursementAmount / 5.5);
+            
+            // Calculate USD Equivalent for tracking
+            let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
+            let usdEquivalent = disbursementAmount * rates[selectedCurrency];
             totalDisbursedAmountUSDEquivalent += usdEquivalent;
+            
+            // Update Loan Status
             loan.status = 'active';
             loan.disbursedAmount = disbursementAmount;
             loan.disbursedCurrency = selectedCurrency;
@@ -622,13 +624,16 @@
             loan.approvedBy = currentUser?.name || 'Admin';
             loan.adminNotes = adminNotes;
             
+            // Credit to Client
             let client = clientsList.find(c => c.id === loan.clientId);
             if (client) {
                 if (selectedCurrency === 'USD') client.balance_usd += disbursementAmount;
                 else if (selectedCurrency === 'EUR') client.balance_eur += disbursementAmount;
                 else if (selectedCurrency === 'BRL') client.balance_brl += disbursementAmount;
+                else if (selectedCurrency === 'GBP') client.balance_gbp += disbursementAmount;
+                
                 addTransaction(client, "LOAN_DISBURSEMENT", disbursementAmount, selectedCurrency, `Loan ${loan.id} approved and disbursed - ${adminNotes || 'No notes'}`);
-                addActivity(`✅ LOAN APPROVED: ${selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(disbursementAmount)} for ${client.name}`);
+                addActivity(`✅ LOAN APPROVED: ${symbol}${formatNumber(disbursementAmount)} (${selectedCurrency}) for ${client.name}`);
                 syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Loan disbursed and synced!';
                 syncStatusDiv.classList.add('success');
             }
@@ -666,7 +671,8 @@
                 let amount = loan.amount;
                 if (amount <= bankReserves[currency]) {
                     bankReserves[currency] -= amount;
-                    totalDisbursedAmountUSDEquivalent += currency === 'USD' ? amount : (currency === 'EUR' ? amount * 1.08 : amount / 5.5);
+                    let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
+                    totalDisbursedAmountUSDEquivalent += amount * rates[currency];
                     loan.status = 'active';
                     loan.disbursedAmount = amount;
                     let client = clientsList.find(c => c.id === loan.clientId);
@@ -674,6 +680,7 @@
                         if (currency === 'USD') client.balance_usd += amount;
                         else if (currency === 'EUR') client.balance_eur += amount;
                         else if (currency === 'BRL') client.balance_brl += amount;
+                        else if (currency === 'GBP') client.balance_gbp += amount;
                         addTransaction(client, "LOAN_DISBURSEMENT", amount, currency, `Bulk loan approval`);
                     }
                 } else { loan.status = 'rejected'; loan.rejectionReason = `Insufficient ${currency} reserve`; }
@@ -696,8 +703,8 @@
     }
     
     function showLoanDetails(loan) {
-        let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : 'R$');
-        let html = `<p><strong>Customer:</strong> ${loan.clientName}</p><p><strong>Requested:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : 'R$')}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Disbursed:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Term:</strong> ${loan.term} months</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>${loan.approvedBy ? `<p><strong>Approved By:</strong> ${loan.approvedBy}</p>` : ''}${loan.rejectionReason ? `<p><strong>Reason:</strong> ${loan.rejectionReason}</p>` : ''}`;
+        let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : (loan.disbursedCurrency === 'BRL' ? 'R$' : '£'));
+        let html = `<p><strong>Customer:</strong> ${loan.clientName}</p><p><strong>Requested:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'))}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Disbursed:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Term:</strong> ${loan.term} months</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>${loan.approvedBy ? `<p><strong>Approved By:</strong> ${loan.approvedBy}</p>` : ''}${loan.rejectionReason ? `<p><strong>Reason:</strong> ${loan.rejectionReason}</p>` : ''}`;
         document.getElementById('loanDetailsContent').innerHTML = html;
         document.getElementById('loanDetailsModal').classList.add('active');
     }
@@ -710,12 +717,13 @@
         let html = '';
         filtered.forEach(l => {
             let statusText = { pending: '⏳ Pending', rejected: '❌ Rejected', active: '🟢 Active' }[l.status] || l.status;
-            html += `<div class="loan-card ${l.status}"><div><strong>${l.clientName}</strong> - $${formatNumber(l.amount)} - ${l.term} months</div><div>Status: ${statusText}</div>${l.status === 'pending' ? `<div><button onclick="approveLoan(${l.id})" class="success">APPROVE</button><button onclick="rejectLoan(${l.id})" class="danger">REJECT</button><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>` : `<div><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>`}</div>`;
+            let symbol = l.requestedCurrency === 'USD' ? '$' : (l.requestedCurrency === 'EUR' ? '€' : (l.requestedCurrency === 'BRL' ? 'R$' : '£'));
+            html += `<div class="loan-card ${l.status}"><div><strong>${l.clientName}</strong> - ${symbol}${formatNumber(l.amount)} - ${l.term} months</div><div>Status: ${statusText}</div>${l.status === 'pending' ? `<div><button onclick="approveLoan(${l.id})" class="success">APPROVE</button><button onclick="rejectLoan(${l.id})" class="danger">REJECT</button><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>` : `<div><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETAILS</button></div>`}</div>`;
         });
         document.getElementById('loansList').innerHTML = html;
     }
     
-    // ============ CLIENT FUNCTIONS with ACCOUNT ID ============
+    // ============ CLIENT FUNCTIONS with ACCOUNT ID (GBP Adicionado) ============
     function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
@@ -724,6 +732,7 @@
         let balanceUSD = parseFloat(document.getElementById('clientBalanceUSD').value);
         let balanceEUR = parseFloat(document.getElementById('clientBalanceEUR').value);
         let balanceBRL = parseFloat(document.getElementById('clientBalanceBRL').value);
+        let balanceGBP = parseFloat(document.getElementById('clientBalanceGBP').value);
         let kyc = document.getElementById('clientKyc').value;
         
         if(!name || !email) return alert("Name and email required");
@@ -737,19 +746,21 @@
             address: address || '',
             balance_usd: isNaN(balanceUSD) ? 0 : balanceUSD, 
             balance_eur: isNaN(balanceEUR) ? 0 : balanceEUR, 
-            balance_brl: isNaN(balanceBRL) ? 0 : balanceBRL, 
+            balance_brl: isNaN(balanceBRL) ? 0 : balanceBRL,
+            balance_gbp: isNaN(balanceGBP) ? 0 : balanceGBP,
             kyc_status: kyc, 
             account_status: "ACTIVE",
             createdAt: new Date().toISOString().slice(0,10),
             crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-            transactionHistory: [{ date: new Date().toISOString(), type: "ACCOUNT_OPENING", amount: (balanceUSD + balanceEUR*1.08 + balanceBRL/5.5), currency: "USD", description: "Initial deposit", balance: balanceUSD + balanceEUR*1.08 + balanceBRL/5.5 }]
+            transactionHistory: [{ date: new Date().toISOString(), type: "ACCOUNT_OPENING", amount: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28), currency: "USD", description: "Initial deposit", balance: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28) }]
         };
         clientsList.push(newClient);
         saveData();
         // Clear form
         document.getElementById('clientName').value = ''; document.getElementById('clientEmail').value = '';
         document.getElementById('clientDocument').value = ''; document.getElementById('clientAddress').value = '';
-        document.getElementById('clientBalanceUSD').value = '0'; document.getElementById('clientBalanceEUR').value = '0'; document.getElementById('clientBalanceBRL').value = '0';
+        document.getElementById('clientBalanceUSD').value = '0'; document.getElementById('clientBalanceEUR').value = '0'; 
+        document.getElementById('clientBalanceBRL').value = '0'; document.getElementById('clientBalanceGBP').value = '0';
         addActivity(`New customer created: ${name} (Account: ${newClient.accountId})`);
         alert(`✅ Customer ${name} created!\nAccount ID: ${newClient.accountId}`);
         updateUI();
@@ -798,14 +809,15 @@
         let client = clientsList.find(c => c.id === id);
         let amount = parseFloat(prompt(`Amount to add to ${currency} balance for ${client.name}:`, "1000"));
         if(!isNaN(amount) && amount !== 0) {
-            let oldBalance = currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl);
             if (currency === 'USD') client.balance_usd += amount;
             else if (currency === 'EUR') client.balance_eur += amount;
             else if (currency === 'BRL') client.balance_brl += amount;
+            else if (currency === 'GBP') client.balance_gbp += amount;
             addTransaction(client, "ADMIN_ADJUSTMENT", amount, currency, `Balance adjustment by admin`);
             saveData();
-            addActivity(`Balance adjusted for ${client.name} (${currency}): ${amount > 0 ? '+' : ''}${formatNumber(amount)} (${oldBalance} -> ${currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl)})`);
-            alert(`✅ New ${currency} balance: ${formatNumber(currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : client.balance_brl))}`);
+            let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
+            addActivity(`Balance adjusted for ${client.name} (${currency}): ${amount > 0 ? '+' : ''}${formatNumber(amount)}`);
+            alert(`✅ New ${currency} balance: ${symbol}${formatNumber(currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : (currency === 'BRL' ? client.balance_brl : client.balance_gbp)))}`);
             updateUI();
             syncAllWithBankSite();
         }
@@ -814,7 +826,7 @@
     function renderClients(list = clientsList) {
         let html = '';
         list.forEach(c => {
-            html += `<tr><td class="account-id">${c.accountId}</td><td>${c.name}</td><td>$${formatNumber(c.balance_usd)}</td><td>€${formatNumber(c.balance_eur)}</td><td>R$${formatNumber(c.balance_brl)}</td><td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td><td><button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button> <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button> <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')" title="Add USD">💵+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')" title="Add EUR">💶+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')" title="Add BRL">💷+</button> <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})" title="View History"><i class="fas fa-history"></i></button></td></tr>`;
+            html += `<tr><td class="account-id">${c.accountId}</td><td>${c.name}</td><td>$${formatNumber(c.balance_usd)}</td><td>€${formatNumber(c.balance_eur)}</td><td>R$${formatNumber(c.balance_brl)}</td><td>£${formatNumber(c.balance_gbp)}</td><td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td><td><button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button> <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button> <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')" title="Add USD">💵+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')" title="Add EUR">💶+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')" title="Add BRL">🇧🇷+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'GBP')" title="Add GBP">🇬🇧+</button> <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})" title="View History"><i class="fas fa-history"></i></button></td></tr>`;
         });
         document.getElementById('clientsList').innerHTML = html;
     }
@@ -824,7 +836,7 @@
         renderClients(clientsList.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || c.accountId.toLowerCase().includes(search)));
     }
     
-    // ============ MULTI-CURRENCY OPERATIONS ============
+    // ============ MULTI-CURRENCY OPERATIONS (GBP Adicionado) ============
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
         let amount = parseFloat(document.getElementById('transferAmount').value);
@@ -836,11 +848,14 @@
         let client = clientsList.find(c => c.id == clientId);
         if(!client) return;
         
-        let balanceField = currency === 'USD' ? 'balance_usd' : (currency === 'EUR' ? 'balance_eur' : 'balance_brl');
-        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : 'R$');
+        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
         
         if(confirm(`Transfer ${symbol}${formatNumber(amount)} to ${client.name}?`)) {
-            client[balanceField] += amount;
+            if (currency === 'USD') client.balance_usd += amount;
+            else if (currency === 'EUR') client.balance_eur += amount;
+            else if (currency === 'BRL') client.balance_brl += amount;
+            else if (currency === 'GBP') client.balance_gbp += amount;
+            
             addTransaction(client, "TRANSFER", amount, currency, `Transfer from admin: ${reason || 'No reason'}`);
             saveData();
             addActivity(`💰 TRANSFER: ${symbol}${formatNumber(amount)} (${currency}) to ${client.name}`);
@@ -863,7 +878,7 @@
         
         if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and enter amount for SWIFT"); return; }
         let client = clientsList.find(c => c.id == clientId);
-        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : 'R$');
+        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
         alert(`🌐 SWIFT TRANSFER INITIATED\n\nTo: ${client.name}\nAccount: ${client.accountId}\nAmount: ${symbol}${formatNumber(amount)}\nCurrency: ${currency}\nReference: ${reason || 'No reference'}\n\nStatus: Processing (1-3 business days)\nSWIFT Code: ZNTXUS33XXX`);
         addActivity(`🌐 SWIFT initiated for ${client.name}: ${symbol}${formatNumber(amount)} (${currency})`);
     }
@@ -892,8 +907,8 @@
         
         if (isNaN(amount) || amount <= 0) { alert("Enter valid amount"); return; }
         
-        let balanceField = fromCurrency === 'USD' ? 'balance_usd' : (fromCurrency === 'EUR' ? 'balance_eur' : 'balance_brl');
-        let symbol = fromCurrency === 'USD' ? '$' : (fromCurrency === 'EUR' ? '€' : 'R$');
+        let balanceField = fromCurrency === 'USD' ? 'balance_usd' : (fromCurrency === 'EUR' ? 'balance_eur' : (fromCurrency === 'BRL' ? 'balance_brl' : 'balance_gbp'));
+        let symbol = fromCurrency === 'USD' ? '$' : (fromCurrency === 'EUR' ? '€' : (fromCurrency === 'BRL' ? 'R$' : '£'));
         
         if (currentSwapClient[balanceField] < amount) { alert(`Insufficient ${fromCurrency} balance. Available: ${symbol}${formatNumber(currentSwapClient[balanceField])}`); return; }
         
@@ -939,7 +954,7 @@
         let select = document.getElementById('transferClient');
         if(!select) return;
         select.innerHTML = '<option value="">Select Customer</option>';
-        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name} (USD:$${formatNumber(c.balance_usd)} | EUR:€${formatNumber(c.balance_eur)} | BRL:R$${formatNumber(c.balance_brl)})</option>`; });
+        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name} (USD:$${formatNumber(c.balance_usd)} | EUR:€${formatNumber(c.balance_eur)} | BRL:R$${formatNumber(c.balance_brl)} | GBP:£${formatNumber(c.balance_gbp)})</option>`; });
     }
     
     function renderActivityLog() {
