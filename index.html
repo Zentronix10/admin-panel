@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentronix Bank | Admin Dashboard Pro - Libra Esterlina Integrada</title>
+    <title>Zentronix Bank | Admin Dashboard - Com Criação de Username/Senha</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -74,7 +74,7 @@
         
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -93,7 +93,7 @@
         
         .panels {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
             gap: 20px;
         }
         .panel {
@@ -140,6 +140,7 @@
         button.warning { background: #ffaa00; color: #0a0b1e; }
         button.crypto { background: linear-gradient(95deg, #7c3aed, #ec489a); color: white; }
         button.api { background: linear-gradient(95deg, #06b6d4, #3b82f6); color: white; }
+        button.message-btn { background: linear-gradient(95deg, #00f2ff, #bc13fe); color: white; }
         
         .loan-card {
             background: rgba(0,0,0,0.4);
@@ -150,9 +151,6 @@
         }
         .loan-card.approved, .loan-card.active { border-left-color: #00ff88; }
         .loan-card.rejected { border-left-color: #ff4466; opacity: 0.7; }
-        .status-pending { color: #ffaa00; }
-        .status-approved, .status-active { color: #00ff88; }
-        .status-rejected { color: #ff4466; }
         
         .reserve-card {
             background: rgba(0,0,0,0.4);
@@ -167,14 +165,8 @@
         .reserve-card .amount.eur { color: #00f2ff; }
         .reserve-card .amount.brl { color: #ffaa00; }
         .reserve-card .amount.gbp { color: #bc13fe; }
-        .reserve-card .sub { font-size: 10px; opacity: 0.5; margin-top: 5px; }
         
-        .reserve-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+        .reserve-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
         
         .modal-overlay {
             display: none;
@@ -194,7 +186,7 @@
             border: 2px solid #00f2ff;
             border-radius: 20px;
             padding: 25px;
-            max-width: 550px;
+            max-width: 600px;
             width: 90%;
             text-align: center;
             max-height: 85vh;
@@ -203,51 +195,45 @@
         .modal-content h3 { color: #00f2ff; margin-bottom: 20px; }
         .modal-content .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .activity-log {
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 11px;
-        }
-        .activity-item {
-            padding: 5px;
-            border-bottom: 1px solid #2a2b4e;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .search-box {
-            display: flex;
-            gap: 10px;
+        .message-item {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 10px;
+            border-left: 3px solid #00f2ff;
+            cursor: pointer;
         }
+        .message-item:hover { background: rgba(0,242,255,0.1); }
+        .message-item.unread { border-left-color: #ffaa00; background: rgba(255,170,0,0.1); }
+        .message-header { font-size: 11px; color: #00f2ff; margin-bottom: 8px; }
+        .message-text { font-size: 13px; }
         
-        .sync-status {
+        .account-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-family: monospace;
             font-size: 12px;
-            padding: 8px;
-            border-radius: 8px;
-            margin-top: 10px;
-            text-align: center;
+            text-align: left;
         }
-        .sync-status.success { background: rgba(0,255,136,0.2); border: 1px solid #00ff88; color: #00ff88; }
-        .sync-status.error { background: rgba(255,68,102,0.2); border: 1px solid #ff4466; color: #ff4466; }
-        .sync-status.pending { background: rgba(255,170,0,0.2); border: 1px solid #ffaa00; color: #ffaa00; }
         
         .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .account-id { font-family: monospace; background: #2a2b4e; padding: 2px 8px; border-radius: 20px; font-size: 11px; color: #00f2ff; }
+        .badge { background: #ff4466; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; margin-left: 5px; }
         
-        @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } .reserve-grid { grid-template-columns: 1fr; } }
+        .form-row-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } .reserve-grid { grid-template-columns: 1fr; } .form-row-2cols { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- MODALS -->
+<!-- MODAIS -->
 <div id="approveLoanModal" class="modal-overlay">
     <div class="modal-content">
         <h3><i class="fas fa-check-circle"></i> Approve & Disburse Loan</h3>
@@ -269,6 +255,26 @@
 
 <div id="clientHistoryModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 700px;"><h3><i class="fas fa-history"></i> Client Bank Statement</h3><div id="clientHistoryContent" style="max-height: 500px; overflow-y: auto;"></div><div class="modal-buttons"><button onclick="closeClientHistoryModal()" class="secondary">Close</button></div></div>
+</div>
+
+<div id="messageModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3><i class="fas fa-envelope"></i> Send Message to Client</h3>
+        <div style="text-align: left;">
+            <p><strong>Client:</strong> <span id="messageClientName"></span></p>
+            <div style="margin: 15px 0;"><label>📝 Subject:</label><input type="text" id="messageSubject" placeholder="Message subject"></div>
+            <div style="margin: 15px 0;"><label>💬 Message:</label><textarea id="messageContent" rows="5" placeholder="Type your message here..."></textarea></div>
+        </div>
+        <div class="modal-buttons"><button onclick="sendMessageToClient()" class="success"><i class="fas fa-paper-plane"></i> SEND MESSAGE</button><button onclick="closeMessageModal()" class="secondary">CANCEL</button></div>
+    </div>
+</div>
+
+<div id="inboxModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+        <h3><i class="fas fa-inbox"></i> Message Inbox <span id="inboxUnreadBadge" style="font-size:12px;"></span></h3>
+        <div id="inboxMessagesList" style="max-height: 500px; overflow-y: auto;"></div>
+        <div class="modal-buttons"><button onclick="closeInboxModal()" class="secondary">CLOSE</button></div>
+    </div>
 </div>
 
 <div id="logoutConfirmModal" class="modal-overlay">
@@ -293,7 +299,8 @@
         <h2><i class="fas fa-chalkboard-user"></i> ZENTRONIX BANK - ADMIN DASHBOARD PRO</h2>
         <div class="user-info">
             <span id="currentAdminName">Admin</span>
-            <button onclick="syncAllWithBankSite()" class="success" style="background:#00f2ff;"><i class="fas fa-sync-alt"></i> SYNC BANK SITE</button>
+            <button onclick="openInbox()" class="message-btn"><i class="fas fa-inbox"></i> INBOX <span id="headerUnreadCount" class="badge" style="display:none;">0</span></button>
+            <button onclick="syncAllWithBankSite()" class="success" style="background:#00f2ff;"><i class="fas fa-sync-alt"></i> SYNC</button>
             <button onclick="showLogoutConfirm()" class="danger"><i class="fas fa-sign-out-alt"></i> EXIT</button>
         </div>
     </div>
@@ -305,7 +312,7 @@
         <div class="stat-card"><h3>🇧🇷 BRL RESERVE</h3><div class="value" id="statBRLReserve">R$900T</div></div>
         <div class="stat-card"><h3>🇬🇧 GBP RESERVE</h3><div class="value" id="statGBPReserve">£900T</div></div>
         <div class="stat-card"><h3>📋 PENDING LOANS</h3><div class="value" id="pendingLoans">0</div></div>
-        <div class="stat-card"><h3>✅ TOTAL DISBURSED</h3><div class="value" id="totalDisbursedStat">$0</div></div>
+        <div class="stat-card"><h3>📩 UNREAD MSG</h3><div class="value" id="unreadCountStat">0</div></div>
     </div>
     
     <div class="panels">
@@ -321,41 +328,57 @@
             <div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div>
         </div>
         
-        <!-- API VERIFICATION PANEL - MELISSA & ABSTRACT -->
+        <!-- API VERIFICATION -->
         <div class="panel">
-            <h2><i class="fas fa-shield-alt"></i> 🔐 API VERIFICATION (Melissa & Abstract)</h2>
+            <h2><i class="fas fa-shield-alt"></i> 🔐 API VERIFICATION</h2>
             <div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; margin-bottom:15px;">
-                <h4><i class="fas fa-id-card"></i> Melissa API - Identity Verification</h4>
-                <div class="flex-row"><input type="text" id="melissaDoc" placeholder="Document (CPF/SSN/Passport)" style="flex:2;"><input type="text" id="melissaName" placeholder="Full Name" style="flex:2;"><button onclick="verifyWithMelissa()" class="api"><i class="fas fa-check-circle"></i> VERIFY</button></div>
+                <h4><i class="fas fa-id-card"></i> Melissa API - Identity</h4>
+                <div class="flex-row"><input type="text" id="melissaDoc" placeholder="Document" style="flex:2;"><input type="text" id="melissaName" placeholder="Full Name" style="flex:2;"><button onclick="verifyWithMelissa()" class="api">VERIFY</button></div>
                 <div id="melissaResult" style="font-size:12px; margin-top:8px;"></div>
             </div>
             <div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px;">
-                <h4><i class="fas fa-map-marker-alt"></i> Abstract API - Address Validation</h4>
-                <div class="flex-row"><input type="text" id="abstractAddress" placeholder="Full address (Street, City, Zip, Country)" style="flex:3;"><button onclick="validateWithAbstract()" class="api"><i class="fas fa-map-pin"></i> VALIDATE</button></div>
+                <h4><i class="fas fa-map-marker-alt"></i> Abstract API - Address</h4>
+                <div class="flex-row"><input type="text" id="abstractAddress" placeholder="Full address" style="flex:3;"><button onclick="validateWithAbstract()" class="api">VALIDATE</button></div>
                 <div id="abstractResult" style="font-size:12px; margin-top:8px;"></div>
             </div>
-            <div class="api-note" style="margin-top:10px; font-size:10px; opacity:0.5; text-align:center;">Note: Demo mode - Replace with actual API keys for production</div>
         </div>
         
-        <!-- CUSTOMER MANAGEMENT with ACCOUNT ID -->
+        <!-- CUSTOMER MANAGEMENT COM USERNAME E SENHA -->
         <div class="panel">
             <h2><i class="fas fa-users"></i> 👥 CUSTOMER MANAGEMENT</h2>
-            <div class="search-box"><input type="text" id="searchClient" placeholder="🔍 Search by name, email or Account ID..."><button onclick="filterClients()" class="secondary">Search</button></div>
+            <div class="search-box"><input type="text" id="searchClient" placeholder="🔍 Search..."><button onclick="filterClients()" class="secondary">Search</button></div>
+            
+            <!-- Formulário de Criação de Cliente com Username e Senha -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="text" id="clientName" placeholder="Full name">
                 <input type="email" id="clientEmail" placeholder="Email">
-                <input type="text" id="clientDocument" placeholder="Document (CPF/SSN)">
+                <input type="text" id="clientDocument" placeholder="Document">
                 <input type="text" id="clientAddress" placeholder="Address">
-                <input type="number" id="clientBalanceUSD" placeholder="USD Balance" value="0">
-                <input type="number" id="clientBalanceEUR" placeholder="EUR Balance" value="0">
-                <input type="number" id="clientBalanceBRL" placeholder="BRL Balance" value="0">
-                <input type="number" id="clientBalanceGBP" placeholder="GBP Balance" value="0">
-                <select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ KYC Pending</option><option value="Rejected">❌ KYC Rejected</option></select>
-                <button onclick="addClient()" class="success" style="grid-column: span 2;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
+                <input type="text" id="clientStreet" placeholder="Street/Rua">
+                <input type="text" id="clientNumber" placeholder="Number/Número">
+                <input type="text" id="clientBankAccount" placeholder="Bank Account Number">
+                <input type="number" id="clientBalanceUSD" placeholder="USD" value="0">
+                <input type="number" id="clientBalanceEUR" placeholder="EUR" value="0">
+                <input type="number" id="clientBalanceBRL" placeholder="BRL" value="0">
+                <input type="number" id="clientBalanceGBP" placeholder="GBP" value="0">
+                <select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ Pending</option><option value="Rejected">❌ Rejected</option></select>
             </div>
+            
+            <!-- NOVOS CAMPOS: USERNAME E PASSWORD -->
+            <div class="form-row-2cols" style="margin-top: 10px;">
+                <input type="text" id="clientUsername" placeholder="🔐 Username (acesso cliente)">
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="clientPassword" placeholder="🔑 Password" style="flex:2;">
+                    <button onclick="generateClientPassword()" class="secondary" type="button" style="flex:1;"><i class="fas fa-sync-alt"></i> Gerar</button>
+                </div>
+                <input type="password" id="clientConfirmPassword" placeholder="Confirm Password">
+            </div>
+            
+            <button onclick="addClient()" class="success" style="width:100%; margin-top:10px;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
+            
             <div style="max-height: 350px; overflow-y: auto; margin-top: 15px;">
-                <table style="width:100%; font-size:11px;">
-                    <thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Actions</th></tr></thead>
+                <table style="width:100%; font-size:10px;">
+                    <thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Username</th><th>Actions</th></tr></thead>
                     <tbody id="clientsList"></tbody>
                 </table>
             </div>
@@ -364,17 +387,29 @@
         <!-- LOAN MANAGEMENT -->
         <div class="panel">
             <h2><i class="fas fa-hand-holding-usd"></i> 📋 LOAN MANAGEMENT</h2>
-            <div class="flex-row"><button onclick="filterLoans('pending')" class="secondary">⏳ Pending (<span id="pendingCount">0</span>)</button><button onclick="filterLoans('active')" class="secondary">🟢 Active</button><button onclick="filterLoans('rejected')" class="secondary">❌ Rejected</button><button onclick="bulkLoanAction()" class="warning"><i class="fas fa-layer-group"></i> Bulk</button></div>
+            <div class="flex-row"><button onclick="filterLoans('pending')" class="secondary">⏳ Pending (<span id="pendingCount">0</span>)</button><button onclick="filterLoans('active')" class="secondary">🟢 Active</button><button onclick="filterLoans('rejected')" class="secondary">❌ Rejected</button><button onclick="bulkLoanAction()" class="warning">Bulk</button></div>
             <div id="loansList" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div>
         </div>
         
-        <!-- MULTI-CURRENCY TRANSFER + CRYPTO + SWIFT -->
+        <!-- MESSAGES PANEL -->
+        <div class="panel">
+            <h2><i class="fas fa-comment-dots"></i> 📩 CLIENT MESSAGES</h2>
+            <div id="clientMessagesList" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
+                <div style="text-align:center; padding:20px; color:#888;">Select a client to view messages</div>
+            </div>
+            <div class="flex-row">
+                <select id="messageClientSelect" style="flex:2;"><option value="">Select client...</option></select>
+                <button onclick="openMessageModal()" class="message-btn"><i class="fas fa-paper-plane"></i> SEND</button>
+            </div>
+        </div>
+        
+        <!-- MULTI-CURRENCY OPERATIONS -->
         <div class="panel">
             <h2><i class="fas fa-exchange-alt"></i> 💸 MULTI-CURRENCY OPERATIONS</h2>
-            <div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div>
+            <div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select></div>
             <input type="number" id="transferAmount" placeholder="Amount">
-            <input type="text" id="transferReason" placeholder="Reason / Reference">
-            <div class="flex-row"><button onclick="quickTransfer()" class="success"><i class="fas fa-paper-plane"></i> SEND TRANSFER</button><button onclick="showSwapCryptoModal()" class="crypto"><i class="fas fa-coins"></i> SWAP TO CRYPTO</button><button onclick="initiateSWIFT()" class="warning"><i class="fas fa-globe"></i> SWIFT</button></div>
+            <input type="text" id="transferReason" placeholder="Reference">
+            <div class="flex-row"><button onclick="quickTransfer()" class="success">TRANSFER</button><button onclick="showSwapCryptoModal()" class="crypto">SWAP TO CRYPTO</button><button onclick="initiateSWIFT()" class="warning">SWIFT</button></div>
             <div id="transferResultMsg" class="sync-status" style="display:none;"></div>
         </div>
         
@@ -388,8 +423,8 @@
         <!-- STATISTICS -->
         <div class="panel">
             <h2><i class="fas fa-chart-line"></i> 📊 STATISTICS</h2>
-            <div>✅ Active Loans: <strong id="statActive">0</strong></div><div>⏳ Pending Loans: <strong id="statPending">0</strong></div><div>❌ Rejected Loans: <strong id="statRejected">0</strong></div><hr><div>💰 Total Disbursed: <strong id="statTotalDisbursed">$0</strong></div>
-            <div>🏦 USD Reserve: <strong id="statReserveUSD">$900T</strong></div><div>🇪🇺 EUR Reserve: <strong id="statReserveEUR">€900T</strong></div><div>🇧🇷 BRL Reserve: <strong id="statReserveBRL">R$900T</strong></div><div>🇬🇧 GBP Reserve: <strong id="statReserveGBP">£900T</strong></div>
+            <div>✅ Active: <strong id="statActive">0</strong></div><div>⏳ Pending: <strong id="statPending">0</strong></div><div>❌ Rejected: <strong id="statRejected">0</strong></div><hr><div>💰 Total Disbursed: <strong id="statTotalDisbursed">$0</strong></div>
+            <div>🏦 USD: <strong id="statReserveUSD">$900T</strong></div><div>🇪🇺 EUR: <strong id="statReserveEUR">€900T</strong></div><div>🇧🇷 BRL: <strong id="statReserveBRL">R$900T</strong></div><div>🇬🇧 GBP: <strong id="statReserveGBP">£900T</strong></div>
         </div>
     </div>
 </div>
@@ -398,48 +433,187 @@
 <div id="cryptoSswapModal" class="modal-overlay">
     <div class="modal-content"><h3><i class="fas fa-coins"></i> Swap Fiat to Crypto</h3>
         <div style="text-align:left;"><p><strong>Customer:</strong> <span id="swapCustomerName"></span></p>
-        <div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div>
+        <div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select></div>
         <div style="margin:10px 0;"><label>Amount:</label><input type="number" id="swapAmount" step="0.01"></div>
-        <div style="margin:10px 0;"><label>To Cryptocurrency:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div>
+        <div style="margin:10px 0;"><label>To Crypto:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div>
         <div id="cryptoSwapResult" class="sync-status" style="display:none;"></div></div>
         <div class="modal-buttons"><button onclick="confirmSwapToCrypto()" class="crypto">CONFIRM SWAP</button><button onclick="closeSwapModal()" class="secondary">CANCEL</button></div>
     </div>
 </div>
 
 <script>
-    // ============ BANK RESERVES (Adicionado GBP) ============
-    let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000, GBP: 900000000000000 };
+    // ============ BANK RESERVES ============
+    let bankReserves = { 
+        USD: 900000000000000, 
+        EUR: 900000000000000, 
+        BRL: 900000000000000, 
+        GBP: 900000000000000
+    };
     let totalDisbursedAmountUSDEquivalent = 0;
-    
-    // ============ DATA STORES ============
     let staffList = [ { id: 1, name: "Master Admin", username: "admin", password: "admin123", role: "admin" } ];
     
-    // Generate unique Account ID (format: ZNX-XXXXXX)
     function generateAccountId() { return "ZNX-" + Math.floor(100000 + Math.random() * 900000).toString(); }
+    function generateRandomPassword() {
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$';
+        let password = '';
+        for(let i = 0; i < 10; i++) { password += chars.charAt(Math.floor(Math.random() * chars.length)); }
+        return password;
+    }
     
+    function generateClientPassword() {
+        let newPassword = generateRandomPassword();
+        document.getElementById('clientPassword').value = newPassword;
+        document.getElementById('clientConfirmPassword').value = newPassword;
+    }
+    
+    // ============ CLIENTES ============
     let clientsList = [
-        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York, NY 10005, USA", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, balance_gbp: 15000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
-        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore 018983", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, balance_gbp: 9000, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
-        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo - SP, Brazil", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, balance_gbp: 2500, kyc_status: "Approved", account_status: "ACTIVE", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
+        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York, NY 10005", street: "Wall Street", number: "123", bankAccountNumber: "USA-887654321", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, balance_gbp: 15000, kyc_status: "Approved", username: "alexander.vance", password: "Alex@123", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
+        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore 018983", street: "Marina Boulevard", number: "10", bankAccountNumber: "SGP-123456789", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, balance_gbp: 9000, kyc_status: "Approved", username: "sarah.chen", password: "Sarah@456", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
+        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo", street: "Av. Paulista", number: "1000", bankAccountNumber: "BRA-987654321", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, balance_gbp: 2500, kyc_status: "Approved", username: "joao.silva", password: "Joao@789", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
     ];
     
-    // Initialize transaction history
-    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 + client.balance_gbp*1.28, currency: "USD", description: "Initial account deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl/5.5 + client.balance_gbp*1.28 } ]; });
+    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28, currency: "USD", description: "Initial deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28 } ]; });
     
+    // ============ EMPRÉSTIMOS ============
     let loanRequests = [
-        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", monthlyPayment: 2185.50, requestedCurrency: "USD" },
-        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Property Acquisition", monthlyPayment: 4250.75, requestedCurrency: "USD" },
-        { id: 103, clientId: 3, clientName: "João Silva", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-17", purpose: "Investment", monthlyPayment: 2185.50, requestedCurrency: "BRL" }
+        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", requestedCurrency: "USD" },
+        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Property Acquisition", requestedCurrency: "USD" },
+        { id: 103, clientId: 3, clientName: "João Silva", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-17", purpose: "Investment", requestedCurrency: "BRL" }
     ];
     
-    let activityLogs = [ { action: "System started - Professional Dashboard with GBP Integration", timestamp: new Date().toISOString(), user: "System" } ];
+    // ============ MENSAGENS ============
+    let messagesList = [
+        { id: 1, clientId: 1, clientName: "Alexander Vance", fromClient: true, subject: "Loan Inquiry", message: "Hello, I would like to know about the loan interest rates for USD 50,000.", date: new Date().toISOString(), read: false },
+        { id: 2, clientId: 2, clientName: "Sarah Chen", fromClient: true, subject: "Account Access", message: "I'm having trouble logging into my account. Can you help?", date: new Date().toISOString(), read: false },
+        { id: 3, clientId: 3, clientName: "João Silva", fromClient: true, subject: "Transfer Question", message: "How do I transfer funds to a Brazilian account?", date: new Date().toISOString(), read: true }
+    ];
+    
+    let activityLogs = [ { action: "System started - Dashboard with Username/Password creation", timestamp: new Date().toISOString(), user: "System" } ];
     
     let currentUser = null;
     let currentFilter = 'pending';
     let currentLoanToApprove = null;
     let currentSwapClient = null;
+    let currentMessageClient = null;
     
-    // ============ HELPER FUNCTIONS ============
+    // ============ FUNÇÕES DE MENSAGEM ============
+    function saveMessages() { localStorage.setItem('zentronix_messages', JSON.stringify(messagesList)); }
+    function loadMessages() { let saved = localStorage.getItem('zentronix_messages'); if(saved) messagesList = JSON.parse(saved); }
+    
+    function sendMessageToClient() {
+        let client = currentMessageClient;
+        let subject = document.getElementById('messageSubject').value;
+        let content = document.getElementById('messageContent').value;
+        if(!client || !subject || !content) { alert("Please fill all fields"); return; }
+        
+        messagesList.unshift({
+            id: Date.now(),
+            clientId: client.id,
+            clientName: client.name,
+            fromClient: false,
+            subject: subject,
+            message: content,
+            date: new Date().toISOString(),
+            read: true
+        });
+        saveMessages();
+        addActivity(`📧 Message sent to ${client.name}: "${subject}"`);
+        alert(`✅ Message sent to ${client.name}!`);
+        closeMessageModal();
+        renderClientMessages();
+        updateUnreadCount();
+        syncAllWithBankSite();
+    }
+    
+    function openMessageModal() {
+        let clientId = document.getElementById('messageClientSelect').value;
+        if(!clientId) { alert("Select a client first"); return; }
+        currentMessageClient = clientsList.find(c => c.id == parseInt(clientId));
+        document.getElementById('messageClientName').innerText = currentMessageClient.name;
+        document.getElementById('messageSubject').value = '';
+        document.getElementById('messageContent').value = '';
+        document.getElementById('messageModal').classList.add('active');
+    }
+    
+    function closeMessageModal() { document.getElementById('messageModal').classList.remove('active'); currentMessageClient = null; }
+    
+    function openMessageForClient(clientId) {
+        let client = clientsList.find(c => c.id === clientId);
+        currentMessageClient = client;
+        document.getElementById('messageClientName').innerText = client.name;
+        document.getElementById('messageSubject').value = '';
+        document.getElementById('messageContent').value = '';
+        document.getElementById('messageModal').classList.add('active');
+    }
+    
+    function openInbox() {
+        let inboxHtml = '';
+        let clientMessages = messagesList.filter(m => m.fromClient === true);
+        if(clientMessages.length === 0) { inboxHtml = '<div style="text-align:center; padding:20px;">No messages from clients</div>'; }
+        else {
+            clientMessages.forEach(msg => {
+                let unreadClass = !msg.read ? 'unread' : '';
+                inboxHtml += `<div class="message-item ${unreadClass}" onclick="markAsReadAndReply(${msg.id}, ${msg.clientId})">
+                    <div class="message-header"><strong>${msg.clientName}</strong> - ${msg.subject} - ${new Date(msg.date).toLocaleString()}</div>
+                    <div class="message-text">${msg.message}</div>
+                </div>`;
+            });
+        }
+        document.getElementById('inboxMessagesList').innerHTML = inboxHtml;
+        document.getElementById('inboxModal').classList.add('active');
+    }
+    
+    function closeInboxModal() { document.getElementById('inboxModal').classList.remove('active'); }
+    
+    function markAsReadAndReply(messageId, clientId) {
+        let msg = messagesList.find(m => m.id === messageId);
+        if(msg && !msg.read) { msg.read = true; saveMessages(); updateUnreadCount(); }
+        closeInboxModal();
+        let client = clientsList.find(c => c.id === clientId);
+        if(client) {
+            currentMessageClient = client;
+            document.getElementById('messageClientName').innerText = client.name;
+            document.getElementById('messageSubject').value = `Re: ${msg.subject}`;
+            document.getElementById('messageContent').value = '';
+            document.getElementById('messageModal').classList.add('active');
+        }
+    }
+    
+    function updateUnreadCount() {
+        let unread = messagesList.filter(m => m.fromClient === true && !m.read).length;
+        document.getElementById('unreadCountStat').innerHTML = unread;
+        let headerBadge = document.getElementById('headerUnreadCount');
+        if(unread > 0) { headerBadge.style.display = 'inline-block'; headerBadge.innerText = unread; }
+        else { headerBadge.style.display = 'none'; }
+        let inboxBadge = document.getElementById('inboxUnreadBadge');
+        if(inboxBadge && unread > 0) inboxBadge.innerHTML = `<span class="badge">${unread} new</span>`;
+    }
+    
+    function renderClientMessages() {
+        let selectedId = document.getElementById('messageClientSelect')?.value;
+        if(!selectedId || selectedId === "") { 
+            document.getElementById('clientMessagesList').innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Select a client to view messages</div>'; 
+            return; 
+        }
+        let clientMsgs = messagesList.filter(m => m.clientId == selectedId);
+        if(clientMsgs.length === 0) { 
+            document.getElementById('clientMessagesList').innerHTML = '<div style="text-align:center; padding:20px; color:#888;">No messages with this client</div>'; 
+            return; 
+        }
+        let html = '';
+        clientMsgs.slice(0, 10).forEach(msg => {
+            let sender = msg.fromClient ? '📩 Client' : '📨 Admin';
+            let senderColor = msg.fromClient ? '#ffaa00' : '#00ff88';
+            html += `<div class="message-item" style="border-left-color: ${senderColor};">
+                <div class="message-header"><span style="color:${senderColor}">${sender}</span> - ${msg.subject} - ${new Date(msg.date).toLocaleString()}</div>
+                <div class="message-text">${msg.message}</div>
+            </div>`;
+        });
+        document.getElementById('clientMessagesList').innerHTML = html;
+    }
+    
+    // ============ FUNÇÕES PRINCIPAIS ============
     function saveData() {
         localStorage.setItem('zentronix_clients', JSON.stringify(clientsList));
         localStorage.setItem('zentronix_loans', JSON.stringify(loanRequests));
@@ -449,6 +623,7 @@
         localStorage.setItem('zentronix_bank_clients', JSON.stringify(clientsList));
         localStorage.setItem('zentronix_bank_reserves', JSON.stringify(bankReserves));
         localStorage.setItem('zentronix_last_sync', new Date().toISOString());
+        saveMessages();
     }
     
     function loadData() {
@@ -462,11 +637,11 @@
         if (savedActivity) activityLogs = JSON.parse(savedActivity);
         if (savedReserves) bankReserves = JSON.parse(savedReserves);
         if (savedTotal) totalDisbursedAmountUSDEquivalent = parseFloat(savedTotal);
+        loadMessages();
     }
     
     function addTransaction(client, type, amount, currency, description) {
-        // Convert balance to USD equivalent for tracking
-        let conversion = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
+        let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
         let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: (client.balance_usd*1) + (client.balance_eur*1.08) + (client.balance_brl*0.18) + (client.balance_gbp*1.28) };
         client.transactionHistory.unshift(tx);
         if(client.transactionHistory.length > 100) client.transactionHistory.pop();
@@ -481,46 +656,49 @@
     }
     
     function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
-    function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
     
-    // ============ SYNC WITH BANK SITE ============
+    function formatTrillion(num) {
+        if (num === undefined || num === null || isNaN(num)) return '0';
+        if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T";
+        return formatNumber(num);
+    }
+    
     async function syncAllWithBankSite() {
         addActivity(`🔄 Syncing with bank site...`);
         saveData();
         try {
-            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
+            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, messages: messagesList, loans: loanRequests, timestamp: new Date().toISOString() } }, '*');
         } catch(e) { console.log("PostMessage error:", e); }
-        alert(`✅ Sync completed!\n\n${clientsList.length} customers synced.\nBank site can access data via localStorage key 'zentronix_bank_clients' or postMessage.`);
+        alert(`✅ Sync completed!\n\n${clientsList.length} customers\n${messagesList.length} messages`);
         addActivity(`✅ Sync completed: ${clientsList.length} customers synced.`);
         return true;
     }
     
     window.addEventListener('message', (event) => {
         if(event.data && event.data.type === 'ZENTRONIX_REQUEST_SYNC') {
-            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, timestamp: new Date().toISOString() } }, '*');
-            addActivity(`📡 Bank site requested sync - data sent via postMessage`);
+            window.postMessage({ type: 'ZENTRONIX_SYNC', data: { clients: clientsList, reserves: bankReserves, messages: messagesList, timestamp: new Date().toISOString() } }, '*');
+            addActivity(`📡 Bank site requested sync`);
         }
     });
     
-    // ============ API VERIFICATION (Melissa & Abstract) ============
+    // ============ VERIFICAÇÃO API ============
     async function verifyWithMelissa() {
         let doc = document.getElementById('melissaDoc').value;
         let name = document.getElementById('melissaName').value;
         let resultDiv = document.getElementById('melissaResult');
-        if(!doc && !name) { alert("Enter document number or name to verify"); return; }
-        resultDiv.innerHTML = '<span class="api-status pending"></span> Verifying with Melissa API...';
+        if(!doc && !name) { alert("Enter document or name"); return; }
+        resultDiv.innerHTML = '<span>Verifying...</span>';
         resultDiv.style.color = '#ffaa00';
         setTimeout(() => {
             let isValid = (doc && doc.length >= 5) || (name && name.length >= 3);
-            let confidence = Math.floor(Math.random() * 30) + 70;
             if(isValid) {
-                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Identity Verified! (Confidence: ${confidence}%)<br>Document: ${doc || 'Not provided'}<br>Name: ${name || 'Not provided'}`;
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Identity Verified!`;
                 resultDiv.style.color = '#00ff88';
-                addActivity(`Melissa API: Identity verified for ${name || doc} (Confidence: ${confidence}%)`);
+                addActivity(`Melissa API: Identity verified for ${name || doc}`);
             } else {
-                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Identity Verification Failed! Please check the information.`;
+                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Verification Failed!`;
                 resultDiv.style.color = '#ff4466';
-                addActivity(`Melissa API: Identity verification failed for ${name || doc}`);
+                addActivity(`Melissa API: Verification failed`);
             }
         }, 1500);
     }
@@ -528,44 +706,50 @@
     async function validateWithAbstract() {
         let address = document.getElementById('abstractAddress').value;
         let resultDiv = document.getElementById('abstractResult');
-        if(!address) { alert("Enter address to validate"); return; }
-        resultDiv.innerHTML = '<span class="api-status pending"></span> Validating address with Abstract API...';
+        if(!address) { alert("Enter address"); return; }
+        resultDiv.innerHTML = '<span>Validating...</span>';
         resultDiv.style.color = '#ffaa00';
         setTimeout(() => {
             let isValid = address.length >= 10;
             if(isValid) {
                 resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ✅ Address Validated!<br>${address}`;
                 resultDiv.style.color = '#00ff88';
-                addActivity(`Abstract API: Address validated successfully`);
+                addActivity(`Abstract API: Address validated`);
             } else {
-                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Address Validation Failed! Please check the address format.`;
+                resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ Validation Failed!`;
                 resultDiv.style.color = '#ff4466';
-                addActivity(`Abstract API: Address validation failed`);
+                addActivity(`Abstract API: Validation failed`);
             }
         }, 1500);
     }
     
-    // ============ RESERVE FUNCTIONS (GBP Adicionado) ============
+    // ============ RESERVAS ============
     function refreshReserves() {
-        document.getElementById('reserveUSD').innerHTML = `$ ${formatNumber(bankReserves.USD)}`;
-        document.getElementById('reserveEUR').innerHTML = `€ ${formatNumber(bankReserves.EUR)}`;
-        document.getElementById('reserveBRL').innerHTML = `R$ ${formatNumber(bankReserves.BRL)}`;
-        document.getElementById('reserveGBP').innerHTML = `£ ${formatNumber(bankReserves.GBP)}`;
+        let usdValue = typeof bankReserves.USD === 'number' ? bankReserves.USD : 900000000000000;
+        let eurValue = typeof bankReserves.EUR === 'number' ? bankReserves.EUR : 900000000000000;
+        let brlValue = typeof bankReserves.BRL === 'number' ? bankReserves.BRL : 900000000000000;
+        let gbpValue = typeof bankReserves.GBP === 'number' ? bankReserves.GBP : 900000000000000;
         
-        document.getElementById('statUSDReserve').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
-        document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
-        document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
-        document.getElementById('statGBPReserve').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
+        document.getElementById('reserveUSD').innerHTML = `$ ${usdValue.toLocaleString('en-US')}`;
+        document.getElementById('reserveEUR').innerHTML = `€ ${eurValue.toLocaleString('en-US')}`;
+        document.getElementById('reserveBRL').innerHTML = `R$ ${brlValue.toLocaleString('en-US')}`;
+        document.getElementById('reserveGBP').innerHTML = `£ ${gbpValue.toLocaleString('en-US')}`;
         
-        document.getElementById('statReserveUSD').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
-        document.getElementById('statReserveEUR').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
-        document.getElementById('statReserveBRL').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
-        document.getElementById('statReserveGBP').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
+        document.getElementById('statUSDReserve').innerHTML = `$${formatTrillion(usdValue)}`;
+        document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(eurValue)}`;
+        document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(brlValue)}`;
+        document.getElementById('statGBPReserve').innerHTML = `£${formatTrillion(gbpValue)}`;
+        
+        document.getElementById('statReserveUSD').innerHTML = `$${formatTrillion(usdValue)}`;
+        document.getElementById('statReserveEUR').innerHTML = `€${formatTrillion(eurValue)}`;
+        document.getElementById('statReserveBRL').innerHTML = `R$${formatTrillion(brlValue)}`;
+        document.getElementById('statReserveGBP').innerHTML = `£${formatTrillion(gbpValue)}`;
+        
         saveData();
     }
     
     function exportReserveReport() {
-        let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nGBP," + bankReserves.GBP + "\nTotal Disbursed (USD Eqv)," + totalDisbursedAmountUSDEquivalent;
+        let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nGBP," + bankReserves.GBP;
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -574,7 +758,7 @@
         addActivity(`Reserve report exported`);
     }
     
-    // ============ LOAN FUNCTIONS (GBP Adicionado) ============
+    // ============ EMPRÉSTIMOS ============
     function showApproveLoanModal(loan) {
         currentLoanToApprove = loan;
         document.getElementById('approveLoanCustomer').innerText = loan.clientName;
@@ -601,22 +785,16 @@
         if (disbursementAmount > bankReserves[selectedCurrency]) { alert(`❌ Insufficient reserve in ${selectedCurrency}! Available: ${formatNumber(bankReserves[selectedCurrency])}`); return; }
         
         let symbol = selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : (selectedCurrency === 'BRL' ? 'R$' : '£'));
-        if (!confirm(`✅ APPROVE LOAN\n\nCustomer: ${loan.clientName}\nDisbursing: ${symbol}${formatNumber(disbursementAmount)}\n\nContinue?`)) return;
+        if (!confirm(`APPROVE LOAN?\n\n${loan.clientName}\n${symbol}${formatNumber(disbursementAmount)} (${selectedCurrency})`)) return;
         
         syncStatusDiv.style.display = 'block';
         syncStatusDiv.className = 'sync-status pending';
-        syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing loan...';
+        syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         
         try {
-            // Debit from Reserve
             bankReserves[selectedCurrency] -= disbursementAmount;
-            
-            // Calculate USD Equivalent for tracking
             let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
-            let usdEquivalent = disbursementAmount * rates[selectedCurrency];
-            totalDisbursedAmountUSDEquivalent += usdEquivalent;
-            
-            // Update Loan Status
+            totalDisbursedAmountUSDEquivalent += disbursementAmount * rates[selectedCurrency];
             loan.status = 'active';
             loan.disbursedAmount = disbursementAmount;
             loan.disbursedCurrency = selectedCurrency;
@@ -624,25 +802,35 @@
             loan.approvedBy = currentUser?.name || 'Admin';
             loan.adminNotes = adminNotes;
             
-            // Credit to Client
             let client = clientsList.find(c => c.id === loan.clientId);
             if (client) {
                 if (selectedCurrency === 'USD') client.balance_usd += disbursementAmount;
                 else if (selectedCurrency === 'EUR') client.balance_eur += disbursementAmount;
                 else if (selectedCurrency === 'BRL') client.balance_brl += disbursementAmount;
                 else if (selectedCurrency === 'GBP') client.balance_gbp += disbursementAmount;
+                addTransaction(client, "LOAN_DISBURSEMENT", disbursementAmount, selectedCurrency, `Loan ${loan.id} approved`);
+                addActivity(`✅ LOAN APPROVED: ${symbol}${formatNumber(disbursementAmount)} for ${client.name}`);
                 
-                addTransaction(client, "LOAN_DISBURSEMENT", disbursementAmount, selectedCurrency, `Loan ${loan.id} approved and disbursed - ${adminNotes || 'No notes'}`);
-                addActivity(`✅ LOAN APPROVED: ${symbol}${formatNumber(disbursementAmount)} (${selectedCurrency}) for ${client.name}`);
-                syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Loan disbursed and synced!';
+                messagesList.unshift({
+                    id: Date.now(),
+                    clientId: client.id,
+                    clientName: client.name,
+                    fromClient: false,
+                    subject: "Loan Approved!",
+                    message: `Your loan of ${symbol}${formatNumber(disbursementAmount)} (${selectedCurrency}) has been approved and credited.`,
+                    date: new Date().toISOString(),
+                    read: true
+                });
+                saveMessages();
+                syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Loan disbursed!';
                 syncStatusDiv.classList.add('success');
             }
             saveData();
             refreshReserves();
             updateUI();
             syncAllWithBankSite();
-            setTimeout(() => { closeApproveLoanModal(); alert(`✅ Loan approved! Amount sent to ${loan.clientName}.`); }, 1500);
-        } catch (error) { syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error processing loan.'; syncStatusDiv.classList.add('error'); }
+            setTimeout(() => { closeApproveLoanModal(); alert(`✅ Loan approved!`); }, 1500);
+        } catch (error) { syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error.'; syncStatusDiv.classList.add('error'); }
     }
     
     function approveLoan(id) { let loan = loanRequests.find(l => l.id === id); if(loan && loan.status === 'pending') showApproveLoanModal(loan); }
@@ -664,8 +852,7 @@
     function bulkLoanAction() {
         let pendingLoans = loanRequests.filter(l => l.status === 'pending');
         if(pendingLoans.length === 0) { alert("No pending loans"); return; }
-        let action = confirm(`Process ${pendingLoans.length} pending loans?\nOK = Approve All, CANCEL = Reject All`);
-        if(action) {
+        if(confirm(`Approve ${pendingLoans.length} pending loans?`)) {
             pendingLoans.forEach(loan => {
                 let currency = loan.requestedCurrency || 'USD';
                 let amount = loan.amount;
@@ -681,22 +868,14 @@
                         else if (currency === 'EUR') client.balance_eur += amount;
                         else if (currency === 'BRL') client.balance_brl += amount;
                         else if (currency === 'GBP') client.balance_gbp += amount;
-                        addTransaction(client, "LOAN_DISBURSEMENT", amount, currency, `Bulk loan approval`);
+                        addTransaction(client, "LOAN_DISBURSEMENT", amount, currency, `Bulk approval`);
                     }
                 } else { loan.status = 'rejected'; loan.rejectionReason = `Insufficient ${currency} reserve`; }
             });
             saveData();
             refreshReserves();
-            addActivity(`📋 BULK ACTION: ${pendingLoans.length} loans processed`);
+            addActivity(`📋 BULK: ${pendingLoans.length} loans processed`);
             alert(`Bulk action completed!`);
-        } else {
-            let reason = prompt("Reason for bulk rejection:");
-            if(reason) {
-                pendingLoans.forEach(loan => { loan.status = 'rejected'; loan.rejectionReason = reason; });
-                saveData();
-                addActivity(`📋 BULK REJECTION: ${pendingLoans.length} loans rejected`);
-                alert(`${pendingLoans.length} loans rejected.`);
-            }
         }
         updateUI();
         syncAllWithBankSite();
@@ -704,7 +883,7 @@
     
     function showLoanDetails(loan) {
         let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : (loan.disbursedCurrency === 'BRL' ? 'R$' : '£'));
-        let html = `<p><strong>Customer:</strong> ${loan.clientName}</p><p><strong>Requested:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'))}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Disbursed:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Term:</strong> ${loan.term} months</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>${loan.approvedBy ? `<p><strong>Approved By:</strong> ${loan.approvedBy}</p>` : ''}${loan.rejectionReason ? `<p><strong>Reason:</strong> ${loan.rejectionReason}</p>` : ''}`;
+        let html = `<p><strong>Customer:</strong> ${loan.clientName}</p><p><strong>Requested:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'))}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Disbursed:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Term:</strong> ${loan.term} months</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>`;
         document.getElementById('loanDetailsContent').innerHTML = html;
         document.getElementById('loanDetailsModal').classList.add('active');
     }
@@ -723,101 +902,120 @@
         document.getElementById('loansList').innerHTML = html;
     }
     
-    // ============ CLIENT FUNCTIONS with ACCOUNT ID (GBP Adicionado) ============
+    // ============ CLIENTES COM USERNAME E SENHA ============
     function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
         let documentNum = document.getElementById('clientDocument').value;
         let address = document.getElementById('clientAddress').value;
+        let street = document.getElementById('clientStreet').value;
+        let number = document.getElementById('clientNumber').value;
+        let bankAccount = document.getElementById('clientBankAccount').value;
         let balanceUSD = parseFloat(document.getElementById('clientBalanceUSD').value);
         let balanceEUR = parseFloat(document.getElementById('clientBalanceEUR').value);
         let balanceBRL = parseFloat(document.getElementById('clientBalanceBRL').value);
         let balanceGBP = parseFloat(document.getElementById('clientBalanceGBP').value);
         let kyc = document.getElementById('clientKyc').value;
+        let username = document.getElementById('clientUsername').value;
+        let password = document.getElementById('clientPassword').value;
+        let confirmPassword = document.getElementById('clientConfirmPassword').value;
         
         if(!name || !email) return alert("Name and email required");
+        if(password !== confirmPassword) return alert("Passwords do not match!");
+        
+        // Gerar username automático se vazio
+        if(!username) {
+            username = name.toLowerCase().replace(/ /g, '.').replace(/[^a-z.]/g, '');
+        }
+        
+        // Gerar senha automática se vazia
+        if(!password) {
+            password = generateRandomPassword();
+        }
         
         let newClient = { 
             id: Date.now(), 
             accountId: generateAccountId(),
-            name: name, 
-            email: email, 
-            document: documentNum || '',
-            address: address || '',
+            name: name, email: email, document: documentNum || '',
+            address: address || `${street || ''} ${number || ''}`,
+            street: street || '', number: number || '', bankAccountNumber: bankAccount || '',
             balance_usd: isNaN(balanceUSD) ? 0 : balanceUSD, 
             balance_eur: isNaN(balanceEUR) ? 0 : balanceEUR, 
             balance_brl: isNaN(balanceBRL) ? 0 : balanceBRL,
             balance_gbp: isNaN(balanceGBP) ? 0 : balanceGBP,
-            kyc_status: kyc, 
-            account_status: "ACTIVE",
+            kyc_status: kyc, account_status: "ACTIVE",
+            username: username,
+            password: password,
             createdAt: new Date().toISOString().slice(0,10),
             crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
             transactionHistory: [{ date: new Date().toISOString(), type: "ACCOUNT_OPENING", amount: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28), currency: "USD", description: "Initial deposit", balance: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28) }]
         };
         clientsList.push(newClient);
         saveData();
-        // Clear form
+        
+        // Limpar formulário
         document.getElementById('clientName').value = ''; document.getElementById('clientEmail').value = '';
         document.getElementById('clientDocument').value = ''; document.getElementById('clientAddress').value = '';
+        document.getElementById('clientStreet').value = ''; document.getElementById('clientNumber').value = '';
+        document.getElementById('clientBankAccount').value = '';
         document.getElementById('clientBalanceUSD').value = '0'; document.getElementById('clientBalanceEUR').value = '0'; 
         document.getElementById('clientBalanceBRL').value = '0'; document.getElementById('clientBalanceGBP').value = '0';
-        addActivity(`New customer created: ${name} (Account: ${newClient.accountId})`);
-        alert(`✅ Customer ${name} created!\nAccount ID: ${newClient.accountId}`);
+        document.getElementById('clientUsername').value = '';
+        document.getElementById('clientPassword').value = '';
+        document.getElementById('clientConfirmPassword').value = '';
+        
+        // Enviar mensagem automática com credenciais
+        messagesList.unshift({
+            id: Date.now(),
+            clientId: newClient.id,
+            clientName: newClient.name,
+            fromClient: false,
+            subject: "Welcome to Zentronix Bank - Your Account Credentials",
+            message: `Dear ${newClient.name},\n\nYour account has been successfully created!\n\nAccount ID: ${newClient.accountId}\nUsername: ${username}\nPassword: ${password}\n\nAccess: https://zentronix10.github.io/zentronix-page/\n\nPlease change your password after first login.\n\nWelcome to Zentronix Bank!`,
+            date: new Date().toISOString(),
+            read: true
+        });
+        saveMessages();
+        
+        addActivity(`New customer: ${name} (${newClient.accountId}) | Username: ${username}`);
+        alert(`✅ Customer ${name} created!\nAccount ID: ${newClient.accountId}\nUsername: ${username}\nPassword: ${password}\n\nCredentials sent to client via message.`);
         updateUI();
         syncAllWithBankSite();
     }
     
     function showClientHistory(client) {
-        let html = `<div style="margin-bottom:15px;"><strong>Account ID:</strong> <span class="account-id">${client.accountId}</span><br><strong>Name:</strong> ${client.name}<br><strong>Email:</strong> ${client.email}<br><strong>Document:</strong> ${client.document || 'Not provided'}<br><strong>Address:</strong> ${client.address || 'Not provided'}<br><strong>Created:</strong> ${client.createdAt}</div>`;
-        html += `<h4>Transaction History</h4><table style="width:100%; font-size:11px;"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Currency</th><th>Description</th><th>Balance (USD Eqv)</th></tr></thead><tbody>`;
+        let html = `<div style="margin-bottom:15px;"><strong>Account ID:</strong> ${client.accountId}<br><strong>Name:</strong> ${client.name}<br><strong>Email:</strong> ${client.email}<br><strong>Username:</strong> ${client.username || 'Not set'}<br><strong>Address:</strong> ${client.address}<br><strong>Bank Account:</strong> ${client.bankAccountNumber || 'Not set'}</div>`;
+        html += `<h4>Transaction History</h4><table style="width:100%; font-size:11px;"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Currency</th><th>Description</th><th>Balance</th></tr></thead><tbody>`;
         if(client.transactionHistory && client.transactionHistory.length > 0) {
             client.transactionHistory.slice(0, 30).forEach(tx => {
                 let amountStr = tx.amount ? (tx.amount > 0 ? `+${formatNumber(tx.amount)}` : formatNumber(tx.amount)) : '0';
-                html += `<tr><td>${new Date(tx.date).toLocaleString()}</td><td>${tx.type}</td><td>${amountStr}</td><td>${tx.currency}</td><td>${tx.description || '-'}</td><td>$${formatNumber(tx.balance)}</td></tr>`;
+                html += `<tr><td>${new Date(tx.date).toLocaleString()}</td>`;
+                html += `<td>${tx.type}</td><td>${amountStr}</td>`;
+                html += `<td>${tx.currency}</td><td>${tx.description || '-'}</td>`;
+                html += `<td>$${formatNumber(tx.balance)}</td>`;
+                html += `</tr>`;
             });
-        } else {
-            html += `<tr><td colspan="6">No transactions found</td></tr>`;
-        }
+        } else { html += `<tr><td colspan="6">No transactions found</td></tr>`; }
         html += `</tbody></table>`;
         document.getElementById('clientHistoryContent').innerHTML = html;
         document.getElementById('clientHistoryModal').classList.add('active');
     }
     
     function closeClientHistoryModal() { document.getElementById('clientHistoryModal').classList.remove('active'); }
-    
-    function editClient(id) {
-        let client = clientsList.find(c => c.id === id);
-        let newName = prompt("New name:", client.name);
-        if(newName) client.name = newName;
-        saveData();
-        updateUI();
-        syncAllWithBankSite();
-    }
-    
-    function deleteClient(id) {
-        let client = clientsList.find(c => c.id === id);
-        if(confirm(`Delete ${client.name}? This action cannot be undone.`)) { 
-            clientsList = clientsList.filter(c => c.id !== id); 
-            saveData();
-            addActivity(`Customer deleted: ${client.name} (${client.accountId})`);
-            updateUI();
-            syncAllWithBankSite();
-        }
-    }
+    function editClient(id) { let client = clientsList.find(c => c.id === id); let newName = prompt("New name:", client.name); if(newName) client.name = newName; saveData(); updateUI(); syncAllWithBankSite(); }
+    function deleteClient(id) { let client = clientsList.find(c => c.id === id); if(confirm(`Delete ${client.name}?`)) { clientsList = clientsList.filter(c => c.id !== id); saveData(); addActivity(`Customer deleted: ${client.name}`); updateUI(); syncAllWithBankSite(); } }
     
     function adjustBalance(id, currency) {
         let client = clientsList.find(c => c.id === id);
-        let amount = parseFloat(prompt(`Amount to add to ${currency} balance for ${client.name}:`, "1000"));
+        let amount = parseFloat(prompt(`Amount to add to ${currency} for ${client.name}:`, "1000"));
         if(!isNaN(amount) && amount !== 0) {
             if (currency === 'USD') client.balance_usd += amount;
             else if (currency === 'EUR') client.balance_eur += amount;
             else if (currency === 'BRL') client.balance_brl += amount;
             else if (currency === 'GBP') client.balance_gbp += amount;
-            addTransaction(client, "ADMIN_ADJUSTMENT", amount, currency, `Balance adjustment by admin`);
+            addTransaction(client, "ADMIN_ADJUSTMENT", amount, currency, `Balance adjustment`);
             saveData();
-            let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
             addActivity(`Balance adjusted for ${client.name} (${currency}): ${amount > 0 ? '+' : ''}${formatNumber(amount)}`);
-            alert(`✅ New ${currency} balance: ${symbol}${formatNumber(currency === 'USD' ? client.balance_usd : (currency === 'EUR' ? client.balance_eur : (currency === 'BRL' ? client.balance_brl : client.balance_gbp)))}`);
             updateUI();
             syncAllWithBankSite();
         }
@@ -826,7 +1024,26 @@
     function renderClients(list = clientsList) {
         let html = '';
         list.forEach(c => {
-            html += `<tr><td class="account-id">${c.accountId}</td><td>${c.name}</td><td>$${formatNumber(c.balance_usd)}</td><td>€${formatNumber(c.balance_eur)}</td><td>R$${formatNumber(c.balance_brl)}</td><td>£${formatNumber(c.balance_gbp)}</td><td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td><td><button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button> <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button> <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')" title="Add USD">💵+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')" title="Add EUR">💶+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')" title="Add BRL">🇧🇷+</button> <button class="secondary" onclick="adjustBalance(${c.id}, 'GBP')" title="Add GBP">🇬🇧+</button> <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})" title="View History"><i class="fas fa-history"></i></button></td></tr>`;
+            html += `<tr>`;
+            html += `<td class="account-id">${c.accountId}</td>`;
+            html += `<td>${c.name}</td>`;
+            html += `<td>$${formatNumber(c.balance_usd)}</td>`;
+            html += `<td>€${formatNumber(c.balance_eur)}</td>`;
+            html += `<td>R$${formatNumber(c.balance_brl)}</td>`;
+            html += `<td>£${formatNumber(c.balance_gbp)}</td>`;
+            html += `<td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td>`;
+            html += `<td><span style="font-family:monospace; font-size:10px;">${c.username || 'N/A'}</span></td>`;
+            html += `<td>
+                <button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button>
+                <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
+                <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')">💵+</button>
+                <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')">💶+</button>
+                <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')">🇧🇷+</button>
+                <button class="secondary" onclick="adjustBalance(${c.id}, 'GBP')">🇬🇧+</button>
+                <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})"><i class="fas fa-history"></i></button>
+                <button class="message-btn" onclick="openMessageForClient(${c.id})"><i class="fas fa-envelope"></i></button>
+            </td>`;
+            html += `</tr>`;
         });
         document.getElementById('clientsList').innerHTML = html;
     }
@@ -836,32 +1053,27 @@
         renderClients(clientsList.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || c.accountId.toLowerCase().includes(search)));
     }
     
-    // ============ MULTI-CURRENCY OPERATIONS (GBP Adicionado) ============
+    // ============ OPERAÇÕES ============
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
         let amount = parseFloat(document.getElementById('transferAmount').value);
         let currency = document.getElementById('transferCurrency').value;
         let reason = document.getElementById('transferReason').value;
         let resultDiv = document.getElementById('transferResultMsg');
-        
         if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and enter amount"); return; }
         let client = clientsList.find(c => c.id == clientId);
         if(!client) return;
-        
         let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-        
         if(confirm(`Transfer ${symbol}${formatNumber(amount)} to ${client.name}?`)) {
             if (currency === 'USD') client.balance_usd += amount;
             else if (currency === 'EUR') client.balance_eur += amount;
             else if (currency === 'BRL') client.balance_brl += amount;
             else if (currency === 'GBP') client.balance_gbp += amount;
-            
-            addTransaction(client, "TRANSFER", amount, currency, `Transfer from admin: ${reason || 'No reason'}`);
+            addTransaction(client, "TRANSFER", amount, currency, reason || 'No reason');
             saveData();
-            addActivity(`💰 TRANSFER: ${symbol}${formatNumber(amount)} (${currency}) to ${client.name}`);
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'sync-status success';
-            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} sent to ${client.name}!`;
+            addActivity(`💰 TRANSFER: ${symbol}${formatNumber(amount)} to ${client.name}`);
+            resultDiv.style.display = 'block'; resultDiv.className = 'sync-status success';
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} sent!`;
             setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
             document.getElementById('transferAmount').value = '';
             document.getElementById('transferReason').value = '';
@@ -875,12 +1087,11 @@
         let amount = parseFloat(document.getElementById('transferAmount').value);
         let currency = document.getElementById('transferCurrency').value;
         let reason = document.getElementById('transferReason').value;
-        
-        if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and enter amount for SWIFT"); return; }
+        if(!clientId || isNaN(amount) || amount <= 0) { alert("Select customer and amount"); return; }
         let client = clientsList.find(c => c.id == clientId);
         let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-        alert(`🌐 SWIFT TRANSFER INITIATED\n\nTo: ${client.name}\nAccount: ${client.accountId}\nAmount: ${symbol}${formatNumber(amount)}\nCurrency: ${currency}\nReference: ${reason || 'No reference'}\n\nStatus: Processing (1-3 business days)\nSWIFT Code: ZNTXUS33XXX`);
-        addActivity(`🌐 SWIFT initiated for ${client.name}: ${symbol}${formatNumber(amount)} (${currency})`);
+        alert(`🌐 SWIFT\n\nTo: ${client.name}\nAccount: ${client.accountId}\nAmount: ${symbol}${formatNumber(amount)}\nCurrency: ${currency}\nRef: ${reason || 'None'}\nSWIFT: ZNTXUS33XXX`);
+        addActivity(`🌐 SWIFT: ${symbol}${formatNumber(amount)} for ${client.name}`);
     }
     
     // ============ CRYPTO SWAP ============
@@ -904,57 +1115,58 @@
         let amount = parseFloat(document.getElementById('swapAmount').value);
         let toCrypto = document.getElementById('swapToCrypto').value;
         let resultDiv = document.getElementById('cryptoSwapResult');
-        
         if (isNaN(amount) || amount <= 0) { alert("Enter valid amount"); return; }
-        
         let balanceField = fromCurrency === 'USD' ? 'balance_usd' : (fromCurrency === 'EUR' ? 'balance_eur' : (fromCurrency === 'BRL' ? 'balance_brl' : 'balance_gbp'));
         let symbol = fromCurrency === 'USD' ? '$' : (fromCurrency === 'EUR' ? '€' : (fromCurrency === 'BRL' ? 'R$' : '£'));
-        
-        if (currentSwapClient[balanceField] < amount) { alert(`Insufficient ${fromCurrency} balance. Available: ${symbol}${formatNumber(currentSwapClient[balanceField])}`); return; }
-        
+        if (currentSwapClient[balanceField] < amount) { alert(`Insufficient balance: ${symbol}${formatNumber(currentSwapClient[balanceField])}`); return; }
         const rates = { BTC: 67000, ETH: 3440, BRC: 10.5, SOL: 98, LTC: 82.5, USDT: 1, MATIC: 0.85 };
         let cryptoAmount = amount / rates[toCrypto];
-        
-        if (confirm(`Swap ${symbol}${formatNumber(amount)} to ${cryptoAmount.toFixed(6)} ${toCrypto} for ${currentSwapClient.name}?`)) {
+        if (confirm(`Swap ${symbol}${formatNumber(amount)} to ${cryptoAmount.toFixed(6)} ${toCrypto}?`)) {
             currentSwapClient[balanceField] -= amount;
             if (!currentSwapClient.crypto_balances) currentSwapClient.crypto_balances = {};
             currentSwapClient.crypto_balances[toCrypto] = (currentSwapClient.crypto_balances[toCrypto] || 0) + cryptoAmount;
             addTransaction(currentSwapClient, "CRYPTO_SWAP", amount, fromCurrency, `Swapped to ${cryptoAmount.toFixed(6)} ${toCrypto}`);
             saveData();
-            addActivity(`🔄 SWAP: ${symbol}${formatNumber(amount)} (${fromCurrency}) -> ${cryptoAmount.toFixed(6)} ${toCrypto} for ${currentSwapClient.name}`);
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'sync-status success';
-            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> Swapped ${symbol}${formatNumber(amount)} to ${cryptoAmount.toFixed(6)} ${toCrypto}!`;
+            addActivity(`🔄 SWAP: ${symbol}${formatNumber(amount)} → ${cryptoAmount.toFixed(6)} ${toCrypto}`);
+            resultDiv.style.display = 'block'; resultDiv.className = 'sync-status success';
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> Swapped!`;
             setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
             updateUI();
             syncAllWithBankSite();
         }
     }
     
-    // ============ UI UPDATE ============
+    // ============ UI ============
     function updateUI() {
         document.getElementById('totalClients').innerText = clientsList.length;
         document.getElementById('pendingLoans').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
         document.getElementById('totalDisbursedStat').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
-        let active = loanRequests.filter(l => l.status === 'active').length;
-        let pending = loanRequests.filter(l => l.status === 'pending').length;
-        let rejected = loanRequests.filter(l => l.status === 'rejected').length;
-        document.getElementById('statActive').innerHTML = active;
-        document.getElementById('statPending').innerHTML = pending;
-        document.getElementById('statRejected').innerHTML = rejected;
+        document.getElementById('statActive').innerHTML = loanRequests.filter(l => l.status === 'active').length;
+        document.getElementById('statPending').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
+        document.getElementById('statRejected').innerHTML = loanRequests.filter(l => l.status === 'rejected').length;
         document.getElementById('statTotalDisbursed').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
-        document.getElementById('pendingCount').innerHTML = pending;
+        document.getElementById('pendingCount').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
         renderClients();
         renderLoans();
         updateTransferSelect();
+        updateMessageSelect();
         refreshReserves();
+        updateUnreadCount();
     }
     
     function updateTransferSelect() {
         let select = document.getElementById('transferClient');
         if(!select) return;
         select.innerHTML = '<option value="">Select Customer</option>';
-        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name} (USD:$${formatNumber(c.balance_usd)} | EUR:€${formatNumber(c.balance_eur)} | BRL:R$${formatNumber(c.balance_brl)} | GBP:£${formatNumber(c.balance_gbp)})</option>`; });
+        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name}</option>`; });
+    }
+    
+    function updateMessageSelect() {
+        let select = document.getElementById('messageClientSelect');
+        if(!select) return;
+        select.innerHTML = '<option value="">Select client...</option>';
+        clientsList.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.accountId} - ${c.name}</option>`; });
+        select.onchange = () => renderClientMessages();
     }
     
     function renderActivityLog() {
@@ -967,7 +1179,7 @@
         if(confirm("Clear all logs?")) { activityLogs = [{ action: "Log cleared", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }]; saveData(); renderActivityLog(); addActivity("Activity log cleared"); }
     }
     
-    // ============ LOGIN/LOGOUT ============
+    // ============ LOGIN ============
     function doLogin() {
         let user = document.getElementById('adminUser').value;
         let pass = document.getElementById('adminPass').value;
@@ -990,7 +1202,18 @@
     
     // ============ INIT ============
     loadData();
-    window.onload = () => { refreshReserves(); renderActivityLog(); updateTransferSelect(); };
+    window.onload = () => { 
+        if (!bankReserves.GBP || bankReserves.GBP === 0) {
+            bankReserves.GBP = 900000000000000;
+            saveData();
+        }
+        refreshReserves(); 
+        renderActivityLog(); 
+        updateTransferSelect(); 
+        updateMessageSelect(); 
+        updateUnreadCount();
+        console.log("✅ Sistema iniciado - GBP: £" + bankReserves.GBP.toLocaleString());
+    };
 </script>
 </body>
 </html>
