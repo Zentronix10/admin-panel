@@ -415,15 +415,115 @@
     function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
     
     // ============ FUNÇÕES PRINCIPAIS ============
-    function syncAllWithBankSite() {
-        addActivity(`🔄 Syncing with bank site...`);
+   function syncAllWithBankSite() {
+    addActivity(`🔄 Syncing with bank site...`);
+    
+    // ========== LER DADOS DO LOCALSTORAGE (PÁGINA DO BANCO) ==========
+    try {
+        // Buscar clientes salvos pela página do banco
+        let bankClients = localStorage.getItem('zentronix_bank_clients');
+        let bankLoans = localStorage.getItem('zentronix_loans');
+        let bankReserves = localStorage.getItem('zentronix_bank_reserves');
+        
+        let novosClientes = 0;
+        let novosEmprestimos = 0;
+        
+        if (bankClients) {
+            const parsedClients = JSON.parse(bankClients);
+            console.log(`📥 Sincronizando ${parsedClients.length} clientes do site do banco`);
+            addActivity(`📥 Encontrados ${parsedClients.length} clientes no site do banco`);
+            
+            // Adicionar clientes que não existem no admin
+            parsedClients.forEach(bankClient => {
+                const exists = clientsList.some(c => c.email === bankClient.email);
+                if (!exists) {
+                    const newClient = {
+                        id: bankClient.id || Date.now(),
+                        accountId: generateAccountId(),
+                        name: bankClient.nome || bankClient.name,
+                        email: bankClient.email,
+                        document: bankClient.document || '',
+                        address: bankClient.address || '',
+                        street: bankClient.street || '',
+                        number: bankClient.number || '',
+                        bankAccountNumber: bankClient.bankAccountNumber || '',
+                        balance_usd: bankClient.saldoUSD || 0,
+                        balance_eur: bankClient.saldoEUR || 0,
+                        balance_brl: bankClient.saldoBRL || 0,
+                        balance_gbp: bankClient.saldoGBP || 0,
+                        kyc_status: bankClient.kyc || 'Pending',
+                        account_status: "ACTIVE",
+                        username: bankClient.email?.split('@')[0] || bankClient.nome?.toLowerCase().replace(/ /g, '.'),
+                        password: 'welcome123',
+                        createdAt: new Date().toISOString().slice(0,10),
+                        crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
+                        transactionHistory: []
+                    };
+                    clientsList.push(newClient);
+                    novosClientes++;
+                    addActivity(`🆕 Novo cliente sincronizado: ${newClient.name}`);
+                }
+            });
+        }
+        
+        if (bankLoans) {
+            const parsedLoans = JSON.parse(bankLoans);
+            console.log(`📥 Sincronizando ${parsedLoans.length} empréstimos do site do banco`);
+            addActivity(`📥 Encontrados ${parsedLoans.length} empréstimos no site do banco`);
+            
+            parsedLoans.forEach(bankLoan => {
+                // Verificar se empréstimo já existe
+                const exists = loanRequests.some(l => l.id === bankLoan.id);
+                if (!exists && bankLoan.status === 'pending') {
+                    const newLoan = {
+                        id: bankLoan.id,
+                        clientId: bankLoan.clientId,
+                        clientName: bankLoan.clientName,
+                        amount: bankLoan.amount,
+                        term: 12,
+                        status: 'pending',
+                        requestedDate: bankLoan.date || new Date().toISOString().slice(0,10),
+                        purpose: bankLoan.purpose || 'Solicitado pelo site',
+                        requestedCurrency: bankLoan.currency || 'USD'
+                    };
+                    loanRequests.push(newLoan);
+                    novosEmprestimos++;
+                    addActivity(`📋 Novo empréstimo solicitado: ${newLoan.clientName} - $${newLoan.amount}`);
+                }
+            });
+        }
+        
+        if (bankReserves) {
+            const parsedReserves = JSON.parse(bankReserves);
+            if (parsedReserves.USD) bankReserves.USD = parsedReserves.USD;
+            if (parsedReserves.EUR) bankReserves.EUR = parsedReserves.EUR;
+            if (parsedReserves.BRL) bankReserves.BRL = parsedReserves.BRL;
+            if (parsedReserves.GBP) bankReserves.GBP = parsedReserves.GBP;
+            addActivity(`💰 Reservas bancárias sincronizadas`);
+        }
+        
         saveData();
-        alert(`✅ Sync completed!\n\n${clientsList.length} customers synced.`);
-        return true;
+        updateUI();
+        refreshReserves();
+        
+        let msg = `✅ Sync completed!\n\n📊 ${clientsList.length} customers synced.`;
+        if (novosClientes > 0) msg += `\n🆕 ${novosClientes} new clients added.`;
+        if (novosEmprestimos > 0) msg += `\n📋 ${novosEmprestimos} new loan requests.`;
+        
+        addActivity(`✅ Sync completo! ${clientsList.length} clientes, ${loanRequests.filter(l => l.status === 'pending').length} empréstimos pendentes.`);
+        alert(msg);
+        
+    } catch (error) {
+        console.error('Erro na sincronização:', error);
+        addActivity(`❌ Erro na sincronização: ${error.message}`);
+        alert(`⚠️ Sync error: ${error.message}`);
     }
     
+    return true;
+}
     function generateIntegrationCode() {
         currentIntegrationCode = `<script>
+
 // ========== ZENTRONIX BANK INTEGRATION ==========
 function carregarDadosBanco() {
     let clientes = localStorage.getItem('zentronix_bank_clients');
