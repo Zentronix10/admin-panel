@@ -1124,7 +1124,7 @@ console.log("🏦 Integração ativa");
                 <td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td>
                 <td>${c.username || 'N/A'}</td>
                 <td>
-                    <button class="secondary" onclick="editClient(${c.id})"><i class="fas fa-edit"></i></button>
+                    <button class="success" onclick="openEditClientModal(${c.id})" style="background: linear-gradient(95deg, #00ff88, #00f2ff);"><i class="fas fa-user-edit"></i> Editar</button>
                     <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
                     <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')">💵+</button>
                     <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')">💶+</button>
