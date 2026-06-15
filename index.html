@@ -328,6 +328,13 @@
 </div>
 
 <script>
+        
+    // ============ CONFIGURAÇÃO DO SUPABASE ==========
+    const SUPABASE_URL = 'https://lhvltpxzwynaiecvpyhr.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxodmx0cHh6d3luYWllY3ZweWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MDIxMDgsImV4cCI6MjA5Njk3ODEwOH0.uSvRpSmlFpfa6-gTLiL-asygcRQlbkUL_-ToiJK1RiA';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    console.log("✅ Supabase configurado:", supabase);
     // ============ DADOS PRINCIPAIS ============
     let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000, GBP: 900000000000000 };
     let totalDisbursedAmountUSDEquivalent = 0;
@@ -1127,7 +1134,7 @@ console.log("🏦 Integração ativa");
         document.getElementById('statRejected').innerHTML = loanRequests.filter(l => l.status === 'rejected').length;
         document.getElementById('statTotalDisbursed').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
         document.getElementById('pendingCount').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
-        renderClients();
+        carregarClientes();
         renderLoans();
         updateTransferSelect();
         updateMessageSelect();
