@@ -869,7 +869,7 @@ console.log("🏦 Integração ativa");
     }
     
     // ============ CLIENTES ============
-       async function addClient() {
+      async function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
         let documentNum = document.getElementById('clientDocument').value;
@@ -881,24 +881,27 @@ console.log("🏦 Integração ativa");
             return;
         }
         
+        // 1. Gera uma senha forte aleatória
+        const generatedPassword = Math.random().toString(36).slice(-10) + "!A1";
+        // 2. Gera um ID de conta único
         let accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
-        let senhaTemp = Math.random().toString(36).slice(-8);
         
-        alert("🔄 Criando conta no Supabase...");
+        alert("🔄 Criando conta segura no Supabase...");
         
-        // 1. Criar usuário no Supabase Auth
+        // 3. CRIA O USUÁRIO NO SUPABASE AUTH
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
-            password: senhaTemp,
+            password: generatedPassword,
             options: { data: { full_name: name } }
         });
         
         if (authError) {
-            alert("❌ Erro ao criar conta: " + authError.message);
+            alert("❌ Erro crítico: " + authError.message);
+            console.error(authError);
             return;
         }
         
-        // 2. Salvar na tabela clientes
+        // 4. Depois de criar no Auth, insere os dados na tabela 'clientes'
         const { error: insertError } = await supabase
             .from('clientes')
             .insert([{
@@ -916,15 +919,15 @@ console.log("🏦 Integração ativa");
             return;
         }
         
-        alert(`✅ CLIENTE CRIADO COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${senhaTemp}\n🏦 Account ID: ${accountId}\n\n⚠️ Anote a senha!`);
+        alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${generatedPassword}\n🏦 Conta: ${accountId}\n\n⚠️ Guarde a senha! Ela será usada para o login.`);
         
-        // Limpar formulário
+        // Limpar o formulário
         document.getElementById('clientName').value = '';
         document.getElementById('clientEmail').value = '';
         document.getElementById('clientDocument').value = '';
         document.getElementById('clientAddress').value = '';
         
-        // Recarregar lista
+        // Recarregar a lista de clientes
         if(typeof carregarClientes === 'function') {
             carregarClientes();
         }
