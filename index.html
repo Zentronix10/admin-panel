@@ -948,33 +948,131 @@ console.log("🏦 Integração ativa");
     }
     
     function closeClientHistoryModal() { document.getElementById('clientHistoryModal').classList.remove('active'); }
-       async function deleteClient(id) {
-        if(!confirm("Deletar este cliente?")) return;
+        async function deleteClient(id) {
+        if(!id) {
+            alert("ID do cliente não encontrado!");
+            return;
+        }
         
-        const { error } = await supabase.from('clientes').delete().eq('id', id);
+        if(!confirm("Tem certeza que deseja deletar este cliente permanentemente?")) {
+            return;
+        }
         
-        if(error) {
-            alert("❌ Erro ao deletar: " + error.message);
-        } else {
-            alert("✅ Cliente deletado!");
-            carregarClientes();
+        console.log("🗑️ Tentando deletar cliente com ID:", id);
+        
+        try {
+            // 1. Primeiro, verificar se o cliente existe
+            const { data: cliente, error: buscaError } = await supabase
+                .from('clientes')
+                .select('id, email')
+                .eq('id', id)
+                .single();
+            
+            if (buscaError) {
+                console.error("❌ Cliente não encontrado:", buscaError);
+                alert("Cliente não encontrado no banco de dados!");
+                return;
+            }
+            
+            console.log("✅ Cliente encontrado:", cliente);
+            
+            // 2. Deletar da tabela clientes
+            const { error: deleteError } = await supabase
+                .from('clientes')
+                .delete()
+                .eq('id', id);
+            
+            if (deleteError) {
+                console.error("❌ Erro ao deletar:", deleteError);
+                alert("Erro ao deletar: " + deleteError.message);
+                return;
+            }
+            
+            console.log("✅ Cliente deletado com sucesso!");
+            alert("✅ Cliente deletado com sucesso!");
+            
+            // 3. Recarregar a lista
+            await carregarClientes();
+            
+        } catch (erro) {
+            console.error("❌ Erro inesperado:", erro);
+            alert("Erro inesperado ao deletar cliente");
         }
     }
     
-    function adjustBalance(id, currency) {
-        let client = clientsList.find(c => c.id === id);
-        let amount = parseFloat(prompt(`Valor para adicionar em ${currency} para ${client.name}:`, "1000"));
-        if(!isNaN(amount) && amount !== 0) {
-            if (currency === 'USD') client.balance_usd += amount;
-            else if (currency === 'EUR') client.balance_eur += amount;
-            else if (currency === 'BRL') client.balance_brl += amount;
-            else if (currency === 'GBP') client.balance_gbp += amount;
-            addTransaction(client, "AJUSTE_ADMIN", amount, currency, `Ajuste de saldo`);
-            saveData();
+        async function adjustBalance(id, currency) {
+        if(!id) {
+            alert("ID do cliente não encontrado!");
+            return;
+        }
+        
+        let valor = prompt(`💰 Adicionar saldo em ${currency}\n\nDigite o valor a ser adicionado:`, "1000");
+        if(!valor) return;
+        
+        let valorNumerico = parseFloat(valor);
+        if(isNaN(valorNumerico) || valorNumerico <= 0) {
+            alert("❌ Por favor, digite um valor válido!");
+            return;
+        }
+        
+        try {
+            // 1. Buscar dados atuais do cliente
+            const { data: cliente, error: buscaError } = await supabase
+                .from('clientes')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (buscaError) {
+                console.error("Erro ao buscar cliente:", buscaError);
+                alert("❌ Cliente não encontrado!");
+                return;
+            }
+            
+            // 2. Determinar qual campo atualizar
+            let campo = '';
+            let valorAtual = 0;
+            
+            switch(currency) {
+                case 'USD': campo = 'saldo_usd'; valorAtual = parseFloat(cliente.saldo_usd || 0); break;
+                case 'EUR': campo = 'saldo_eur'; valorAtual = parseFloat(cliente.saldo_eur || 0); break;
+                case 'BRL': campo = 'saldo_brl'; valorAtual = parseFloat(cliente.saldo_brl || 0); break;
+                case 'GBP': campo = 'saldo_gbp'; valorAtual = parseFloat(cliente.saldo_gbp || 0); break;
+                default:
+                    alert("Moeda inválida!");
+                    return;
+            }
+            
+            let novoSaldo = valorAtual + valorNumerico;
+            
+            // 3. Atualizar no Supabase
+            const { error: updateError } = await supabase
+                .from('clientes')
+                .update({ [campo]: novoSaldo })
+                .eq('id', id);
+            
+            if (updateError) {
+                console.error("Erro ao atualizar saldo:", updateError);
+                alert("❌ Erro ao ajustar saldo: " + updateError.message);
+                return;
+            }
+            
+            // 4. Registrar atividade
             let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-            addActivity(`Saldo ajustado para ${client.name} (${currency}): ${amount > 0 ? '+' : ''}${formatNumber(amount)}`);
-            updateUI();
-            syncAllWithBankSite();
+            if (typeof addActivity === 'function') {
+                addActivity(`💰 Saldo ajustado para ${cliente.nome} (${currency}): +${symbol}${valorNumerico.toFixed(2)}`);
+            }
+            
+            alert(`✅ Saldo ajustado com sucesso!\n\nCliente: ${cliente.nome}\nMoeda: ${currency}\nValor adicionado: ${symbol}${valorNumerico.toFixed(2)}\nNovo saldo: ${symbol}${novoSaldo.toFixed(2)}`);
+            
+            // 5. Recarregar a lista de clientes
+            if (typeof carregarClientes === 'function') {
+                await carregarClientes();
+            }
+            
+        } catch (erro) {
+            console.error("❌ Erro inesperado:", erro);
+            alert("Erro inesperado ao ajustar saldo");
         }
     }
     
@@ -1003,11 +1101,6 @@ console.log("🏦 Integração ativa");
             </tr>`;
         });
         document.getElementById('clientsList').innerHTML = html;
-    }
-    
-    function filterClients() {
-        let search = document.getElementById('searchClient').value.toLowerCase();
-        renderClients(clientsList.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || c.accountId.toLowerCase().includes(search)));
     }
     
     // ============ OPERAÇÕES ============
