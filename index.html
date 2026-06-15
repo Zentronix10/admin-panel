@@ -1274,7 +1274,56 @@ console.log("🏦 Integração ativa");
             carregarClientes();
         }
     }
+  
+        // ============ LOGIN ============
+    function doLogin() {
+        let user = document.getElementById('adminUser').value;
+        let pass = document.getElementById('adminPass').value;
+        
+        if(user === "admin" && pass === "admin123") {
+            currentUser = { name: "Master Admin" };
+            loadData();
+            addActivity(`Login: Master Admin`);
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('dashboardArea').style.display = 'block';
+            document.getElementById('currentAdminName').innerHTML = "Master Admin";
+            updateUI();
+            syncAllWithBankSite();
+        } else {
+            document.getElementById('loginError').innerText = 'Credenciais inválidas! Use admin / admin123';
+        }
+    }
     
+    function showLogoutConfirm() { 
+        document.getElementById('logoutConfirmModal').classList.add('active'); 
+    }
+    
+    function closeLogoutModal() { 
+        document.getElementById('logoutConfirmModal').classList.remove('active'); 
+    }
+    
+    function confirmLogout() { 
+        closeLogoutModal(); 
+        if(currentUser) addActivity(`Logout: ${currentUser.name}`); 
+        currentUser = null; 
+        document.getElementById('loginArea').style.display = 'flex'; 
+        document.getElementById('dashboardArea').style.display = 'none'; 
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+    }
+
+    // ============ INIT ============
+    loadData();
+    
+    window.onload = () => {
+        refreshReserves();
+        renderActivityLog();
+        updateTransferSelect();
+        updateMessageSelect();
+        updateUnreadCount();
+        carregarClientes();
+        console.log("✅ Sistema iniciado - Use admin / admin123");
+    };
     // ============ INIT ============
     loadData();
     
