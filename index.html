@@ -1173,6 +1173,10 @@ console.log("🏦 Integração ativa");
         let pass = document.getElementById('adminPass').value;
         
         if(user === "admin" && pass === "admin123") {
+            // Salvar sessão no sessionStorage
+            sessionStorage.setItem('adminLoggedIn', 'true');
+            sessionStorage.setItem('adminName', 'Master Admin');
+            
             currentUser = { name: "Master Admin" };
             loadData();
             addActivity(`Login: Master Admin`);
@@ -1274,11 +1278,31 @@ console.log("🏦 Integração ativa");
             carregarClientes();
         }
     }  
-
+    
+    // ============ VERIFICAR SESSÃO AO CARREGAR ============
+    function checkAdminSession() {
+        const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+        if (isLoggedIn === 'true') {
+            // Restaura o estado do admin
+            currentUser = { name: sessionStorage.getItem('adminName') };
+            
+            // Mostra o dashboard em vez do login
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('dashboardArea').style.display = 'block';
+            document.getElementById('currentAdminName').innerHTML = currentUser.name;
+            
+            // Recarregar dados
+            loadData();
+            updateUI();
+            syncAllWithBankSite();
+            console.log("✅ Sessão restaurada - Admin logado");
+        }
+    }
     // ============ INIT ============
     loadData();
     
     window.onload = () => {
+        checkAdminSession();
         refreshReserves();
         renderActivityLog();
         updateTransferSelect();
