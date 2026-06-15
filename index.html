@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zentronix Bank | Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -353,189 +354,35 @@
     
     clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28, currency: "USD", description: "Initial deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28 } ]; });
     
-    // ============ FUNÇÕES DE EDIÇÃO DE CLIENTE ============
-    let currentEditingClient = null;
+// ============ FUNÇÕES DE EDIÇÃO DE CLIENTE ============
+async function editClient(id) {
+    const { data: cliente, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', id)
+        .single();
     
-    function openEditClientModal(clientId) {
-        const client = clientsList.find(c => c.id === clientId);
-        if (!client) {
-            alert("Cliente não encontrado!");
-            return;
-        }
-        
-        currentEditingClient = client;
-        
-        const modalContent = `
-            <div style="background: linear-gradient(135deg, #1a1b3a, #0a0b1e); border-radius: 20px; padding: 25px; max-width: 650px; width: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="color: #00f2ff; margin: 0;"><i class="fas fa-user-edit"></i> Editar Cliente</h3>
-                    <button onclick="closeEditClientModal()" style="background: #ff4466; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: white;">✕</button>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">Account ID</label>
-                        <input type="text" id="editAccountId" style="width:100%; padding:8px; background:#2a2b4e; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.accountId}" readonly>
-                    </div>
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">Data Cadastro</label>
-                        <input type="text" id="editCreatedAt" style="width:100%; padding:8px; background:#2a2b4e; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.createdAt || ''}" readonly>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">👤 Nome Completo *</label>
-                        <input type="text" id="editName" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.name}" placeholder="Nome completo">
-                    </div>
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">📧 Email *</label>
-                        <input type="email" id="editEmail" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.email}" placeholder="email@exemplo.com">
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">📞 Telefone</label>
-                        <input type="tel" id="editPhone" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.phone || client.telefone || ''}" placeholder="(11) 99999-9999">
-                    </div>
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">🆔 Documento</label>
-                        <input type="text" id="editDocument" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.document || ''}" placeholder="RG/CPF">
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px;">
-                    <label style="color: #bc13fe; font-size: 12px;">📍 Endereço Completo</label>
-                    <input type="text" id="editAddress" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.address || ''}" placeholder="Rua, número, bairro, cidade, CEP">
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">🔑 Username (login)</label>
-                        <input type="text" id="editUsername" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.username || ''}" placeholder="Usuário para login">
-                    </div>
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">🔒 Nova Senha</label>
-                        <input type="password" id="editPassword" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" placeholder="Deixe em branco para manter">
-                        <small style="color: #888; font-size: 10px;">Preencha apenas se quiser alterar</small>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">✅ Status KYC</label>
-                        <select id="editKycStatus" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;">
-                            <option value="Approved" ${client.kyc_status === 'Approved' ? 'selected' : ''}>✅ Approved</option>
-                            <option value="Pending" ${client.kyc_status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
-                            <option value="Rejected" ${client.kyc_status === 'Rejected' ? 'selected' : ''}>❌ Rejected</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="color: #bc13fe; font-size: 12px;">🏦 Conta Bancária</label>
-                        <input type="text" id="editBankAccount" style="width:100%; padding:8px; background:#0d1117; border:1px solid #bc13fe; border-radius:8px; color:white;" value="${client.bankAccountNumber || ''}" placeholder="Número da conta">
-                    </div>
-                </div>
-                
-                <div style="margin-top: 25px; display: flex; gap: 10px;">
-                    <button onclick="saveClientEdit()" style="flex:1; background: linear-gradient(95deg, #00ff88, #00f2ff); border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;"><i class="fas fa-save"></i> SALVAR ALTERAÇÕES</button>
-                    <button onclick="closeEditClientModal()" style="flex:1; background:#2a2b4e; border:1px solid #00f2ff; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; color:#00f2ff;">CANCELAR</button>
-                </div>
-            </div>
-        `;
-        
-        let modal = document.getElementById('editClientModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'editClientModal';
-            modal.className = 'modal-overlay';
-            modal.style.display = 'none';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100%';
-            modal.style.height = '100%';
-            modal.style.background = 'rgba(0,0,0,0.95)';
-            modal.style.zIndex = '2000';
-            modal.style.justifyContent = 'center';
-            modal.style.alignItems = 'center';
-            document.body.appendChild(modal);
-        }
-        
-        modal.innerHTML = `<div style="max-width: 700px; width: 90%;">${modalContent}</div>`;
-        modal.style.display = 'flex';
+    if(error) {
+        alert("Erro ao buscar cliente");
+        return;
     }
     
-    function closeEditClientModal() {
-        const modal = document.getElementById('editClientModal');
-        if (modal) modal.style.display = 'none';
-        currentEditingClient = null;
+    let newName = prompt("Novo nome:", cliente.nome);
+    if(newName) {
+        const { error: updateError } = await supabase
+            .from('clientes')
+            .update({ nome: newName })
+            .eq('id', id);
+        
+        if(updateError) {
+            alert("Erro ao atualizar: " + updateError.message);
+        } else {
+            alert("✅ Nome atualizado!");
+            carregarClientes();
+        }
     }
+}
     
-    function saveClientEdit() {
-        if (!currentEditingClient) return;
-        
-        const client = currentEditingClient;
-        const index = clientsList.findIndex(c => c.id === client.id);
-        
-        if (index === -1) {
-            alert("Cliente não encontrado!");
-            closeEditClientModal();
-            return;
-        }
-        
-        const newName = document.getElementById('editName').value;
-        const newEmail = document.getElementById('editEmail').value;
-        const newPhone = document.getElementById('editPhone').value;
-        const newDocument = document.getElementById('editDocument').value;
-        const newAddress = document.getElementById('editAddress').value;
-        const newUsername = document.getElementById('editUsername').value;
-        const newPassword = document.getElementById('editPassword').value;
-        const newKycStatus = document.getElementById('editKycStatus').value;
-        const newBankAccount = document.getElementById('editBankAccount').value;
-        
-        if (!newName || !newEmail) {
-            alert("Nome e Email são obrigatórios!");
-            return;
-        }
-        
-        const emailExists = clientsList.some(c => c.email === newEmail && c.id !== client.id);
-        if (emailExists) {
-            alert("Este email já está cadastrado para outro cliente!");
-            return;
-        }
-        
-        if (newUsername) {
-            const usernameExists = clientsList.some(c => c.username === newUsername && c.id !== client.id);
-            if (usernameExists) {
-                alert("Este username já está em uso!");
-                return;
-            }
-        }
-        
-        clientsList[index].name = newName;
-        clientsList[index].email = newEmail;
-        clientsList[index].phone = newPhone;
-        clientsList[index].telefone = newPhone;
-        clientsList[index].document = newDocument;
-        clientsList[index].address = newAddress;
-        clientsList[index].username = newUsername || client.username;
-        clientsList[index].kyc_status = newKycStatus;
-        clientsList[index].bankAccountNumber = newBankAccount;
-        
-        if (newPassword && newPassword.length >= 6) {
-            clientsList[index].password = newPassword;
-        }
-        
-        saveData();
-        syncAllWithBankSite();
-        addActivity(`📝 Dados do cliente ${client.name} atualizados pelo ADMIN`);
-        
-        alert(`✅ Cliente ${newName} atualizado com sucesso!`);
-        closeEditClientModal();
-        updateUI();
-    }
-
     // ============ EMPRÉSTIMOS ============
     let loanRequests = [
         { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", requestedCurrency: "USD" },
@@ -1022,58 +869,65 @@ console.log("🏦 Integração ativa");
     }
     
     // ============ CLIENTES ============
-    function addClient() {
+       async function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
         let documentNum = document.getElementById('clientDocument').value;
         let address = document.getElementById('clientAddress').value;
-        let street = document.getElementById('clientStreet').value;
-        let number = document.getElementById('clientNumber').value;
-        let bankAccount = document.getElementById('clientBankAccount').value;
-        let balanceUSD = parseFloat(document.getElementById('clientBalanceUSD').value);
-        let balanceEUR = parseFloat(document.getElementById('clientBalanceEUR').value);
-        let balanceBRL = parseFloat(document.getElementById('clientBalanceBRL').value);
-        let balanceGBP = parseFloat(document.getElementById('clientBalanceGBP').value);
         let kyc = document.getElementById('clientKyc').value;
-        let username = document.getElementById('clientUsername').value;
-        let password = document.getElementById('clientPassword').value;
-        let confirmPassword = document.getElementById('clientConfirmPassword').value;
         
-        if(!name || !email) return alert("Nome e email obrigatórios");
-        if(password !== confirmPassword) return alert("Senhas não conferem!");
+        if(!name || !email) {
+            alert("Nome e email são obrigatórios!");
+            return;
+        }
         
-        if(!username) { username = name.toLowerCase().replace(/ /g, '.').replace(/[^a-z.]/g, ''); }
-        if(!password) { password = generateRandomPassword(); }
+        let accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
+        let senhaTemp = Math.random().toString(36).slice(-8);
         
-        let newClient = { 
-            id: Date.now(), accountId: generateAccountId(), name: name, email: email, document: documentNum || '',
-            address: address || `${street || ''} ${number || ''}`, street: street || '', number: number || '',
-            bankAccountNumber: bankAccount || '', balance_usd: isNaN(balanceUSD) ? 0 : balanceUSD, 
-            balance_eur: isNaN(balanceEUR) ? 0 : balanceEUR, balance_brl: isNaN(balanceBRL) ? 0 : balanceBRL,
-            balance_gbp: isNaN(balanceGBP) ? 0 : balanceGBP, kyc_status: kyc, account_status: "ACTIVE",
-            username: username, password: password, createdAt: new Date().toISOString().slice(0,10),
-            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-            transactionHistory: [{ date: new Date().toISOString(), type: "ACCOUNT_OPENING", amount: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28), currency: "USD", description: "Depósito inicial", balance: (balanceUSD + balanceEUR*1.08 + balanceBRL*0.18 + balanceGBP*1.28) }]
-        };
-        clientsList.push(newClient);
-        saveData();
+        alert("🔄 Criando conta no Supabase...");
         
-        document.getElementById('clientName').value = ''; document.getElementById('clientEmail').value = '';
-        document.getElementById('clientDocument').value = ''; document.getElementById('clientAddress').value = '';
-        document.getElementById('clientStreet').value = ''; document.getElementById('clientNumber').value = '';
-        document.getElementById('clientBankAccount').value = '';
-        document.getElementById('clientBalanceUSD').value = '0'; document.getElementById('clientBalanceEUR').value = '0'; 
-        document.getElementById('clientBalanceBRL').value = '0'; document.getElementById('clientBalanceGBP').value = '0';
-        document.getElementById('clientUsername').value = ''; document.getElementById('clientPassword').value = '';
-        document.getElementById('clientConfirmPassword').value = '';
+        // 1. Criar usuário no Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: senhaTemp,
+            options: { data: { full_name: name } }
+        });
         
-        messagesList.unshift({ id: Date.now(), clientId: newClient.id, clientName: newClient.name, fromClient: false, subject: "Bem-vindo ao Zentronix Bank", message: `Bem-vindo ${newClient.name}!\n\nAccount ID: ${newClient.accountId}\nUsuário: ${username}\nSenha: ${password}`, date: new Date().toISOString(), read: true });
-        saveMessages();
+        if (authError) {
+            alert("❌ Erro ao criar conta: " + authError.message);
+            return;
+        }
         
-        addActivity(`Novo cliente: ${name} (${newClient.accountId})`);
-        alert(`✅ Cliente ${name} criado!\nAccount ID: ${newClient.accountId}\nUsuário: ${username}\nSenha: ${password}`);
-        updateUI();
-        syncAllWithBankSite();
+        // 2. Salvar na tabela clientes
+        const { error: insertError } = await supabase
+            .from('clientes')
+            .insert([{
+                id: authData.user.id,
+                email: email,
+                nome: name,
+                account_id: accountId,
+                documento: documentNum || null,
+                endereco: address || null,
+                kyc_status: kyc || 'Pending'
+            }]);
+        
+        if (insertError) {
+            alert("❌ Erro ao salvar dados: " + insertError.message);
+            return;
+        }
+        
+        alert(`✅ CLIENTE CRIADO COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${senhaTemp}\n🏦 Account ID: ${accountId}\n\n⚠️ Anote a senha!`);
+        
+        // Limpar formulário
+        document.getElementById('clientName').value = '';
+        document.getElementById('clientEmail').value = '';
+        document.getElementById('clientDocument').value = '';
+        document.getElementById('clientAddress').value = '';
+        
+        // Recarregar lista
+        if(typeof carregarClientes === 'function') {
+            carregarClientes();
+        }
     }
     
     function showClientHistory(client) {
@@ -1091,8 +945,18 @@ console.log("🏦 Integração ativa");
     }
     
     function closeClientHistoryModal() { document.getElementById('clientHistoryModal').classList.remove('active'); }
-    function editClient(id) { let client = clientsList.find(c => c.id === id); let newName = prompt("Novo nome:", client.name); if(newName) client.name = newName; saveData(); updateUI(); syncAllWithBankSite(); }
-    function deleteClient(id) { let client = clientsList.find(c => c.id === id); if(confirm(`Deletar ${client.name}?`)) { clientsList = clientsList.filter(c => c.id !== id); saveData(); addActivity(`Cliente deletado: ${client.name}`); updateUI(); syncAllWithBankSite(); } }
+       async function deleteClient(id) {
+        if(!confirm("Deletar este cliente?")) return;
+        
+        const { error } = await supabase.from('clientes').delete().eq('id', id);
+        
+        if(error) {
+            alert("❌ Erro ao deletar: " + error.message);
+        } else {
+            alert("✅ Cliente deletado!");
+            carregarClientes();
+        }
+    }
     
     function adjustBalance(id, currency) {
         let client = clientsList.find(c => c.id === id);
@@ -1299,6 +1163,83 @@ console.log("🏦 Integração ativa");
         document.getElementById('adminUser').value = '';
         document.getElementById('adminPass').value = '';
     }
+
+    // ============ CARREGAR CLIENTES DO SUPABASE ============
+    async function carregarClientes() {
+        const { data, error } = await supabase
+            .from('clientes')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Erro ao carregar:', error);
+            return;
+        }
+        
+        let html = '';
+        for (let c of data) {
+            html += `<tr>
+                <td class="account-id">${c.account_id}</td>
+                <td>${c.nome}</td>
+                <td>$${c.saldo_usd || 0}</td>
+                <td>€${c.saldo_eur || 0}</td>
+                <td>R$${c.saldo_brl || 0}</td>
+                <td>£${c.saldo_gbp || 0}</td>
+                <td>${c.kyc_status}</td>
+                <td>${c.email}</td>
+                <td>
+                    <button class="success" onclick="editClient('${c.id}')"><i class="fas fa-user-edit"></i> Editar</button>
+                    <button class="danger" onclick="deleteClient('${c.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')">💵+</button>
+                    <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')">💶+</button>
+                    <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')">🇧🇷+</button>
+                    <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')">🇬🇧+</button>
+                </td>
+            </tr>`;
+        }
+        
+        document.getElementById('clientsList').innerHTML = html;
+        document.getElementById('totalClients').innerHTML = data.length;
+    }
+
+    // ============ AJUSTAR SALDO ============
+    async function adjustBalance(id, currency) {
+        let valor = prompt(`Valor para adicionar em ${currency}:`, "1000");
+        if(!valor) return;
+        
+        const { data: cliente, error: buscaError } = await supabase
+            .from('clientes')
+            .select('*')
+            .eq('id', id)
+            .single();
+        
+        if(buscaError) {
+            alert("Erro ao buscar cliente");
+            return;
+        }
+        
+        let campo = '';
+        let valorAtual = 0;
+        
+        if(currency === 'USD') { campo = 'saldo_usd'; valorAtual = parseFloat(cliente.saldo_usd || 0); }
+        else if(currency === 'EUR') { campo = 'saldo_eur'; valorAtual = parseFloat(cliente.saldo_eur || 0); }
+        else if(currency === 'BRL') { campo = 'saldo_brl'; valorAtual = parseFloat(cliente.saldo_brl || 0); }
+        else if(currency === 'GBP') { campo = 'saldo_gbp'; valorAtual = parseFloat(cliente.saldo_gbp || 0); }
+        
+        let novoSaldo = valorAtual + parseFloat(valor);
+        
+        const { error } = await supabase
+            .from('clientes')
+            .update({ [campo]: novoSaldo })
+            .eq('id', id);
+        
+        if(error) {
+            alert("❌ Erro ao ajustar saldo: " + error.message);
+        } else {
+            alert(`✅ Saldo ajustado! Novo saldo ${currency}: ${novoSaldo}`);
+            carregarClientes();
+        }
+    }
     
     // ============ INIT ============
     loadData();
@@ -1309,6 +1250,7 @@ console.log("🏦 Integração ativa");
         updateTransferSelect();
         updateMessageSelect();
         updateUnreadCount();
+        carregarClientes();
         console.log("✅ Sistema iniciado - Use admin / admin123");
     };
 </script>
