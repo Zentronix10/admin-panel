@@ -1076,33 +1076,6 @@ console.log("🏦 Integração ativa");
         }
     }
     
-    function renderClients(list = clientsList) {
-        let html = '';
-        list.forEach(c => {
-            html += `<tr>
-                <td class="account-id">${c.accountId}</td>
-                <td>${c.name}</td>
-                <td>$${formatNumber(c.balance_usd)}</td>
-                <td>€${formatNumber(c.balance_eur)}</td>
-                <td>R$${formatNumber(c.balance_brl)}</td>
-                <td>£${formatNumber(c.balance_gbp)}</td>
-                <td style="color:${c.kyc_status === 'Approved' ? '#00ff88' : '#ffaa00'}">${c.kyc_status}</td>
-                <td>${c.username || 'N/A'}</td>
-                <td>
-                    <button class="success" onclick="openEditClientModal(${c.id})" style="background: linear-gradient(95deg, #00ff88, #00f2ff);"><i class="fas fa-user-edit"></i> Editar</button>
-                    <button class="danger" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
-                    <button class="secondary" onclick="adjustBalance(${c.id}, 'USD')">💵+</button>
-                    <button class="secondary" onclick="adjustBalance(${c.id}, 'EUR')">💶+</button>
-                    <button class="secondary" onclick="adjustBalance(${c.id}, 'BRL')">🇧🇷+</button>
-                    <button class="secondary" onclick="adjustBalance(${c.id}, 'GBP')">🇬🇧+</button>
-                    <button class="secondary" onclick="showClientHistory(${JSON.stringify(c).replace(/'/g, "\\'")})"><i class="fas fa-history"></i></button>
-                    <button class="message-btn" onclick="openMessageForClient(${c.id})"><i class="fas fa-envelope"></i></button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('clientsList').innerHTML = html;
-    }
-    
     // ============ OPERAÇÕES ============
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
