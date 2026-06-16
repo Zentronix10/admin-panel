@@ -954,93 +954,161 @@ console.log("🏦 Integração ativa");
         document.getElementById('clientHistoryModal').classList.add('active');
     }
 
-        async function editClient(id) {
-        console.log("✏️ editClient chamado com ID:", id);
-        
-        if(!id) {
-            alert("ID do cliente não encontrado!");
-            return;
-        }
-        
-        // Buscar dados atuais do cliente
-        const { data: cliente, error } = await supabase
-            .from('clientes')
-            .select('*')
-            .eq('id', id)
-            .single();
-        
-        if(error) {
-            console.error("Erro ao buscar:", error);
-            alert("Erro ao buscar cliente: " + error.message);
-            return;
-        }
-        
-        // Pedir novo nome
-        const novoNome = prompt("✏️ Editar Nome\n\nNome atual: " + cliente.nome, cliente.nome);
-        
-        if (!novoNome) {
-            alert("Operação cancelada.");
-            return;
-        }
-        
-        if (novoNome === cliente.nome) {
-            alert("Nenhuma alteração realizada.");
-            return;
-        }
-        
-        // Atualizar no Supabase
-        const { error: updateError } = await supabase
-            .from('clientes')
-            .update({ nome: novoNome })
-            .eq('id', id);
-        
-        if(updateError) {
-            console.error("Erro ao atualizar:", updateError);
-            alert("Erro ao atualizar: " + updateError.message);
-        } else {
-            alert("✅ Nome atualizado com sucesso!");
-            carregarClientes(); // Recarregar a lista
-        }
-    }
-    
-    function closeClientHistoryModal() { document.getElementById('clientHistoryModal').classList.remove('active'); }
-        async function deleteClient(id) {
-    console.log("🗑️ deleteClient chamado com ID:", id);
+ // ============ EDIÇÃO COMPLETA DE CLIENTE (SEM SENHA) ============
+async function editClient(id) {
+    console.log("✏️ editClient chamado com ID:", id);
     
     if(!id) {
         alert("ID do cliente não encontrado!");
         return;
     }
     
-    if(!confirm("Tem certeza que deseja deletar este cliente?")) {
+    // Buscar dados atuais do cliente no Supabase
+    const { data: cliente, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', id)
+        .single();
+    
+    if(error) {
+        console.error("Erro ao buscar:", error);
+        alert("Erro ao buscar cliente: " + error.message);
         return;
     }
     
-    try {
-        // Deletar da tabela clientes
-        const { error: deleteError } = await supabase
-            .from('clientes')
-            .delete()
-            .eq('id', id);
-        
-        if (deleteError) {
-            console.error("❌ Erro ao deletar:", deleteError);
-            alert("Erro ao deletar: " + deleteError.message);
-            return;
-        }
-        
-        console.log("✅ Cliente deletado com sucesso!");
-        alert("✅ Cliente deletado com sucesso!");
-        
-        // Recarregar a lista
+    // Criar modal de edição
+    const modalHtml = `
+        <div id="editClientModal" class="modal-overlay" style="display: flex; z-index: 2000;">
+            <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;">
+                <h3><i class="fas fa-user-edit"></i> Editar Cliente</h3>
+                <div style="text-align: left;">
+                    
+                    <label>📛 Nome:</label>
+                    <input type="text" id="edit_nome" value="${escapeHtml(cliente.nome || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>📧 Email:</label>
+                    <input type="email" id="edit_email" value="${escapeHtml(cliente.email || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>🆔 Documento:</label>
+                    <input type="text" id="edit_documento" value="${escapeHtml(cliente.documento || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>📍 Rua/Street:</label>
+                    <input type="text" id="edit_rua" value="${escapeHtml(cliente.rua || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>🏠 Endereço:</label>
+                    <input type="text" id="edit_endereco" value="${escapeHtml(cliente.endereco || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>✅ KYC Status:</label>
+                    <select id="edit_kyc" style="width:100%; margin-bottom:12px;">
+                        <option value="Approved" ${cliente.kyc_status === 'Approved' ? 'selected' : ''}>✅ Approved</option>
+                        <option value="Pending" ${cliente.kyc_status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                        <option value="Rejected" ${cliente.kyc_status === 'Rejected' ? 'selected' : ''}>❌ Rejected</option>
+                    </select>
+                    
+                    <hr>
+                    <h4>💰 Saldos</h4>
+                    
+                    <label>💵 USD:</label>
+                    <input type="number" id="edit_saldo_usd" value="${cliente.saldo_usd || 0}" step="0.01" style="width:100%; margin-bottom:8px;">
+                    
+                    <label>💶 EUR:</label>
+                    <input type="number" id="edit_saldo_eur" value="${cliente.saldo_eur || 0}" step="0.01" style="width:100%; margin-bottom:8px;">
+                    
+                    <label>🇧🇷 BRL:</label>
+                    <input type="number" id="edit_saldo_brl" value="${cliente.saldo_brl || 0}" step="0.01" style="width:100%; margin-bottom:8px;">
+                    
+                    <label>🇬🇧 GBP:</label>
+                    <input type="number" id="edit_saldo_gbp" value="${cliente.saldo_gbp || 0}" step="0.01" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>🏦 Account ID:</label>
+                    <input type="text" id="edit_account_id" value="${escapeHtml(cliente.account_id || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                    <label>👤 Username:</label>
+                    <input type="text" id="edit_username" value="${escapeHtml(cliente.username || '')}" style="width:100%; margin-bottom:12px;">
+                    
+                </div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button onclick="saveClientEdit('${id}')" class="success"><i class="fas fa-save"></i> SALVAR</button>
+                    <button onclick="closeEditModal()" class="secondary">CANCELAR</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('editClientModal');
+    if(existingModal) existingModal.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// ============ FUNÇÃO AUXILIAR PARA ESCAPAR HTML ============
+function escapeHtml(str) {
+    if(!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if(m === '&') return '&amp;';
+        if(m === '<') return '&lt;';
+        if(m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// ============ SALVAR EDIÇÃO DO CLIENTE ============
+async function saveClientEdit(id) {
+    const nome = document.getElementById('edit_nome').value;
+    const email = document.getElementById('edit_email').value;
+    const documento = document.getElementById('edit_documento').value;
+    const rua = document.getElementById('edit_rua').value;
+    const endereco = document.getElementById('edit_endereco').value;
+    const kyc_status = document.getElementById('edit_kyc').value;
+    const saldo_usd = parseFloat(document.getElementById('edit_saldo_usd').value) || 0;
+    const saldo_eur = parseFloat(document.getElementById('edit_saldo_eur').value) || 0;
+    const saldo_brl = parseFloat(document.getElementById('edit_saldo_brl').value) || 0;
+    const saldo_gbp = parseFloat(document.getElementById('edit_saldo_gbp').value) || 0;
+    const account_id = document.getElementById('edit_account_id').value;
+    const username = document.getElementById('edit_username').value;
+    
+    if(!nome || !email) {
+        alert("Nome e email são obrigatórios!");
+        return;
+    }
+    
+    const updates = {
+        nome: nome,
+        email: email,
+        documento: documento,
+        rua: rua,
+        endereco: endereco,
+        kyc_status: kyc_status,
+        saldo_usd: saldo_usd,
+        saldo_eur: saldo_eur,
+        saldo_brl: saldo_brl,
+        saldo_gbp: saldo_gbp,
+        account_id: account_id,
+        username: username,
+        updated_at: new Date().toISOString()
+    };
+    
+    const { error } = await supabase
+        .from('clientes')
+        .update(updates)
+        .eq('id', id);
+    
+    if(error) {
+        alert("❌ Erro: " + error.message);
+    } else {
+        alert("✅ Cliente atualizado com sucesso!");
+        closeEditModal();
         await carregarClientes();
-        
-    } catch (erro) {
-        console.error("❌ Erro inesperado:", erro);
-        alert("Erro inesperado ao deletar cliente: " + erro.message);
+        updateUI();
+        syncAllWithBankSite();
     }
 }
-    
+
+// ============ FECHAR MODAL DE EDIÇÃO ============
+function closeEditModal() {
+    const modal = document.getElementById('editClientModal');
+    if(modal) modal.remove();
+}
+
     // ============ OPERAÇÕES ============
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
