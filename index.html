@@ -1194,6 +1194,63 @@ function escapeHtml(str) {
         return m;
     });
 }
+
+// ============ DELETAR CLIENTE ============
+async function deleteClient(id) {
+    if(!confirm("⚠️ Tem certeza que deseja DELETAR este cliente permanentemente?")) return;
+    
+    if(!confirm("🔄 Esta ação não pode ser desfeita! Confirmar?")) return;
+    
+    try {
+        // 1. Deletar saldos
+        await supabase
+            .from('balances')
+            .delete()
+            .eq('user_id', id);
+        
+        // 2. Deletar transações
+        await supabase
+            .from('transactions')
+            .delete()
+            .eq('user_id', id);
+        
+        // 3. Deletar carteiras
+        await supabase
+            .from('wallets')
+            .delete()
+            .eq('user_id', id);
+        
+        // 4. Deletar notificações
+        await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', id);
+        
+        // 5. Deletar usuário da tabela users
+        const { error } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', id);
+        
+        if(error) {
+            alert("❌ Erro ao deletar cliente: " + error.message);
+            return;
+        }
+        
+        alert("✅ Cliente deletado com sucesso!");
+        
+        // Recarregar listas
+        await carregarClientes();
+        await updateTransferSelect();
+        await updateMessageSelect();
+        syncAllWithBankSite();
+        
+    } catch (error) {
+        console.error('Erro ao deletar:', error);
+        alert('❌ Erro ao deletar cliente: ' + error.message);
+    }
+}
+
     // ============ OPERAÇÕES ============
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
