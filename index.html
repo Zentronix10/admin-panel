@@ -361,35 +361,109 @@
     
     clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28, currency: "USD", description: "Initial deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28 } ]; });
     
-// ============ FUNÇÕES DE EDIÇÃO DE CLIENTE ============
+// ============ EDIÇÃO COMPLETA DE CLIENTE ============
 async function editClient(id) {
-    const { data: cliente, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('id', id)
-        .single();
+    console.log("✏️ editClient chamado com ID:", id);
     
-    if(error) {
-        alert("Erro ao buscar cliente");
+    if(!id) {
+        alert("ID do cliente não encontrado!");
         return;
     }
     
-    let newName = prompt("Novo nome:", cliente.nome);
-    if(newName) {
-        const { error: updateError } = await supabase
-            .from('clientes')
-            .update({ nome: newName })
-            .eq('id', id);
+    try {
+        // ✅ CORRETO - Usando .maybeSingle() em vez de .single()
+        const { data: cliente, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();  // ⬅️ Mudei de .single() para .maybeSingle()
         
-        if(updateError) {
-            alert("Erro ao atualizar: " + updateError.message);
-        } else {
-            alert("✅ Nome atualizado!");
-            carregarClientes();
+        if(error) {
+            console.error("Erro ao buscar:", error);
+            alert("Erro ao buscar cliente: " + error.message);
+            return;
         }
+        
+        if(!cliente) {
+            alert("❌ Cliente não encontrado!");
+            return;
+        }
+        
+        // Buscar saldos do cliente na tabela 'balances'
+        const { data: balances, error: balError } = await supabase
+            .from('balances')
+            .select('*')
+            .eq('user_id', id);
+        
+        if(balError) {
+            console.error("Erro ao buscar saldos:", balError);
+        }
+        
+        const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
+        const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
+        const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
+        const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
+        
+        // Criar modal de edição
+        const modalHtml = `
+            <div id="editClientModal" class="modal-overlay" style="display: flex; z-index: 2000;">
+                <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;">
+                    <h3><i class="fas fa-user-edit"></i> Editar Cliente</h3>
+                    <div style="text-align: left;">
+                        
+                        <label>📛 Nome:</label>
+                        <input type="text" id="edit_nome" value="${escapeHtml(cliente.full_name || '')}" style="width:100%; margin-bottom:12px;">
+                        
+                        <label>📧 Email:</label>
+                        <input type="email" id="edit_email" value="${escapeHtml(cliente.email || '')}" style="width:100%; margin-bottom:12px;">
+                        
+                        <label>👤 Username:</label>
+                        <input type="text" id="edit_username" value="${escapeHtml(cliente.username || '')}" style="width:100%; margin-bottom:12px;">
+                        
+                        <label>📱 Telefone:</label>
+                        <input type="text" id="edit_phone" value="${escapeHtml(cliente.phone || '')}" style="width:100%; margin-bottom:12px;">
+                        
+                        <label>✅ KYC Status:</label>
+                        <select id="edit_kyc" style="width:100%; margin-bottom:12px;">
+                            <option value="approved" ${cliente.kyc_status === 'approved' ? 'selected' : ''}>✅ Approved</option>
+                            <option value="pending" ${cliente.kyc_status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                            <option value="rejected" ${cliente.kyc_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
+                        </select>
+                        
+                        <hr>
+                        <h4>💰 Saldos</h4>
+                        
+                        <label>💵 USD:</label>
+                        <input type="number" id="edit_saldo_usd" value="${usd}" step="0.01" style="width:100%; margin-bottom:8px;">
+                        
+                        <label>💶 EUR:</label>
+                        <input type="number" id="edit_saldo_eur" value="${eur}" step="0.01" style="width:100%; margin-bottom:8px;">
+                        
+                        <label>🇧🇷 BRL:</label>
+                        <input type="number" id="edit_saldo_brl" value="${brl}" step="0.01" style="width:100%; margin-bottom:8px;">
+                        
+                        <label>🇬🇧 GBP:</label>
+                        <input type="number" id="edit_saldo_gbp" value="${gbp}" step="0.01" style="width:100%; margin-bottom:12px;">
+                        
+                    </div>
+                    <div class="modal-buttons" style="margin-top: 20px;">
+                        <button onclick="saveClientEdit('${id}')" class="success"><i class="fas fa-save"></i> SALVAR</button>
+                        <button onclick="closeEditModal()" class="secondary">CANCELAR</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const existingModal = document.getElementById('editClientModal');
+        if(existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+    } catch (error) {
+        console.error('Erro ao editar cliente:', error);
+        alert('❌ Erro ao carregar dados do cliente: ' + error.message);
     }
 }
-    
+
     // ============ EMPRÉSTIMOS ============
     let loanRequests = [
         { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", requestedCurrency: "USD" },
