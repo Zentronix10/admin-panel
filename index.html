@@ -1273,8 +1273,6 @@ function escapeHtml(str) {
 async function deleteClient(id) {
     if(!confirm("⚠️ Tem certeza que deseja DELETAR este cliente permanentemente?")) return;
     
-    if(!confirm("🔄 Esta ação não pode ser desfeita! Confirmar?")) return;
-    
     try {
         // 1. Deletar saldos
         await supabase
