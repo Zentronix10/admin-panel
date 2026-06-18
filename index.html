@@ -1573,7 +1573,7 @@ async function addClient() {
 async function carregarClientes() {
     try {
         const { data: clientes, error } = await supabase
-            .from('users')
+            .from('users')  // ✅ TABELA CORRETA
             .select('*')
             .order('created_at', { ascending: false });
         
@@ -1598,7 +1598,7 @@ async function carregarClientes() {
         for (const c of clientes) {
             // Buscar saldos do cliente
             const { data: balances } = await supabase
-                .from('balances')
+                .from('balances')  // ✅ TABELA CORRETA
                 .select('currency, amount')
                 .eq('user_id', c.id);
             
@@ -1645,6 +1645,81 @@ async function carregarClientes() {
                 ❌ Erro ao carregar clientes: ${error.message}
             </td></tr>
         `;
+    }
+}
+
+// ============ AJUSTAR SALDO (CORRIGIDO) ============
+async function adjustBalance(id, currency) {
+    let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
+    if(!valor) return;
+    if(isNaN(valor) || parseFloat(valor) <= 0) {
+        alert("❌ Digite um valor válido!");
+        return;
+    }
+    
+    try {
+        // Buscar o saldo atual
+        const { data: balance, error: buscaError } = await supabase
+            .from('balances')  // ✅ TABELA CORRETA
+            .select('id, amount')
+            .eq('user_id', id)
+            .eq('currency', currency)
+            .maybeSingle();
+        
+        if (buscaError) {
+            console.error("Erro ao buscar saldo:", buscaError);
+            alert("❌ Erro ao buscar saldo: " + buscaError.message);
+            return;
+        }
+        
+        const valorAtual = balance?.amount || 0;
+        const novoSaldo = valorAtual + parseFloat(valor);
+        
+        if (balance) {
+            // Atualizar saldo existente
+            const { error: updateError } = await supabase
+                .from('balances')
+                .update({ 
+                    amount: novoSaldo,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', balance.id);
+            
+            if (updateError) {
+                alert("❌ Erro ao atualizar saldo: " + updateError.message);
+                return;
+            }
+        } else {
+            // Criar novo saldo
+            const { error: insertError } = await supabase
+                .from('balances')
+                .insert({
+                    user_id: id,
+                    currency: currency,
+                    amount: parseFloat(valor),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+            
+            if (insertError) {
+                alert("❌ Erro ao criar saldo: " + insertError.message);
+                return;
+            }
+        }
+        
+        const symbol = currency === 'USD' ? '$' : 
+                      (currency === 'EUR' ? '€' : 
+                      (currency === 'BRL' ? 'R$' : '£'));
+        
+        alert(`✅ Saldo ajustado!\n\n${symbol}${novoSaldo.toFixed(2)} ${currency}`);
+        addActivity(`💰 SALDO AJUSTADO: ${symbol}${valor} para ${currency}`);
+        
+        // Recarregar lista
+        await carregarClientes();
+        
+    } catch (error) {
+        console.error('❌ Erro ao ajustar saldo:', error);
+        alert('❌ Erro ao ajustar saldo: ' + error.message);
     }
 }
 
