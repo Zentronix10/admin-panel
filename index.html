@@ -1569,7 +1569,7 @@ async function addClient() {
     }
 }
 
-// ============ CARREGAR CLIENTES DO SUPABASE (CORRIGIDO) ============
+// ============ CARREGAR CLIENTES DO SUPABASE (VERSÃO ÚNICA E CORRETA) ============
 async function carregarClientes() {
     try {
         const { data: clientes, error } = await supabase
@@ -1598,7 +1598,7 @@ async function carregarClientes() {
         for (const c of clientes) {
             // Buscar saldos do cliente
             const { data: balances } = await supabase
-                .from('balances')  // ✅ TABELA CORRETA
+                .from('balances')
                 .select('currency, amount')
                 .eq('user_id', c.id);
             
@@ -1645,6 +1645,158 @@ async function carregarClientes() {
                 ❌ Erro ao carregar clientes: ${error.message}
             </td></tr>
         `;
+    }
+}
+
+// ============ AJUSTAR SALDO (VERSÃO ÚNICA E CORRETA) ============
+async function adjustBalance(id, currency) {
+    let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
+    if(!valor) return;
+    if(isNaN(valor) || parseFloat(valor) <= 0) {
+        alert("❌ Digite um valor válido!");
+        return;
+    }
+    
+    try {
+        // Buscar o saldo atual
+        const { data: balance, error: buscaError } = await supabase
+            .from('balances')
+            .select('id, amount')
+            .eq('user_id', id)
+            .eq('currency', currency)
+            .maybeSingle();
+        
+        if (buscaError) {
+            console.error("Erro ao buscar saldo:", buscaError);
+            alert("❌ Erro ao buscar saldo: " + buscaError.message);
+            return;
+        }
+        
+        const valorAtual = balance?.amount || 0;
+        const novoSaldo = valorAtual + parseFloat(valor);
+        
+        if (balance) {
+            // Atualizar saldo existente
+            const { error: updateError } = await supabase
+                .from('balances')
+                .update({ 
+                    amount: novoSaldo,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', balance.id);
+            
+            if (updateError) {
+                alert("❌ Erro ao atualizar saldo: " + updateError.message);
+                return;
+            }
+        } else {
+            // Criar novo saldo
+            const { error: insertError } = await supabase
+                .from('balances')
+                .insert({
+                    user_id: id,
+                    currency: currency,
+                    amount: parseFloat(valor),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+            
+            if (insertError) {
+                alert("❌ Erro ao criar saldo: " + insertError.message);
+                return;
+            }
+        }
+        
+        const symbol = currency === 'USD' ? '$' : 
+                      (currency === 'EUR' ? '€' : 
+                      (currency === 'BRL' ? 'R$' : '£'));
+        
+        alert(`✅ Saldo ajustado!\n\n${symbol}${novoSaldo.toFixed(2)} ${currency}`);
+        addActivity(`💰 SALDO AJUSTADO: ${symbol}${valor} para ${currency}`);
+        
+        // Recarregar lista
+        await carregarClientes();
+        
+    } catch (error) {
+        console.error('❌ Erro ao ajustar saldo:', error);
+        alert('❌ Erro ao ajustar saldo: ' + error.message);
+    }
+}
+
+// ============ ATUALIZAR SELECT DE TRANSFERÊNCIA (CORRIGIDO) ============
+async function updateTransferSelect() {
+    let select = document.getElementById('transferClient');
+    if(!select) return;
+    
+    try {
+        // Buscar clientes do Supabase - TABELA CORRETA: users
+        const { data: clientes, error } = await supabase
+            .from('users')  // ✅ TABELA CORRETA
+            .select('id, full_name, email')
+            .order('created_at', { ascending: false });
+        
+        if(error) {
+            console.error("Erro ao buscar clientes:", error);
+            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+            return;
+        }
+        
+        if(!clientes || clientes.length === 0) {
+            select.innerHTML = '<option value="">📭 Nenhum cliente encontrado</option>';
+            return;
+        }
+        
+        // Popular o select
+        select.innerHTML = '<option value="">👇 Selecione um cliente</option>';
+        clientes.forEach(cliente => {
+            const displayName = cliente.full_name || cliente.email || 'Sem nome';
+            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
+        });
+        
+        console.log(`✅ Select de transferência atualizado com ${clientes.length} clientes do Supabase`);
+        
+    } catch(erro) {
+        console.error("Erro inesperado:", erro);
+        select.innerHTML = '<option value="">⚠️ Erro ao carregar clientes</option>';
+    }
+}
+
+// ============ ATUALIZAR SELECT DE MENSAGENS (CORRIGIDO) ============
+async function updateMessageSelect() {
+    let select = document.getElementById('messageClientSelect');
+    if(!select) return;
+    
+    try {
+        // Buscar clientes do Supabase - TABELA CORRETA: users
+        const { data: clientes, error } = await supabase
+            .from('users')  // ✅ TABELA CORRETA
+            .select('id, full_name, email')
+            .order('created_at', { ascending: false });
+        
+        if(error) {
+            console.error("Erro ao buscar clientes:", error);
+            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+            return;
+        }
+        
+        if(!clientes || clientes.length === 0) {
+            select.innerHTML = '<option value="">📭 Nenhum cliente</option>';
+            return;
+        }
+        
+        select.innerHTML = '<option value="">👇 Selecione um cliente...</option>';
+        clientes.forEach(cliente => {
+            const displayName = cliente.full_name || cliente.email || 'Sem nome';
+            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
+        });
+        
+        select.onchange = () => renderClientMessages();
+        
+        console.log(`✅ Select de mensagens atualizado com ${clientes.length} clientes do Supabase`);
+        
+    } catch(erro) {
+        console.error("Erro inesperado:", erro);
+        select.innerHTML = '<option value="">⚠️ Erro ao carregar</option>';
     }
 }
 
@@ -2020,47 +2172,9 @@ async function updateMessageSelect() {
         document.getElementById('adminPass').value = '';
     }
 
-    // ============ CARREGAR CLIENTES DO SUPABASE ============
-    async function carregarClientes() {
-        const { data, error } = await supabase
-            .from('clientes')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            console.error('Erro ao carregar:', error);
-            return;
-        }
-        
-        let html = '';
-        for (let c of data) {
-            html += `<tr>
-                <td class="account-id">${c.account_id}</td>
-                <td>${c.nome}</td>
-                <td>$${c.saldo_usd || 0}</td>
-                <td>€${c.saldo_eur || 0}</td>
-                <td>R$${c.saldo_brl || 0}</td>
-                <td>£${c.saldo_gbp || 0}</td>
-                <td>${c.kyc_status}</td>
-                <td>${c.email}</td>
-                <td>
-                    <button class="success" onclick="editClient('${c.id}')"><i class="fas fa-user-edit"></i> Editar</button>
-                    <button class="danger" onclick="deleteClient('${c.id}')"><i class="fas fa-trash"></i></button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')">💵+</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')">💶+</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')">🇧🇷+</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')">🇬🇧+</button>
-                </td>
-            </tr>`;
-        }
-        
-        document.getElementById('clientsList').innerHTML = html;
-        document.getElementById('totalClients').innerHTML = data.length;
-    }
-
-    // ============ AJUSTAR SALDO ============
+ // ============ AJUSTAR SALDO ============
     async function adjustBalance(id, currency) {
-        let valor = prompt(`Valor para adicionar em ${currency}:`, "1000");
+     let valor = prompt(`Valor para adicionar em ${currency}:`, "1000");
         if(!valor) return;
         
         const { data: cliente, error: buscaError } = await supabase
