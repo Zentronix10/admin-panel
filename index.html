@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zentronix Bank | Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -264,6 +264,7 @@
 <div id="logoutConfirmModal" class="modal-overlay"><div class="modal-content"><h3>Exit Dashboard</h3><p>Are you sure?</p><div class="modal-buttons"><button onclick="confirmLogout()" class="danger">YES</button><button onclick="closeLogoutModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="cryptoSswapModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-coins"></i> Swap Fiat to Crypto</h3><div style="text-align:left;"><p><strong>Customer:</strong> <span id="swapCustomerName"></span></p><div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select></div><div style="margin:10px 0;"><label>Amount:</label><input type="number" id="swapAmount" step="0.01"></div><div style="margin:10px 0;"><label>To Crypto:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div><div id="cryptoSwapResult" class="sync-status" style="display:none;"></div></div><div class="modal-buttons"><button onclick="confirmSwapToCrypto()" class="crypto">CONFIRM SWAP</button><button onclick="closeSwapModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="integrationCodeModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-code"></i> Código de Integração</h3><p style="margin-bottom:10px;">Copie o código abaixo e cole no site do banco:</p><div class="code-container"><pre id="integrationCodeText"></pre></div><div class="modal-buttons"><button onclick="copyIntegrationCode()" class="success"><i class="fas fa-copy"></i> COPIAR</button><button onclick="closeIntegrationCodeModal()" class="secondary">FECHAR</button></div></div></div>
+<div id="editClientModal" class="modal-overlay"><div class="modal-content" style="max-width:600px;"><h3><i class="fas fa-user-edit"></i> Editar Cliente</h3><div id="editClientContent" style="text-align:left;"></div><div class="modal-buttons"><button onclick="saveClientEdit()" class="success">SALVAR</button><button onclick="closeEditModal()" class="secondary">CANCELAR</button></div></div></div>
 
 <!-- LOGIN -->
 <div id="loginArea" class="login-container">
@@ -297,48 +298,113 @@
     </div>
     
     <div class="stats">
-        <div class="stat-card"><h3>💰 TOTAL CUSTOMERS</h3><div class="value" id="totalClients">3</div></div>
+        <div class="stat-card"><h3>💰 TOTAL CUSTOMERS</h3><div class="value" id="totalClients">0</div></div>
         <div class="stat-card"><h3>💵 USD RESERVE</h3><div class="value" id="statUSDReserve">$900T</div></div>
         <div class="stat-card"><h3>🇪🇺 EUR RESERVE</h3><div class="value" id="statEURReserve">€900T</div></div>
         <div class="stat-card"><h3>🇧🇷 BRL RESERVE</h3><div class="value" id="statBRLReserve">R$900T</div></div>
         <div class="stat-card"><h3>🇬🇧 GBP RESERVE</h3><div class="value" id="statGBPReserve">£900T</div></div>
-        <div class="stat-card"><h3>📋 PENDING LOANS</h3><div class="value" id="pendingLoans">3</div></div>
-        <div class="stat-card"><h3>📩 UNREAD MSG</h3><div class="value" id="unreadCountStat">2</div></div>
+        <div class="stat-card"><h3>📋 PENDING LOANS</h3><div class="value" id="pendingLoans">0</div></div>
+        <div class="stat-card"><h3>📩 UNREAD MSG</h3><div class="value" id="unreadCountStat">0</div></div>
     </div>
     
     <div class="panels">
-<div class="panel"><h2><i class="fas fa-piggy-bank"></i> 💰 BANK RESERVES (900T per Currency)</h2><div class="reserve-grid"><div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇬🇧 GBP</div><div class="amount gbp" id="reserveGBP">£900,000,000,000,000</div></div></div><div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div></div>
-<div class="panel"><h2><i class="fas fa-shield-alt"></i> 🔐 API VERIFICATION</h2><div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; margin-bottom:15px;"><h4><i class="fas fa-id-card"></i> Melissa API - Identity</h4><div class="flex-row"><input type="text" id="melissaDoc" placeholder="Document" style="flex:2;"><input type="text" id="melissaName" placeholder="Full Name" style="flex:2;"><button onclick="alert('Demo: Verificação de identidade')" class="api">VERIFY</button></div><div id="melissaResult" style="font-size:12px; margin-top:8px;"></div></div><div class="api-section" style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px;"><h4><i class="fas fa-map-marker-alt"></i> Abstract API - Address</h4><div class="flex-row"><input type="text" id="abstractAddress" placeholder="Full address" style="flex:3;"><button onclick="alert('Demo: Validação de endereço')" class="api">VALIDATE</button></div><div id="abstractResult" style="font-size:12px; margin-top:8px;"></div></div></div>
-<div class="panel"><h2><i class="fas fa-users"></i> 👥 CUSTOMER MANAGEMENT</h2><div class="search-box"><input type="text" id="searchClient" placeholder="🔍 Search..."><button onclick="filterClients()" class="secondary">Search</button></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"><input type="text" id="clientName" placeholder="Full name"><input type="email" id="clientEmail" placeholder="Email"><input type="text" id="clientDocument" placeholder="Document"><input type="text" id="clientAddress" placeholder="Address"><input type="text" id="clientStreet" placeholder="Street/Rua"><input type="text" id="clientNumber" placeholder="Number/Número"><input type="text" id="clientBankAccount" placeholder="Bank Account Number"><input type="number" id="clientBalanceUSD" placeholder="USD" value="0"><input type="number" id="clientBalanceEUR" placeholder="EUR" value="0"><input type="number" id="clientBalanceBRL" placeholder="BRL" value="0"><input type="number" id="clientBalanceGBP" placeholder="GBP" value="0"><select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ Pending</option><option value="Rejected">❌ Rejected</option></select></div><div class="form-row-2cols" style="margin-top: 10px;"><input type="text" id="clientUsername" placeholder="🔐 Username (acesso cliente)"><div style="display: flex; gap: 5px;"><input type="text" id="clientPassword" placeholder="🔑 Password" style="flex:2;"><button onclick="generateClientPassword()" class="secondary" type="button" style="flex:1;"><i class="fas fa-sync-alt"></i> Gerar</button></div><input type="password" id="clientConfirmPassword" placeholder="Confirm Password"></div><button onclick="addClient()" class="success" style="width:100%; margin-top:10px;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button><div style="max-height: 350px; overflow-y: auto; margin-top: 15px;"><table style="width:100%; font-size:10px;"><thead><tr><th>Account ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Username</th><th>Actions</th></tr></thead><tbody id="clientsList"></tbody></table></div></div>
-<div class="panel"><h2><i class="fas fa-hand-holding-usd"></i> 📋 LOAN MANAGEMENT</h2><div class="flex-row"><button onclick="filterLoans('pending')" class="secondary">⏳ Pending (<span id="pendingCount">0</span>)</button><button onclick="filterLoans('active')" class="secondary">🟢 Active</button><button onclick="filterLoans('rejected')" class="secondary">❌ Rejected</button><button onclick="bulkLoanAction()" class="warning">Bulk</button></div><div id="loansList" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div></div>
-<div class="panel"><h2><i class="fas fa-comment-dots"></i> 📩 CLIENT MESSAGES</h2><div id="clientMessagesList" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;"><div style="text-align:center; padding:20px; color:#888;">Select a client to view messages</div></div><div class="flex-row"><select id="messageClientSelect" style="flex:2;"><option value="">Select client...</option></select><button onclick="openMessageModal()" class="message-btn"><i class="fas fa-paper-plane"></i> SEND</button></div></div>
-<div class="panel"><h2><i class="fas fa-exchange-alt"></i> 💸 MULTI-CURRENCY OPERATIONS</h2><div class="flex-row"><select id="transferClient" style="flex:2;"></select><select id="transferCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select></div><input type="number" id="transferAmount" placeholder="Amount"><input type="text" id="transferReason" placeholder="Reference"><div class="flex-row"><button onclick="quickTransfer()" class="success">TRANSFER</button><button onclick="showSwapCryptoModal()" class="crypto">SWAP TO CRYPTO</button><button onclick="initiateSWIFT()" class="warning">SWIFT</button></div><div id="transferResultMsg" class="sync-status" style="display:none;"></div></div>
-<div class="panel"><h2><i class="fas fa-history"></i> 📝 ACTIVITY LOG</h2><div class="activity-log" id="activityLog"></div><button onclick="clearActivityLog()" class="secondary" style="margin-top:10px; width:100%;">CLEAR LOG</button></div>
-<div class="panel"><h2><i class="fas fa-chart-line"></i> 📊 STATISTICS</h2>
-<div>✅ Active: <strong id="statActive">0</strong></div>
-<div>⏳ Pending: <strong id="statPending">0</strong></div>
-<div>❌ Rejected: <strong id="statRejected">0</strong></div>
-<hr>
-<div>💰 Total Disbursed (Resumo): <strong id="totalDisbursedStat">$0</strong></div>
-<div>💰 Total Disbursed: <strong id="statTotalDisbursed">$0</strong></div>
-<div>🏦 USD: <strong id="statReserveUSD">$900T</strong></div>
-<div>🇪🇺 EUR: <strong id="statReserveEUR">€900T</strong></div>
-<div>🇧🇷 BRL: <strong id="statReserveBRL">R$900T</strong></div>
-<div>🇬🇧 GBP: <strong id="statReserveGBP">£900T</strong></div>
+        <div class="panel"><h2><i class="fas fa-piggy-bank"></i> 💰 BANK RESERVES (900T per Currency)</h2><div class="reserve-grid"><div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇬🇧 GBP</div><div class="amount gbp" id="reserveGBP">£900,000,000,000,000</div></div></div><div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div></div>
+        
+        <div class="panel"><h2><i class="fas fa-users"></i> 👥 CUSTOMER MANAGEMENT</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" id="clientName" placeholder="Full name">
+                <input type="email" id="clientEmail" placeholder="Email">
+                <input type="text" id="clientDocument" placeholder="Document">
+                <input type="text" id="clientAddress" placeholder="Address">
+                <input type="text" id="clientStreet" placeholder="Street/Rua">
+                <input type="text" id="clientNumber" placeholder="Number/Número">
+                <input type="text" id="clientBankAccount" placeholder="Bank Account Number">
+                <input type="number" id="clientBalanceUSD" placeholder="USD" value="0">
+                <input type="number" id="clientBalanceEUR" placeholder="EUR" value="0">
+                <input type="number" id="clientBalanceBRL" placeholder="BRL" value="0">
+                <input type="number" id="clientBalanceGBP" placeholder="GBP" value="0">
+                <select id="clientKyc"><option value="Approved">✅ KYC Approved</option><option value="Pending">⏳ Pending</option><option value="Rejected">❌ Rejected</option></select>
+                <input type="text" id="clientUsername" placeholder="🔐 Username">
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="clientPassword" placeholder="🔑 Password" style="flex:2;">
+                    <button onclick="generateClientPassword()" class="secondary" type="button" style="flex:1;"><i class="fas fa-sync-alt"></i> Gerar</button>
+                </div>
+                <input type="password" id="clientConfirmPassword" placeholder="Confirm Password">
+            </div>
+            <button onclick="addClient()" class="success" style="width:100%; margin-top:10px;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
+            <div style="max-height: 350px; overflow-y: auto; margin-top: 15px;">
+                <table style="width:100%; font-size:10px;">
+                    <thead><tr><th>ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Username</th><th>Actions</th></tr></thead>
+                    <tbody id="clientsList"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="panel"><h2><i class="fas fa-hand-holding-usd"></i> 📋 LOAN MANAGEMENT</h2>
+            <div class="flex-row">
+                <button onclick="filterLoans('pending')" class="secondary">⏳ Pending (<span id="pendingCount">0</span>)</button>
+                <button onclick="filterLoans('active')" class="secondary">🟢 Active</button>
+                <button onclick="filterLoans('rejected')" class="secondary">❌ Rejected</button>
+                <button onclick="bulkLoanAction()" class="warning">Bulk</button>
+            </div>
+            <div id="loansList" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+        
+        <div class="panel"><h2><i class="fas fa-comment-dots"></i> 📩 CLIENT MESSAGES</h2>
+            <div id="clientMessagesList" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
+                <div style="text-align:center; padding:20px; color:#888;">Select a client to view messages</div>
+            </div>
+            <div class="flex-row">
+                <select id="messageClientSelect" style="flex:2;"><option value="">Select client...</option></select>
+                <button onclick="openMessageModal()" class="message-btn"><i class="fas fa-paper-plane"></i> SEND</button>
+            </div>
+        </div>
+        
+        <div class="panel"><h2><i class="fas fa-exchange-alt"></i> 💸 MULTI-CURRENCY OPERATIONS</h2>
+            <div class="flex-row">
+                <select id="transferClient" style="flex:2;"></select>
+                <select id="transferCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select>
+            </div>
+            <input type="number" id="transferAmount" placeholder="Amount">
+            <input type="text" id="transferReason" placeholder="Reference">
+            <div class="flex-row">
+                <button onclick="quickTransfer()" class="success">TRANSFER</button>
+                <button onclick="showSwapCryptoModal()" class="crypto">SWAP TO CRYPTO</button>
+                <button onclick="initiateSWIFT()" class="warning">SWIFT</button>
+            </div>
+            <div id="transferResultMsg" class="sync-status" style="display:none;"></div>
+        </div>
+        
+        <div class="panel"><h2><i class="fas fa-history"></i> 📝 ACTIVITY LOG</h2>
+            <div class="activity-log" id="activityLog"></div>
+            <button onclick="clearActivityLog()" class="secondary" style="margin-top:10px; width:100%;">CLEAR LOG</button>
+        </div>
+    </div>
 </div>
 
 <script>
-        
     // ============ CONFIGURAÇÃO DO SUPABASE ==========
     const SUPABASE_URL = 'https://lhvltpxzwynaiecvpyhr.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxodmx0cHh6d3luYWllY3ZweWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MDIxMDgsImV4cCI6MjA5Njk3ODEwOH0.uSvRpSmlFpfa6-gTLiL-asygcRQlbkUL_-ToiJK1RiA';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    console.log("✅ Supabase configurado:", supabase);
-    // ============ DADOS PRINCIPAIS ============
+    console.log("✅ Supabase configurado");
+
+    // ============ DADOS PRINCIPAIS ==========
     let bankReserves = { USD: 900000000000000, EUR: 900000000000000, BRL: 900000000000000, GBP: 900000000000000 };
     let totalDisbursedAmountUSDEquivalent = 0;
-    
+    let clientsList = [];
+    let loanRequests = [];
+    let messagesList = [];
+    let activityLogs = [];
+    let currentUser = null;
+    let currentFilter = 'pending';
+    let currentLoanToApprove = null;
+    let currentSwapClient = null;
+    let currentMessageClient = null;
+    let currentEditClientId = null;
+    let currentIntegrationCode = "";
+
+    // ============ FUNÇÕES AUXILIARES ==========
     function generateAccountId() { return "ZNX-" + Math.floor(100000 + Math.random() * 900000).toString(); }
     function generateRandomPassword() {
         let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$';
@@ -351,142 +417,11 @@
         document.getElementById('clientPassword').value = newPassword;
         document.getElementById('clientConfirmPassword').value = newPassword;
     }
-    
-    // ============ CLIENTES ============
-    let clientsList = [
-        { id: 1, accountId: "ZNX-100001", name: "Alexander Vance", email: "alexander@zentronix.com", document: "US123456789", address: "123 Wall Street, New York", street: "Wall Street", number: "123", bankAccountNumber: "USA-887654321", balance_usd: 25000, balance_eur: 18000, balance_brl: 5280.50, balance_gbp: 15000, kyc_status: "Approved", username: "alexander.vance", password: "Alex@123", createdAt: "2024-01-15", crypto_balances: { BTC: 0.42, ETH: 4.2, BRC: 15000, SOL: 250, LTC: 125, USDT: 10000, MATIC: 5000 }, transactionHistory: [] },
-        { id: 2, accountId: "ZNX-100002", name: "Sarah Chen", email: "sarah@offshore.com", document: "SG987654321", address: "10 Marina Boulevard, Singapore", street: "Marina Boulevard", number: "10", bankAccountNumber: "SGP-123456789", balance_usd: 128000, balance_eur: 25000, balance_brl: 0, balance_gbp: 9000, kyc_status: "Approved", username: "sarah.chen", password: "Sarah@456", createdAt: "2024-02-20", crypto_balances: { BTC: 0.12, ETH: 1.5, BRC: 5000, SOL: 50, LTC: 30, USDT: 5000, MATIC: 1000 }, transactionHistory: [] },
-        { id: 3, accountId: "ZNX-100003", name: "João Silva", email: "joao@email.com", document: "BR123456789", address: "Av. Paulista, 1000, São Paulo", street: "Av. Paulista", number: "1000", bankAccountNumber: "BRA-987654321", balance_usd: 5000, balance_eur: 0, balance_brl: 15000, balance_gbp: 2500, kyc_status: "Approved", username: "joao.silva", password: "Joao@789", createdAt: "2025-01-10", crypto_balances: { BTC: 0.05, ETH: 0.5, BRC: 1000, SOL: 10, LTC: 5, USDT: 1000, MATIC: 200 }, transactionHistory: [] }
-    ];
-    
-    clientsList.forEach(client => { if(client.transactionHistory.length === 0) client.transactionHistory = [ { date: client.createdAt, type: "ACCOUNT_OPENING", amount: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28, currency: "USD", description: "Initial deposit", balance: client.balance_usd + client.balance_eur*1.08 + client.balance_brl*0.18 + client.balance_gbp*1.28 } ]; });
-    
-// ============ EDIÇÃO COMPLETA DE CLIENTE ============
-async function editClient(id) {
-    console.log("✏️ editClient chamado com ID:", id);
-    
-    if(!id) {
-        alert("ID do cliente não encontrado!");
-        return;
-    }
-    
-    try {
-        // ✅ CORRETO - Usando .maybeSingle() em vez de .single()
-        const { data: cliente, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', id)
-            .maybeSingle();  // ⬅️ Mudei de .single() para .maybeSingle()
-        
-        if(error) {
-            console.error("Erro ao buscar:", error);
-            alert("Erro ao buscar cliente: " + error.message);
-            return;
-        }
-        
-        if(!cliente) {
-            alert("❌ Cliente não encontrado!");
-            return;
-        }
-        
-        // Buscar saldos do cliente na tabela 'balances'
-        const { data: balances, error: balError } = await supabase
-            .from('balances')
-            .select('*')
-            .eq('user_id', id);
-        
-        if(balError) {
-            console.error("Erro ao buscar saldos:", balError);
-        }
-        
-        const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
-        const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
-        const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
-        const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
-        
-        // Criar modal de edição
-        const modalHtml = `
-            <div id="editClientModal" class="modal-overlay" style="display: flex; z-index: 2000;">
-                <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;">
-                    <h3><i class="fas fa-user-edit"></i> Editar Cliente</h3>
-                    <div style="text-align: left;">
-                        
-                        <label>📛 Nome:</label>
-                        <input type="text" id="edit_nome" value="${escapeHtml(cliente.full_name || '')}" style="width:100%; margin-bottom:12px;">
-                        
-                        <label>📧 Email:</label>
-                        <input type="email" id="edit_email" value="${escapeHtml(cliente.email || '')}" style="width:100%; margin-bottom:12px;">
-                        
-                        <label>👤 Username:</label>
-                        <input type="text" id="edit_username" value="${escapeHtml(cliente.username || '')}" style="width:100%; margin-bottom:12px;">
-                        
-                        <label>📱 Telefone:</label>
-                        <input type="text" id="edit_phone" value="${escapeHtml(cliente.phone || '')}" style="width:100%; margin-bottom:12px;">
-                        
-                        <label>✅ KYC Status:</label>
-                        <select id="edit_kyc" style="width:100%; margin-bottom:12px;">
-                            <option value="approved" ${cliente.kyc_status === 'approved' ? 'selected' : ''}>✅ Approved</option>
-                            <option value="pending" ${cliente.kyc_status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
-                            <option value="rejected" ${cliente.kyc_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
-                        </select>
-                        
-                        <hr>
-                        <h4>💰 Saldos</h4>
-                        
-                        <label>💵 USD:</label>
-                        <input type="number" id="edit_saldo_usd" value="${usd}" step="0.01" style="width:100%; margin-bottom:8px;">
-                        
-                        <label>💶 EUR:</label>
-                        <input type="number" id="edit_saldo_eur" value="${eur}" step="0.01" style="width:100%; margin-bottom:8px;">
-                        
-                        <label>🇧🇷 BRL:</label>
-                        <input type="number" id="edit_saldo_brl" value="${brl}" step="0.01" style="width:100%; margin-bottom:8px;">
-                        
-                        <label>🇬🇧 GBP:</label>
-                        <input type="number" id="edit_saldo_gbp" value="${gbp}" step="0.01" style="width:100%; margin-bottom:12px;">
-                        
-                    </div>
-                    <div class="modal-buttons" style="margin-top: 20px;">
-                        <button onclick="saveClientEdit('${id}')" class="success"><i class="fas fa-save"></i> SALVAR</button>
-                        <button onclick="closeEditModal()" class="secondary">CANCELAR</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const existingModal = document.getElementById('editClientModal');
-        if(existingModal) existingModal.remove();
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-    } catch (error) {
-        console.error('Erro ao editar cliente:', error);
-        alert('❌ Erro ao carregar dados do cliente: ' + error.message);
-    }
-}
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
+    function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+    function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
 
-    // ============ EMPRÉSTIMOS ============
-    let loanRequests = [
-        { id: 101, clientId: 1, clientName: "Alexander Vance", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-15", purpose: "Business Expansion", requestedCurrency: "USD" },
-        { id: 102, clientId: 2, clientName: "Sarah Chen", amount: 125000, term: 36, status: "pending", requestedDate: "2025-01-16", purpose: "Property Acquisition", requestedCurrency: "USD" },
-        { id: 103, clientId: 3, clientName: "João Silva", amount: 50000, term: 24, status: "pending", requestedDate: "2025-01-17", purpose: "Investment", requestedCurrency: "BRL" }
-    ];
-    
-    // ============ MENSAGENS ============
-    let messagesList = [
-        { id: 1, clientId: 1, clientName: "Alexander Vance", fromClient: true, subject: "Loan Inquiry", message: "Hello, I would like to know about the loan interest rates for USD 50,000.", date: new Date().toISOString(), read: false },
-        { id: 2, clientId: 2, clientName: "Sarah Chen", fromClient: true, subject: "Account Access", message: "I'm having trouble logging into my account. Can you help?", date: new Date().toISOString(), read: false },
-        { id: 3, clientId: 3, clientName: "João Silva", fromClient: true, subject: "Transfer Question", message: "How do I transfer funds to a Brazilian account?", date: new Date().toISOString(), read: true }
-    ];
-    
-    let activityLogs = [{ action: "System started - Zentronix Bank Admin Dashboard", timestamp: new Date().toISOString(), user: "System" }];
-    let currentUser = null;
-    let currentFilter = 'pending';
-    let currentLoanToApprove = null;
-    let currentSwapClient = null;
-    let currentMessageClient = null;
-    let currentIntegrationCode = "";
-    
-    // ============ FUNÇÕES DE SALVAMENTO ============
+    // ============ SALVAMENTO ==========
     function saveMessages() { localStorage.setItem('zentronix_messages', JSON.stringify(messagesList)); }
     function loadMessages() { let saved = localStorage.getItem('zentronix_messages'); if(saved) messagesList = JSON.parse(saved); }
     
@@ -515,14 +450,7 @@ async function editClient(id) {
         if (savedTotal) totalDisbursedAmountUSDEquivalent = parseFloat(savedTotal);
         loadMessages();
     }
-    
-    function addTransaction(client, type, amount, currency, description) {
-        let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
-        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: (client.balance_usd*1) + (client.balance_eur*1.08) + (client.balance_brl*0.18) + (client.balance_gbp*1.28) };
-        client.transactionHistory.unshift(tx);
-        if(client.transactionHistory.length > 100) client.transactionHistory.pop();
-    }
-    
+
     function addActivity(action) {
         let logEntry = { action: action, timestamp: new Date().toISOString(), user: currentUser?.name || 'System' };
         activityLogs.unshift(logEntry);
@@ -530,158 +458,447 @@ async function editClient(id) {
         saveData();
         renderActivityLog();
     }
-    
-    function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
-    function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
-    
-    // ============ FUNÇÕES PRINCIPAIS ============
-   function syncAllWithBankSite() {
-    addActivity(`🔄 Syncing with bank site...`);
-    
-    // ========== LER DADOS DO LOCALSTORAGE (PÁGINA DO BANCO) ==========
-    try {
-        // Buscar clientes salvos pela página do banco
-        let bankClients = localStorage.getItem('zentronix_bank_clients');
-        let bankLoans = localStorage.getItem('zentronix_loans');
-        let bankReserves = localStorage.getItem('zentronix_bank_reserves');
-        
-        let novosClientes = 0;
-        let novosEmprestimos = 0;
-        
-        if (bankClients) {
-            const parsedClients = JSON.parse(bankClients);
-            console.log(`📥 Sincronizando ${parsedClients.length} clientes do site do banco`);
-            addActivity(`📥 Encontrados ${parsedClients.length} clientes no site do banco`);
-            
-            // Adicionar clientes que não existem no admin
-            parsedClients.forEach(bankClient => {
-                const exists = clientsList.some(c => c.email === bankClient.email);
-                if (!exists) {
-                    const newClient = {
-                        id: bankClient.id || Date.now(),
-                        accountId: generateAccountId(),
-                        name: bankClient.nome || bankClient.name,
-                        email: bankClient.email,
-                        document: bankClient.document || '',
-                        address: bankClient.address || '',
-                        street: bankClient.street || '',
-                        number: bankClient.number || '',
-                        bankAccountNumber: bankClient.bankAccountNumber || '',
-                        balance_usd: bankClient.saldoUSD || 0,
-                        balance_eur: bankClient.saldoEUR || 0,
-                        balance_brl: bankClient.saldoBRL || 0,
-                        balance_gbp: bankClient.saldoGBP || 0,
-                        kyc_status: bankClient.kyc || 'Pending',
-                        account_status: "ACTIVE",
-                        username: bankClient.email?.split('@')[0] || bankClient.nome?.toLowerCase().replace(/ /g, '.'),
-                        password: 'welcome123',
-                        createdAt: new Date().toISOString().slice(0,10),
-                        crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-                        transactionHistory: []
-                    };
-                    clientsList.push(newClient);
-                    novosClientes++;
-                    addActivity(`🆕 Novo cliente sincronizado: ${newClient.name}`);
-                }
-            });
-        }
-        
-        if (bankLoans) {
-            const parsedLoans = JSON.parse(bankLoans);
-            console.log(`📥 Sincronizando ${parsedLoans.length} empréstimos do site do banco`);
-            addActivity(`📥 Encontrados ${parsedLoans.length} empréstimos no site do banco`);
-            
-            parsedLoans.forEach(bankLoan => {
-                // Verificar se empréstimo já existe
-                const exists = loanRequests.some(l => l.id === bankLoan.id);
-                if (!exists && bankLoan.status === 'pending') {
-                    const newLoan = {
-                        id: bankLoan.id,
-                        clientId: bankLoan.clientId,
-                        clientName: bankLoan.clientName,
-                        amount: bankLoan.amount,
-                        term: 12,
-                        status: 'pending',
-                        requestedDate: bankLoan.date || new Date().toISOString().slice(0,10),
-                        purpose: bankLoan.purpose || 'Solicitado pelo site',
-                        requestedCurrency: bankLoan.currency || 'USD'
-                    };
-                    loanRequests.push(newLoan);
-                    novosEmprestimos++;
-                    addActivity(`📋 Novo empréstimo solicitado: ${newLoan.clientName} - $${newLoan.amount}`);
-                }
-            });
-        }
-        
-        if (bankReserves) {
-            const parsedReserves = JSON.parse(bankReserves);
-            if (parsedReserves.USD) bankReserves.USD = parsedReserves.USD;
-            if (parsedReserves.EUR) bankReserves.EUR = parsedReserves.EUR;
-            if (parsedReserves.BRL) bankReserves.BRL = parsedReserves.BRL;
-            if (parsedReserves.GBP) bankReserves.GBP = parsedReserves.GBP;
-            addActivity(`💰 Reservas bancárias sincronizadas`);
-        }
-        
-        saveData();
-        updateUI();
-        refreshReserves();
-        
-        let msg = `✅ Sync completed!\n\n📊 ${clientsList.length} customers synced.`;
-        if (novosClientes > 0) msg += `\n🆕 ${novosClientes} new clients added.`;
-        if (novosEmprestimos > 0) msg += `\n📋 ${novosEmprestimos} new loan requests.`;
-        
-        addActivity(`✅ Sync completo! ${clientsList.length} clientes, ${loanRequests.filter(l => l.status === 'pending').length} empréstimos pendentes.`);
-        alert(msg);
-        
-    } catch (error) {
-        console.error('Erro na sincronização:', error);
-        addActivity(`❌ Erro na sincronização: ${error.message}`);
-        alert(`⚠️ Sync error: ${error.message}`);
-    }
-    
-    return true;
-}
-    function generateIntegrationCode() {
-        currentIntegrationCode = `<script>
 
-// ========== ZENTRONIX BANK INTEGRATION ==========
-function carregarDadosBanco() {
-    let clientes = localStorage.getItem('zentronix_bank_clients');
-    let reservas = localStorage.getItem('zentronix_bank_reserves');
-    if (clientes) console.log("✅ Clientes:", JSON.parse(clientes).length);
-    return { clientes: clientes ? JSON.parse(clientes) : [], reservas: reservas ? JSON.parse(reservas) : {} };
-}
-function solicitarEmprestimo(clienteId, clienteNome, valor, moeda) {
-    let emp = JSON.parse(localStorage.getItem('zentronix_loans') || '[]');
-    emp.push({ id: Date.now(), clientId: clienteId, clientName: clienteNome, amount: valor, status: "pending", requestedCurrency: moeda });
-    localStorage.setItem('zentronix_loans', JSON.stringify(emp));
-    alert("✅ Empréstimo solicitado!");
-}
-carregarDadosBanco();
-console.log("🏦 Integração ativa");
-<\/script>`;
-        document.getElementById('integrationCodeText').innerText = currentIntegrationCode;
-        document.getElementById('integrationCodeModal').classList.add('active');
-        addActivity(`📋 Código de integração gerado.`);
+    function addTransaction(client, type, amount, currency, description) {
+        let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
+        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: (client.balance_usd*1) + (client.balance_eur*1.08) + (client.balance_brl*0.18) + (client.balance_gbp*1.28) };
+        client.transactionHistory.unshift(tx);
+        if(client.transactionHistory.length > 100) client.transactionHistory.pop();
     }
-    
-    function copyIntegrationCode() {
-        navigator.clipboard.writeText(currentIntegrationCode).then(() => {
-            alert("✅ Código copiado!");
-        }).catch(() => {
-            const textarea = document.createElement('textarea');
-            textarea.value = currentIntegrationCode;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert("✅ Código copiado!");
-        });
+
+    // ============ FUNÇÃO ADD CLIENT (CORRIGIDA) ==========
+    async function addClient() {
+        let name = document.getElementById('clientName').value;
+        let email = document.getElementById('clientEmail').value;
+        let documentNum = document.getElementById('clientDocument').value;
+        let address = document.getElementById('clientAddress').value;
+        let street = document.getElementById('clientStreet').value;
+        let number = document.getElementById('clientNumber').value;
+        let bankAccount = document.getElementById('clientBankAccount').value;
+        let kyc = document.getElementById('clientKyc').value;
+        let username = document.getElementById('clientUsername').value || email.split('@')[0];
+        let password = document.getElementById('clientPassword').value;
+        let confirmPassword = document.getElementById('clientConfirmPassword').value;
+        
+        if(!name || !email) { alert("❌ Nome e email são obrigatórios!"); return; }
+        if(!password || password.length < 6) { alert("❌ A senha deve ter pelo menos 6 caracteres!"); return; }
+        if(password !== confirmPassword) { alert("❌ As senhas não coincidem!"); return; }
+        
+        const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
+        if(existingUser) { alert("❌ Este email já está cadastrado!"); return; }
+        
+        alert("🔄 Criando conta no Supabase...");
+        
+        try {
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email, password: password,
+                options: { data: { full_name: name, username: username } }
+            });
+            
+            if (authError) { alert("❌ Erro ao criar usuário: " + authError.message); return; }
+            if (!authData || !authData.user) { alert("❌ Erro: Não foi possível criar o usuário."); return; }
+            
+            const userId = authData.user.id;
+            const accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
+            
+            const { error: insertError } = await supabase.from('users').insert({
+                id: userId, email: email, username: username, full_name: name,
+                phone: '', kyc_status: kyc || 'Pending', created_at: new Date().toISOString()
+            });
+            if (insertError) { alert("❌ Erro ao salvar dados: " + insertError.message); return; }
+            
+            const usd = parseFloat(document.getElementById('clientBalanceUSD').value) || 0;
+            const eur = parseFloat(document.getElementById('clientBalanceEUR').value) || 0;
+            const brl = parseFloat(document.getElementById('clientBalanceBRL').value) || 0;
+            const gbp = parseFloat(document.getElementById('clientBalanceGBP').value) || 0;
+            
+            const balances = [
+                { currency: 'USD', amount: usd }, { currency: 'EUR', amount: eur },
+                { currency: 'BRL', amount: brl }, { currency: 'GBP', amount: gbp }
+            ];
+            
+            for (const b of balances) {
+                await supabase.from('balances').insert({
+                    user_id: userId, currency: b.currency, amount: b.amount,
+                    created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+                });
+            }
+            
+            const newClient = {
+                id: userId, accountId: accountId, name: name, email: email,
+                document: documentNum || '', address: address || '', street: street || '',
+                number: number || '', bankAccountNumber: bankAccount || '',
+                balance_usd: usd, balance_eur: eur, balance_brl: brl, balance_gbp: gbp,
+                kyc_status: kyc || 'Pending', username: username, password: password,
+                createdAt: new Date().toISOString().slice(0,10),
+                crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
+                transactionHistory: []
+            };
+            
+            clientsList.push(newClient);
+            saveData();
+            
+            alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountId}`);
+            
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientEmail').value = '';
+            document.getElementById('clientDocument').value = '';
+            document.getElementById('clientAddress').value = '';
+            document.getElementById('clientStreet').value = '';
+            document.getElementById('clientNumber').value = '';
+            document.getElementById('clientBankAccount').value = '';
+            document.getElementById('clientBalanceUSD').value = '';
+            document.getElementById('clientBalanceEUR').value = '';
+            document.getElementById('clientBalanceBRL').value = '';
+            document.getElementById('clientBalanceGBP').value = '';
+            document.getElementById('clientUsername').value = '';
+            document.getElementById('clientPassword').value = '';
+            document.getElementById('clientConfirmPassword').value = '';
+            
+            await carregarClientes();
+            await updateTransferSelect();
+            await updateMessageSelect();
+            updateUI();
+            syncAllWithBankSite();
+            
+        } catch (error) {
+            console.error('❌ Erro inesperado:', error);
+            alert('❌ Erro ao criar cliente: ' + error.message);
+        }
     }
-    
-    function closeIntegrationCodeModal() { document.getElementById('integrationCodeModal').classList.remove('active'); }
-    
-    // ============ RESERVAS ============
+
+    // ============ FUNÇÃO EDIT CLIENT (CORRIGIDA) ==========
+    async function editClient(id) {
+        currentEditClientId = id;
+        try {
+            const { data: cliente, error } = await supabase
+                .from('users').select('*').eq('id', id).maybeSingle();
+            if(error || !cliente) { alert("❌ Cliente não encontrado!"); return; }
+            
+            const { data: balances } = await supabase
+                .from('balances').select('currency, amount').eq('user_id', id);
+            
+            const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
+            const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
+            const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
+            const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
+            
+            const content = `
+                <label>📛 Nome:</label><input type="text" id="edit_nome" value="${escapeHtml(cliente.full_name)}" style="width:100%; margin-bottom:10px;">
+                <label>📧 Email:</label><input type="email" id="edit_email" value="${escapeHtml(cliente.email)}" style="width:100%; margin-bottom:10px;">
+                <label>👤 Username:</label><input type="text" id="edit_username" value="${escapeHtml(cliente.username)}" style="width:100%; margin-bottom:10px;">
+                <label>📱 Telefone:</label><input type="text" id="edit_phone" value="${escapeHtml(cliente.phone || '')}" style="width:100%; margin-bottom:10px;">
+                <label>✅ KYC Status:</label>
+                <select id="edit_kyc" style="width:100%; margin-bottom:10px;">
+                    <option value="approved" ${cliente.kyc_status === 'approved' ? 'selected' : ''}>✅ Approved</option>
+                    <option value="pending" ${cliente.kyc_status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                    <option value="rejected" ${cliente.kyc_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
+                </select>
+                <hr><h4>💰 Saldos</h4>
+                <label>💵 USD:</label><input type="number" id="edit_saldo_usd" value="${usd}" step="0.01" style="width:100%; margin-bottom:8px;">
+                <label>💶 EUR:</label><input type="number" id="edit_saldo_eur" value="${eur}" step="0.01" style="width:100%; margin-bottom:8px;">
+                <label>🇧🇷 BRL:</label><input type="number" id="edit_saldo_brl" value="${brl}" step="0.01" style="width:100%; margin-bottom:8px;">
+                <label>🇬🇧 GBP:</label><input type="number" id="edit_saldo_gbp" value="${gbp}" step="0.01" style="width:100%; margin-bottom:8px;">
+            `;
+            
+            document.getElementById('editClientContent').innerHTML = content;
+            document.getElementById('editClientModal').classList.add('active');
+            
+        } catch(error) {
+            console.error('Erro ao editar cliente:', error);
+            alert('❌ Erro ao carregar dados do cliente: ' + error.message);
+        }
+    }
+
+    // ============ FUNÇÃO SAVE CLIENT EDIT (CORRIGIDA) ==========
+    async function saveClientEdit() {
+        const id = currentEditClientId;
+        if(!id) { alert("❌ ID do cliente não encontrado!"); return; }
+        
+        const nome = document.getElementById('edit_nome').value;
+        const email = document.getElementById('edit_email').value;
+        const username = document.getElementById('edit_username').value;
+        const phone = document.getElementById('edit_phone').value;
+        const kyc_status = document.getElementById('edit_kyc').value;
+        const saldo_usd = parseFloat(document.getElementById('edit_saldo_usd').value) || 0;
+        const saldo_eur = parseFloat(document.getElementById('edit_saldo_eur').value) || 0;
+        const saldo_brl = parseFloat(document.getElementById('edit_saldo_brl').value) || 0;
+        const saldo_gbp = parseFloat(document.getElementById('edit_saldo_gbp').value) || 0;
+        
+        if(!nome || !email) { alert("Nome e email são obrigatórios!"); return; }
+        
+        const { error: userError } = await supabase
+            .from('users')
+            .update({ full_name: nome, email: email, username: username, phone: phone, kyc_status: kyc_status, updated_at: new Date().toISOString() })
+            .eq('id', id);
+        
+        if(userError) { alert("❌ Erro ao atualizar usuário: " + userError.message); return; }
+        
+        const balances = [
+            { currency: 'USD', amount: saldo_usd }, { currency: 'EUR', amount: saldo_eur },
+            { currency: 'BRL', amount: saldo_brl }, { currency: 'GBP', amount: saldo_gbp }
+        ];
+        
+        for (const b of balances) {
+            const { data: current } = await supabase
+                .from('balances').select('id').eq('user_id', id).eq('currency', b.currency).maybeSingle();
+            
+            if (current) {
+                await supabase.from('balances').update({ amount: b.amount, updated_at: new Date().toISOString() }).eq('id', current.id);
+            } else {
+                await supabase.from('balances').insert({ user_id: id, currency: b.currency, amount: b.amount, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+            }
+        }
+        
+        alert("✅ Cliente atualizado com sucesso!");
+        closeEditModal();
+        await carregarClientes();
+        await updateTransferSelect();
+        await updateMessageSelect();
+        syncAllWithBankSite();
+    }
+
+    function closeEditModal() { document.getElementById('editClientModal').classList.remove('active'); currentEditClientId = null; }
+
+    // ============ FUNÇÃO DELETE CLIENT (CORRIGIDA) ==========
+    async function deleteClient(id) {
+        if(!confirm("⚠️ Tem certeza que deseja DELETAR este cliente permanentemente?")) return;
+        if(!confirm("❌ Esta ação é IRREVERSÍVEL! Todos os dados do cliente serão perdidos.")) return;
+        
+        try {
+            const { data: cliente } = await supabase.from('users').select('email').eq('id', id).maybeSingle();
+            if(!cliente) { alert("❌ Cliente não encontrado!"); return; }
+            
+            await supabase.from('balances').delete().eq('user_id', id);
+            await supabase.from('wallets').delete().eq('user_id', id);
+            await supabase.from('loans').delete().eq('user_id', id);
+            await supabase.from('users').delete().eq('id', id);
+            
+            const indexLocal = clientsList.findIndex(c => c.id === id);
+            if (indexLocal !== -1) clientsList.splice(indexLocal, 1);
+            
+            messagesList = messagesList.filter(m => m.clientId !== id);
+            loanRequests = loanRequests.filter(l => l.clientId !== id);
+            
+            saveData();
+            addActivity(`🗑️ CLIENTE DELETADO: ${cliente.email}`);
+            alert(`✅ Cliente ${cliente.email} deletado com sucesso!`);
+            
+            await carregarClientes();
+            await updateTransferSelect();
+            await updateMessageSelect();
+            updateUI();
+            syncAllWithBankSite();
+        } catch(error) {
+            console.error('❌ Erro ao deletar cliente:', error);
+            alert('❌ Erro ao deletar cliente: ' + error.message);
+        }
+    }
+
+    // ============ FUNÇÃO CARREGAR CLIENTES (CORRIGIDA) ==========
+    async function carregarClientes() {
+        try {
+            const { data: clientes, error } = await supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) { console.error('❌ Erro ao carregar clientes:', error); return; }
+            
+            if (!clientes || clientes.length === 0) {
+                document.getElementById('clientsList').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; opacity:0.6;">📭 Nenhum cliente cadastrado ainda</td></tr>';
+                document.getElementById('totalClients').innerHTML = '0';
+                return;
+            }
+            
+            let html = '';
+            for (const c of clientes) {
+                const { data: balances } = await supabase
+                    .from('balances')
+                    .select('currency, amount')
+                    .eq('user_id', c.id);
+                
+                const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
+                const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
+                const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
+                const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
+                
+                const kycStatus = c.kyc_status || 'Pending';
+                const kycBadge = kycStatus === 'approved' || kycStatus === 'Approved' ? '🟢' : (kycStatus === 'pending' || kycStatus === 'Pending' ? '🟡' : '🔴');
+                
+                html += `<tr>
+                    <td>${c.id?.slice(0, 8) || 'N/A'}</td>
+                    <td>${c.full_name || c.name || 'N/A'}</td>
+                    <td>$${Number(usd).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>€${Number(eur).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>R$${Number(brl).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>£${Number(gbp).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${kycBadge} ${kycStatus}</td>
+                    <td>${c.username || c.email?.split('@')[0] || 'N/A'}</td>
+                    <td>
+                        <button class="success" onclick="editClient('${c.id}')" title="Editar"><i class="fas fa-user-edit"></i></button>
+                        <button class="danger" onclick="deleteClient('${c.id}')" title="Deletar"><i class="fas fa-trash-alt"></i></button>
+                        <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')" title="Adicionar USD">💵</button>
+                        <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')" title="Adicionar EUR">💶</button>
+                        <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')" title="Adicionar BRL">🇧🇷</button>
+                        <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')" title="Adicionar GBP">🇬🇧</button>
+                    </td>
+                </tr>`;
+            }
+            
+            document.getElementById('clientsList').innerHTML = html;
+            document.getElementById('totalClients').innerHTML = clientes.length;
+            console.log(`✅ ${clientes.length} clientes carregados do Supabase`);
+            
+        } catch(error) {
+            console.error('❌ Erro ao carregar clientes:', error);
+            document.getElementById('clientsList').innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#ff4466;">❌ Erro ao carregar clientes: ${error.message}</td></tr>`;
+        }
+    }
+
+    // ============ FUNÇÃO AJUSTAR SALDO (CORRIGIDA) ==========
+    async function adjustBalance(id, currency) {
+        let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
+        if(!valor) return;
+        if(isNaN(valor) || parseFloat(valor) <= 0) { alert("❌ Digite um valor válido!"); return; }
+        
+        try {
+            const { data: balance, error: buscaError } = await supabase
+                .from('balances')
+                .select('id, amount')
+                .eq('user_id', id)
+                .eq('currency', currency)
+                .maybeSingle();
+            
+            if (buscaError) { alert("❌ Erro ao buscar saldo: " + buscaError.message); return; }
+            
+            const valorAtual = balance?.amount || 0;
+            const novoSaldo = valorAtual + parseFloat(valor);
+            
+            if (balance) {
+                await supabase.from('balances').update({ amount: novoSaldo, updated_at: new Date().toISOString() }).eq('id', balance.id);
+            } else {
+                await supabase.from('balances').insert({ user_id: id, currency: currency, amount: parseFloat(valor), created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+            }
+            
+            const symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
+            alert(`✅ Saldo ajustado!\n\n${symbol}${novoSaldo.toFixed(2)} ${currency}`);
+            addActivity(`💰 SALDO AJUSTADO: ${symbol}${valor} para ${currency}`);
+            await carregarClientes();
+            
+        } catch(error) {
+            console.error('❌ Erro ao ajustar saldo:', error);
+            alert('❌ Erro ao ajustar saldo: ' + error.message);
+        }
+    }
+
+    // ============ ATUALIZAR SELECTS (CORRIGIDO) ==========
+    async function updateTransferSelect() {
+        let select = document.getElementById('transferClient');
+        if(!select) return;
+        try {
+            const { data: clientes, error } = await supabase.from('users').select('id, full_name, email').order('created_at', { ascending: false });
+            if(error || !clientes) { select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; return; }
+            select.innerHTML = '<option value="">👇 Selecione um cliente</option>';
+            clientes.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.full_name || c.email || 'Sem nome'}</option>`; });
+        } catch(e) { select.innerHTML = '<option value="">⚠️ Erro</option>'; }
+    }
+
+    async function updateMessageSelect() {
+        let select = document.getElementById('messageClientSelect');
+        if(!select) return;
+        try {
+            const { data: clientes, error } = await supabase.from('users').select('id, full_name, email').order('created_at', { ascending: false });
+            if(error || !clientes) { select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; return; }
+            select.innerHTML = '<option value="">👇 Selecione um cliente...</option>';
+            clientes.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.full_name || c.email || 'Sem nome'}</option>`; });
+            select.onchange = () => renderClientMessages();
+        } catch(e) { select.innerHTML = '<option value="">⚠️ Erro</option>'; }
+    }
+
+    // ============ SINCRONIZAR ==========
+    function syncAllWithBankSite() {
+        addActivity(`🔄 Syncing with bank site...`);
+        try {
+            let bankClients = localStorage.getItem('zentronix_bank_clients');
+            let bankLoans = localStorage.getItem('zentronix_loans');
+            let bankReserves = localStorage.getItem('zentronix_bank_reserves');
+            
+            if (bankClients) {
+                const parsedClients = JSON.parse(bankClients);
+                parsedClients.forEach(bankClient => {
+                    const exists = clientsList.some(c => c.email === bankClient.email);
+                    if (!exists) {
+                        const newClient = {
+                            id: bankClient.id || Date.now(),
+                            accountId: generateAccountId(),
+                            name: bankClient.nome || bankClient.name,
+                            email: bankClient.email,
+                            document: bankClient.document || '',
+                            address: bankClient.address || '',
+                            street: bankClient.street || '',
+                            number: bankClient.number || '',
+                            bankAccountNumber: bankClient.bankAccountNumber || '',
+                            balance_usd: bankClient.saldoUSD || 0,
+                            balance_eur: bankClient.saldoEUR || 0,
+                            balance_brl: bankClient.saldoBRL || 0,
+                            balance_gbp: bankClient.saldoGBP || 0,
+                            kyc_status: bankClient.kyc || 'Pending',
+                            account_status: "ACTIVE",
+                            username: bankClient.email?.split('@')[0] || bankClient.nome?.toLowerCase().replace(/ /g, '.'),
+                            password: 'welcome123',
+                            createdAt: new Date().toISOString().slice(0,10),
+                            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
+                            transactionHistory: []
+                        };
+                        clientsList.push(newClient);
+                        addActivity(`🆕 Novo cliente sincronizado: ${newClient.name}`);
+                    }
+                });
+            }
+            
+            if (bankLoans) {
+                const parsedLoans = JSON.parse(bankLoans);
+                parsedLoans.forEach(bankLoan => {
+                    const exists = loanRequests.some(l => l.id === bankLoan.id);
+                    if (!exists && bankLoan.status === 'pending') {
+                        loanRequests.push({
+                            id: bankLoan.id,
+                            clientId: bankLoan.clientId,
+                            clientName: bankLoan.clientName,
+                            amount: bankLoan.amount,
+                            term: 12,
+                            status: 'pending',
+                            requestedDate: bankLoan.date || new Date().toISOString().slice(0,10),
+                            purpose: bankLoan.purpose || 'Solicitado pelo site',
+                            requestedCurrency: bankLoan.currency || 'USD'
+                        });
+                        addActivity(`📋 Novo empréstimo solicitado: ${bankLoan.clientName} - $${bankLoan.amount}`);
+                    }
+                });
+            }
+            
+            if (bankReserves) {
+                const parsedReserves = JSON.parse(bankReserves);
+                if (parsedReserves.USD) bankReserves.USD = parsedReserves.USD;
+                if (parsedReserves.EUR) bankReserves.EUR = parsedReserves.EUR;
+                if (parsedReserves.BRL) bankReserves.BRL = parsedReserves.BRL;
+                if (parsedReserves.GBP) bankReserves.GBP = parsedReserves.GBP;
+            }
+            
+            saveData();
+            updateUI();
+            refreshReserves();
+            addActivity(`✅ Sync completo! ${clientsList.length} clientes, ${loanRequests.filter(l => l.status === 'pending').length} empréstimos pendentes.`);
+            
+        } catch(error) {
+            console.error('Erro na sincronização:', error);
+            addActivity(`❌ Erro na sincronização: ${error.message}`);
+        }
+        return true;
+    }
+
+    // ============ RESERVAS ==========
     function refreshReserves() {
         document.getElementById('reserveUSD').innerHTML = `$ ${bankReserves.USD.toLocaleString('en-US')}`;
         document.getElementById('reserveEUR').innerHTML = `€ ${bankReserves.EUR.toLocaleString('en-US')}`;
@@ -691,13 +908,9 @@ console.log("🏦 Integração ativa");
         document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
         document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
         document.getElementById('statGBPReserve').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
-        document.getElementById('statReserveUSD').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
-        document.getElementById('statReserveEUR').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
-        document.getElementById('statReserveBRL').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
-        document.getElementById('statReserveGBP').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
         saveData();
     }
-    
+
     function exportReserveReport() {
         let csv = "Currency,Available Reserve\nUSD," + bankReserves.USD + "\nEUR," + bankReserves.EUR + "\nBRL," + bankReserves.BRL + "\nGBP," + bankReserves.GBP;
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -707,8 +920,8 @@ console.log("🏦 Integração ativa");
         link.click();
         addActivity(`Reserve report exported`);
     }
-    
-    // ============ MENSAGENS ============
+
+    // ============ MENSAGENS ==========
     function sendMessageToClient() {
         let client = currentMessageClient;
         let subject = document.getElementById('messageSubject').value;
@@ -723,27 +936,20 @@ console.log("🏦 Integração ativa");
         updateUnreadCount();
         syncAllWithBankSite();
     }
-    
+
     function openMessageModal() {
         let clientId = document.getElementById('messageClientSelect').value;
         if(!clientId) { alert("Selecione um cliente"); return; }
-        currentMessageClient = clientsList.find(c => c.id == parseInt(clientId));
+        currentMessageClient = clientsList.find(c => c.id == clientId);
+        if(!currentMessageClient) { alert("Cliente não encontrado"); return; }
         document.getElementById('messageClientName').innerText = currentMessageClient.name;
         document.getElementById('messageSubject').value = '';
         document.getElementById('messageContent').value = '';
         document.getElementById('messageModal').classList.add('active');
     }
-    
+
     function closeMessageModal() { document.getElementById('messageModal').classList.remove('active'); currentMessageClient = null; }
-    function openMessageForClient(clientId) {
-        let client = clientsList.find(c => c.id === clientId);
-        currentMessageClient = client;
-        document.getElementById('messageClientName').innerText = client.name;
-        document.getElementById('messageSubject').value = '';
-        document.getElementById('messageContent').value = '';
-        document.getElementById('messageModal').classList.add('active');
-    }
-    
+
     function openInbox() {
         let inboxHtml = '';
         let clientMessages = messagesList.filter(m => m.fromClient === true);
@@ -760,9 +966,9 @@ console.log("🏦 Integração ativa");
         document.getElementById('inboxMessagesList').innerHTML = inboxHtml;
         document.getElementById('inboxModal').classList.add('active');
     }
-    
+
     function closeInboxModal() { document.getElementById('inboxModal').classList.remove('active'); }
-    
+
     function markAsReadAndReply(messageId, clientId) {
         let msg = messagesList.find(m => m.id === messageId);
         if(msg && !msg.read) { msg.read = true; saveMessages(); updateUnreadCount(); }
@@ -776,7 +982,7 @@ console.log("🏦 Integração ativa");
             document.getElementById('messageModal').classList.add('active');
         }
     }
-    
+
     function updateUnreadCount() {
         let unread = messagesList.filter(m => m.fromClient === true && !m.read).length;
         document.getElementById('unreadCountStat').innerHTML = unread;
@@ -784,7 +990,7 @@ console.log("🏦 Integração ativa");
         if(unread > 0) { headerBadge.style.display = 'inline-block'; headerBadge.innerText = unread; }
         else { headerBadge.style.display = 'none'; }
     }
-    
+
     function renderClientMessages() {
         let selectedId = document.getElementById('messageClientSelect')?.value;
         if(!selectedId || selectedId === "") { 
@@ -804,8 +1010,8 @@ console.log("🏦 Integração ativa");
         });
         document.getElementById('clientMessagesList').innerHTML = html;
     }
-    
-    // ============ EMPRÉSTIMOS ============
+
+    // ============ EMPRÉSTIMOS ==========
     function showApproveLoanModal(loan) {
         currentLoanToApprove = loan;
         document.getElementById('approveLoanCustomer').innerText = loan.clientName;
@@ -817,9 +1023,9 @@ console.log("🏦 Integração ativa");
         document.getElementById('syncStatusMsg').style.display = 'none';
         document.getElementById('approveLoanModal').classList.add('active');
     }
-    
+
     function closeApproveLoanModal() { document.getElementById('approveLoanModal').classList.remove('active'); currentLoanToApprove = null; }
-    
+
     async function confirmApproveLoan() {
         if (!currentLoanToApprove) return;
         let loan = currentLoanToApprove;
@@ -879,8 +1085,9 @@ console.log("🏦 Integração ativa");
             setTimeout(() => { closeApproveLoanModal(); alert(`✅ Empréstimo aprovado!`); }, 1500);
         } catch (error) { syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Erro.'; syncStatusDiv.classList.add('error'); }
     }
-    
+
     function approveLoan(id) { let loan = loanRequests.find(l => l.id === id); if(loan && loan.status === 'pending') showApproveLoanModal(loan); }
+    
     function rejectLoan(id) {
         let reason = prompt("Motivo da rejeição:");
         if(reason) {
@@ -895,7 +1102,7 @@ console.log("🏦 Integração ativa");
             }
         }
     }
-    
+
     function bulkLoanAction() {
         let pendingLoans = loanRequests.filter(l => l.status === 'pending');
         if(pendingLoans.length === 0) { alert("Nenhum empréstimo pendente"); return; }
@@ -927,16 +1134,18 @@ console.log("🏦 Integração ativa");
         updateUI();
         syncAllWithBankSite();
     }
-    
+
     function showLoanDetails(loan) {
         let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : (loan.disbursedCurrency === 'BRL' ? 'R$' : '£'));
         let html = `<p><strong>Cliente:</strong> ${loan.clientName}</p><p><strong>Solicitado:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'))}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Valor liberado:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Prazo:</strong> ${loan.term} meses</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>`;
         document.getElementById('loanDetailsContent').innerHTML = html;
         document.getElementById('loanDetailsModal').classList.add('active');
     }
-    function closeLoanDetailsModal() { document.getElementById('loanDetailsModal').classList.remove('active'); }
-    function filterLoans(filter) { currentFilter = filter; renderLoans(); }
     
+    function closeLoanDetailsModal() { document.getElementById('loanDetailsModal').classList.remove('active'); }
+    
+    function filterLoans(filter) { currentFilter = filter; renderLoans(); }
+
     function renderLoans() {
         let filtered = loanRequests.filter(l => l.status === currentFilter);
         if(filtered.length === 0) { document.getElementById('loansList').innerHTML = '<div style="text-align:center; padding:20px;">Nenhum empréstimo</div>'; return; }
@@ -948,848 +1157,8 @@ console.log("🏦 Integração ativa");
         });
         document.getElementById('loansList').innerHTML = html;
     }
-    
-    // ============ CLIENTES ============
-     async function addClient() {
-    let name = document.getElementById('clientName').value;
-    let email = document.getElementById('clientEmail').value;
-    let documentNum = document.getElementById('clientDocument').value;
-    let address = document.getElementById('clientAddress').value;
-    let street = document.getElementById('clientStreet').value;
-    let number = document.getElementById('clientNumber').value;
-    let bankAccount = document.getElementById('clientBankAccount').value;
-    let kyc = document.getElementById('clientKyc').value;
-    let username = document.getElementById('clientUsername').value || email.split('@')[0];
-    let password = document.getElementById('clientPassword').value;
-    let confirmPassword = document.getElementById('clientConfirmPassword').value;
-    
-    // Validações
-    if(!name || !email) {
-        alert("Nome e email são obrigatórios!");
-        return;
-    }
-    
-    if(password !== confirmPassword) {
-        alert("As senhas não coincidem!");
-        return;
-    }
-    
-    if(password.length < 6) {
-        alert("A senha deve ter pelo menos 6 caracteres!");
-        return;
-    }
-    
-    // Verificar se cliente já existe
-    const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .single();
-    
-    if(existingUser) {
-        alert("❌ Este email já está cadastrado!");
-        return;
-    }
-    
-    alert("🔄 Criando conta no Supabase...");
-    
-    try {
-        // 1. Criar usuário no Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: { 
-                    full_name: name,
-                    username: username
-                }
-            }
-        });
-        
-        if (authError) {
-            alert("❌ Erro ao criar usuário: " + authError.message);
-            return;
-        }
-        
-        // 2. Inserir na tabela users
-        const accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
-        
-        const { error: insertError } = await supabase
-            .from('users')
-            .insert({
-                id: authData.user.id,
-                email: email,
-                username: username,
-                full_name: name,
-                phone: '',
-                kyc_status: kyc || 'Pending',
-                created_at: new Date().toISOString()
-            });
-        
-        if (insertError) {
-            alert("❌ Erro ao salvar dados: " + insertError.message);
-            return;
-        }
-        
-        // 3. Inserir saldos iniciais
-        const usd = parseFloat(document.getElementById('clientBalanceUSD').value) || 0;
-        const eur = parseFloat(document.getElementById('clientBalanceEUR').value) || 0;
-        const brl = parseFloat(document.getElementById('clientBalanceBRL').value) || 0;
-        const gbp = parseFloat(document.getElementById('clientBalanceGBP').value) || 0;
-        
-        const balances = [
-            { currency: 'USD', amount: usd },
-            { currency: 'EUR', amount: eur },
-            { currency: 'BRL', amount: brl },
-            { currency: 'GBP', amount: gbp },
-            { currency: 'BTC', amount: 0 },
-            { currency: 'BRC', amount: 0 }
-        ];
-        
-        for (const b of balances) {
-            await supabase
-                .from('balances')
-                .insert({
-                    user_id: authData.user.id,
-                    currency: b.currency,
-                    amount: b.amount,
-                    updated_at: new Date().toISOString()
-                });
-        }
-        
-        alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountId}\n\n⚠️ Guarde a senha! Ela será usada para o login.`);
-        
-        // Limpar formulário
-        document.getElementById('clientName').value = '';
-        document.getElementById('clientEmail').value = '';
-        document.getElementById('clientDocument').value = '';
-        document.getElementById('clientAddress').value = '';
-        document.getElementById('clientStreet').value = '';
-        document.getElementById('clientNumber').value = '';
-        document.getElementById('clientBankAccount').value = '';
-        document.getElementById('clientBalanceUSD').value = '';
-        document.getElementById('clientBalanceEUR').value = '';
-        document.getElementById('clientBalanceBRL').value = '';
-        document.getElementById('clientBalanceGBP').value = '';
-        document.getElementById('clientUsername').value = '';
-        document.getElementById('clientPassword').value = '';
-        document.getElementById('clientConfirmPassword').value = '';
-        
-        // Recarregar lista
-        await carregarClientes();
-        await updateTransferSelect();
-        await updateMessageSelect();
-        syncAllWithBankSite();
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('❌ Erro ao criar cliente: ' + error.message);
-    }
-}
 
-// ============ EDIÇÃO COMPLETA DE CLIENTE ============
-async function editClient(id) {
-    console.log("✏️ editClient chamado com ID:", id);
-    
-    if(!id) {
-        alert("ID do cliente não encontrado!");
-        return;
-    }
-    
-    // ✅ CORRETO - Usando tabela 'users'
-    const { data: cliente, error } = await supabase
-        .from('users')  // ⬅️ Tabela correta!
-        .select('*')
-        .eq('id', id)
-        .single();
-    
-    if(error) {
-        console.error("Erro ao buscar:", error);
-        alert("Erro ao buscar cliente: " + error.message);
-        return;
-    }
-    
-    // Buscar saldos do cliente na tabela 'balances'
-    const { data: balances } = await supabase
-        .from('balances')
-        .select('*')
-        .eq('user_id', id);
-    
-    const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
-    const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
-    const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
-    const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
-    
-    // Criar modal de edição
-    const modalHtml = `
-        <div id="editClientModal" class="modal-overlay" style="display: flex; z-index: 2000;">
-            <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;">
-                <h3><i class="fas fa-user-edit"></i> Editar Cliente</h3>
-                <div style="text-align: left;">
-                    
-                    <label>📛 Nome:</label>
-                    <input type="text" id="edit_nome" value="${escapeHtml(cliente.full_name || '')}" style="width:100%; margin-bottom:12px;">
-                    
-                    <label>📧 Email:</label>
-                    <input type="email" id="edit_email" value="${escapeHtml(cliente.email || '')}" style="width:100%; margin-bottom:12px;">
-                    
-                    <label>👤 Username:</label>
-                    <input type="text" id="edit_username" value="${escapeHtml(cliente.username || '')}" style="width:100%; margin-bottom:12px;">
-                    
-                    <label>📱 Telefone:</label>
-                    <input type="text" id="edit_phone" value="${escapeHtml(cliente.phone || '')}" style="width:100%; margin-bottom:12px;">
-                    
-                    <label>✅ KYC Status:</label>
-                    <select id="edit_kyc" style="width:100%; margin-bottom:12px;">
-                        <option value="approved" ${cliente.kyc_status === 'approved' ? 'selected' : ''}>✅ Approved</option>
-                        <option value="pending" ${cliente.kyc_status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
-                        <option value="rejected" ${cliente.kyc_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
-                    </select>
-                    
-                    <hr>
-                    <h4>💰 Saldos</h4>
-                    
-                    <label>💵 USD:</label>
-                    <input type="number" id="edit_saldo_usd" value="${usd}" step="0.01" style="width:100%; margin-bottom:8px;">
-                    
-                    <label>💶 EUR:</label>
-                    <input type="number" id="edit_saldo_eur" value="${eur}" step="0.01" style="width:100%; margin-bottom:8px;">
-                    
-                    <label>🇧🇷 BRL:</label>
-                    <input type="number" id="edit_saldo_brl" value="${brl}" step="0.01" style="width:100%; margin-bottom:8px;">
-                    
-                    <label>🇬🇧 GBP:</label>
-                    <input type="number" id="edit_saldo_gbp" value="${gbp}" step="0.01" style="width:100%; margin-bottom:12px;">
-                    
-                </div>
-                <div class="modal-buttons" style="margin-top: 20px;">
-                    <button onclick="saveClientEdit('${id}')" class="success"><i class="fas fa-save"></i> SALVAR</button>
-                    <button onclick="closeEditModal()" class="secondary">CANCELAR</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const existingModal = document.getElementById('editClientModal');
-    if(existingModal) existingModal.remove();
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-// ============ SALVAR EDIÇÃO DO CLIENTE ============
-async function saveClientEdit(id) {
-    const nome = document.getElementById('edit_nome').value;
-    const email = document.getElementById('edit_email').value;
-    const username = document.getElementById('edit_username').value;
-    const phone = document.getElementById('edit_phone').value;
-    const kyc_status = document.getElementById('edit_kyc').value;
-    
-    const saldo_usd = parseFloat(document.getElementById('edit_saldo_usd').value) || 0;
-    const saldo_eur = parseFloat(document.getElementById('edit_saldo_eur').value) || 0;
-    const saldo_brl = parseFloat(document.getElementById('edit_saldo_brl').value) || 0;
-    const saldo_gbp = parseFloat(document.getElementById('edit_saldo_gbp').value) || 0;
-    
-    if(!nome || !email) {
-        alert("Nome e email são obrigatórios!");
-        return;
-    }
-    
-    // Atualizar dados do usuário na tabela 'users'
-    const { error: userError } = await supabase
-        .from('users')
-        .update({
-            full_name: nome,
-            email: email,
-            username: username,
-            phone: phone,
-            kyc_status: kyc_status,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-    
-    if(userError) {
-        alert("❌ Erro ao atualizar usuário: " + userError.message);
-        return;
-    }
-    
-    // Atualizar saldos na tabela 'balances'
-    const balances = [
-        { currency: 'USD', amount: saldo_usd },
-        { currency: 'EUR', amount: saldo_eur },
-        { currency: 'BRL', amount: saldo_brl },
-        { currency: 'GBP', amount: saldo_gbp }
-    ];
-    
-    for (const b of balances) {
-        const { data: current } = await supabase
-            .from('balances')
-            .select('id')
-            .eq('user_id', id)
-            .eq('currency', b.currency)
-            .single();
-        
-        if (current) {
-            await supabase
-                .from('balances')
-                .update({ amount: b.amount, updated_at: new Date().toISOString() })
-                .eq('id', current.id);
-        } else {
-            await supabase
-                .from('balances')
-                .insert({
-                    user_id: id,
-                    currency: b.currency,
-                    amount: b.amount,
-                    updated_at: new Date().toISOString()
-                });
-        }
-    }
-    
-    alert("✅ Cliente atualizado com sucesso!");
-    closeEditModal();
-    await carregarClientes();
-    await updateTransferSelect();
-    await updateMessageSelect();
-    syncAllWithBankSite();
-}
-
-// ============ FECHAR MODAL DE EDIÇÃO ============
-function closeEditModal() {
-    const modal = document.getElementById('editClientModal');
-    if(modal) modal.remove();
-}
-
-// ============ FUNÇÃO AUXILIAR PARA ESCAPAR HTML ============
-function escapeHtml(str) {
-    if(!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if(m === '&') return '&amp;';
-        if(m === '<') return '&lt;';
-        if(m === '>') return '&gt;';
-        return m;
-    });
-}
-
-// ============ DELETAR CLIENTE (CORRIGIDO) ============
-async function deleteClient(id) {
-    if(!confirm("⚠️ Tem certeza que deseja DELETAR este cliente permanentemente?")) return;
-    if(!confirm("❌ Esta ação é IRREVERSÍVEL! Todos os dados do cliente serão perdidos.")) return;
-    
-    try {
-        // 1. Buscar o cliente para saber o email (para deletar do Auth)
-        const { data: cliente, error: buscaError } = await supabase
-            .from('users')
-            .select('email')
-            .eq('id', id)
-            .maybeSingle();
-        
-        if (buscaError) {
-            console.error("Erro ao buscar cliente:", buscaError);
-            alert("❌ Erro ao buscar cliente: " + buscaError.message);
-            return;
-        }
-        
-        if (!cliente) {
-            alert("❌ Cliente não encontrado!");
-            return;
-        }
-        
-        const emailCliente = cliente.email;
-        console.log(`🗑️ Deletando cliente: ${emailCliente} (ID: ${id})`);
-        
-        // 2. Deletar saldos
-        const { error: balError } = await supabase
-            .from('balances')
-            .delete()
-            .eq('user_id', id);
-        
-        if (balError) console.warn("⚠️ Erro ao deletar saldos:", balError.message);
-        
-        // 3. Deletar wallets
-        const { error: walletError } = await supabase
-            .from('wallets')
-            .delete()
-            .eq('user_id', id);
-        
-        if (walletError) console.warn("⚠️ Erro ao deletar wallets:", walletError.message);
-        
-        // 4. Deletar empréstimos
-        const { error: loanError } = await supabase
-            .from('loans')
-            .delete()
-            .eq('user_id', id);
-        
-        if (loanError) console.warn("⚠️ Erro ao deletar empréstimos:", loanError.message);
-        
-        // 5. Deletar usuário da tabela users
-        const { error: userError } = await supabase
-            .from('users')
-            .delete()
-            .eq('id', id);
-        
-        if (userError) {
-            alert("❌ Erro ao deletar usuário: " + userError.message);
-            return;
-        }
-        
-        // 6. Deletar usuário do Auth (Supabase Auth)
-        try {
-            // Chamar função do Supabase para deletar usuário do Auth
-            const { error: authError } = await supabase.auth.admin.deleteUser(id);
-            
-            if (authError) {
-                console.warn("⚠️ Erro ao deletar do Auth:", authError.message);
-                alert("⚠️ Cliente deletado do banco, mas não foi possível deletar do Auth. Contate o suporte.");
-            } else {
-                console.log("✅ Usuário deletado do Auth também");
-            }
-        } catch (authError) {
-            console.warn("⚠️ Erro ao deletar do Auth (pode ser permissão):", authError);
-            // Continua mesmo se não conseguir deletar do Auth
-        }
-        
-        // 7. Remover também das listas locais
-        const indexLocal = clientsList.findIndex(c => c.id === id);
-        if (indexLocal !== -1) {
-            clientsList.splice(indexLocal, 1);
-        }
-        
-        // 8. Remover mensagens do cliente
-        messagesList = messagesList.filter(m => m.clientId !== id);
-        saveMessages();
-        
-        // 9. Remover empréstimos do cliente
-        loanRequests = loanRequests.filter(l => l.clientId !== id);
-        
-        saveData();
-        addActivity(`🗑️ CLIENTE DELETADO: ${emailCliente}`);
-        
-        alert(`✅ Cliente ${emailCliente} deletado com sucesso!`);
-        
-        // Recarregar listas
-        await carregarClientes();
-        await updateTransferSelect();
-        await updateMessageSelect();
-        updateUI();
-        syncAllWithBankSite();
-        
-    } catch (error) {
-        console.error('❌ Erro ao deletar cliente:', error);
-        alert('❌ Erro ao deletar cliente: ' + error.message);
-    }
-}
-
-// ============ CRIAR CLIENTE (CORRIGIDO - LOGIN FUNCIONAL) ============
-async function addClient() {
-    let name = document.getElementById('clientName').value;
-    let email = document.getElementById('clientEmail').value;
-    let documentNum = document.getElementById('clientDocument').value;
-    let address = document.getElementById('clientAddress').value;
-    let street = document.getElementById('clientStreet').value;
-    let number = document.getElementById('clientNumber').value;
-    let bankAccount = document.getElementById('clientBankAccount').value;
-    let kyc = document.getElementById('clientKyc').value;
-    let username = document.getElementById('clientUsername').value || email.split('@')[0];
-    let password = document.getElementById('clientPassword').value;
-    let confirmPassword = document.getElementById('clientConfirmPassword').value;
-    
-    // VALIDAÇÕES
-    if(!name || !email) {
-        alert("❌ Nome e email são obrigatórios!");
-        return;
-    }
-    
-    if(!password || password.length < 6) {
-        alert("❌ A senha deve ter pelo menos 6 caracteres!");
-        return;
-    }
-    
-    if(password !== confirmPassword) {
-        alert("❌ As senhas não coincidem!");
-        return;
-    }
-    
-    // Verificar se email já existe
-    const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-    
-    if (existingUser) {
-        alert("❌ Este email já está cadastrado!");
-        return;
-    }
-    
-    alert("🔄 Criando conta no Supabase...");
-    
-    try {
-        // 1. CRIAR USUÁRIO NO SUPABASE AUTH (para login)
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: { 
-                    full_name: name,
-                    username: username
-                }
-            }
-        });
-        
-        if (authError) {
-            console.error("❌ Erro Auth:", authError);
-            alert("❌ Erro ao criar usuário: " + authError.message);
-            return;
-        }
-        
-        if (!authData || !authData.user) {
-            alert("❌ Erro: Não foi possível criar o usuário. Tente novamente.");
-            return;
-        }
-        
-        const userId = authData.user.id;
-        const accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
-        
-        console.log("✅ Usuário criado no Auth:", userId);
-        
-        // 2. INSERIR NA TABELA USERS
-        const { error: insertError } = await supabase
-            .from('users')
-            .insert({
-                id: userId,
-                email: email,
-                username: username,
-                full_name: name,
-                phone: '',
-                kyc_status: kyc || 'Pending',
-                created_at: new Date().toISOString()
-            });
-        
-        if (insertError) {
-            console.error("❌ Erro ao inserir:", insertError);
-            alert("❌ Erro ao salvar dados: " + insertError.message);
-            // Não apagar o usuário do Auth pois pode ser problema de RLS
-            return;
-        }
-        
-        console.log("✅ Usuário inserido na tabela users");
-        
-        // 3. INSERIR SALDOS INICIAIS
-        const usd = parseFloat(document.getElementById('clientBalanceUSD').value) || 0;
-        const eur = parseFloat(document.getElementById('clientBalanceEUR').value) || 0;
-        const brl = parseFloat(document.getElementById('clientBalanceBRL').value) || 0;
-        const gbp = parseFloat(document.getElementById('clientBalanceGBP').value) || 0;
-        
-        const balances = [
-            { currency: 'USD', amount: usd },
-            { currency: 'EUR', amount: eur },
-            { currency: 'BRL', amount: brl },
-            { currency: 'GBP', amount: gbp },
-            { currency: 'BTC', amount: 0 },
-            { currency: 'ETH', amount: 0 },
-            { currency: 'BNB', amount: 0 },
-            { currency: 'SOL', amount: 0 },
-            { currency: 'MATIC', amount: 0 },
-            { currency: 'USDT', amount: 0 },
-            { currency: 'LTC', amount: 0 },
-            { currency: 'BRC', amount: 0 }
-        ];
-        
-        for (const b of balances) {
-            const { error: balError } = await supabase
-                .from('balances')
-                .insert({
-                    user_id: userId,
-                    currency: b.currency,
-                    amount: b.amount,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-            
-            if (balError) {
-                console.warn(`⚠️ Erro ao inserir saldo ${b.currency}:`, balError.message);
-            }
-        }
-        
-        console.log("✅ Saldos inseridos");
-        
-        // 4. ADICIONAR À LISTA LOCAL
-        const newClient = {
-            id: userId,
-            accountId: accountId,
-            name: name,
-            email: email,
-            document: documentNum || '',
-            address: address || '',
-            street: street || '',
-            number: number || '',
-            bankAccountNumber: bankAccount || '',
-            balance_usd: usd,
-            balance_eur: eur,
-            balance_brl: brl,
-            balance_gbp: gbp,
-            kyc_status: kyc || 'Pending',
-            username: username,
-            password: password,
-            createdAt: new Date().toISOString().slice(0,10),
-            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-            transactionHistory: []
-        };
-        
-        clientsList.push(newClient);
-        saveData();
-        
-        alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountId}\n\n⚠️ Guarde a senha! Ela será usada para o login.`);
-        
-        // 5. LIMPAR FORMULÁRIO
-        document.getElementById('clientName').value = '';
-        document.getElementById('clientEmail').value = '';
-        document.getElementById('clientDocument').value = '';
-        document.getElementById('clientAddress').value = '';
-        document.getElementById('clientStreet').value = '';
-        document.getElementById('clientNumber').value = '';
-        document.getElementById('clientBankAccount').value = '';
-        document.getElementById('clientBalanceUSD').value = '';
-        document.getElementById('clientBalanceEUR').value = '';
-        document.getElementById('clientBalanceBRL').value = '';
-        document.getElementById('clientBalanceGBP').value = '';
-        document.getElementById('clientUsername').value = '';
-        document.getElementById('clientPassword').value = '';
-        document.getElementById('clientConfirmPassword').value = '';
-        
-        // 6. RECARREGAR LISTAS
-        await carregarClientes();
-        await updateTransferSelect();
-        await updateMessageSelect();
-        updateUI();
-        syncAllWithBankSite();
-        
-    } catch (error) {
-        console.error('❌ Erro inesperado:', error);
-        alert('❌ Erro ao criar cliente: ' + error.message);
-    }
-}
-
-// ============ CARREGAR CLIENTES DO SUPABASE (VERSÃO ÚNICA E CORRETA) ============
-async function carregarClientes() {
-    try {
-        const { data: clientes, error } = await supabase
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            console.error('❌ Erro ao carregar clientes:', error);
-            return;
-        }
-        
-        if (!clientes || clientes.length === 0) {
-            document.getElementById('clientsList').innerHTML = `
-                <tr><td colspan="9" style="text-align:center; padding:20px; opacity:0.6;">
-                    📭 Nenhum cliente cadastrado ainda
-                </td></tr>
-            `;
-            document.getElementById('totalClients').innerHTML = '0';
-            return;
-        }
-        
-        let html = '';
-        let total = 0;
-        
-        for (const c of clientes) {
-            const { data: balances } = await supabase
-                .from('balances')
-                .select('currency, amount')
-                .eq('user_id', c.id);
-            
-            const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
-            const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
-            const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
-            const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
-            
-            total++;
-            
-            const kycStatus = c.kyc_status || 'Pending';
-            const kycBadge = kycStatus === 'approved' || kycStatus === 'Approved' ? '🟢' : 
-                            (kycStatus === 'pending' || kycStatus === 'Pending' ? '🟡' : '🔴');
-            
-            html += `<tr>
-                <td class="account-id">${c.id?.slice(0, 8) || 'N/A'}</td>
-                <td>${c.full_name || c.name || 'N/A'}</td>
-                <td>$${Number(usd).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td>€${Number(eur).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td>R$${Number(brl).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td>£${Number(gbp).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td>${kycBadge} ${kycStatus}</td>
-                <td>${c.username || c.email?.split('@')[0] || 'N/A'}</td>
-                <td>
-                    <button class="success" onclick="editClient('${c.id}')" title="Editar"><i class="fas fa-user-edit"></i></button>
-                    <button class="danger" onclick="deleteClient('${c.id}')" title="Deletar"><i class="fas fa-trash-alt"></i></button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')" title="Adicionar USD">💵</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')" title="Adicionar EUR">💶</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')" title="Adicionar BRL">🇧🇷</button>
-                    <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')" title="Adicionar GBP">🇬🇧</button>
-                </td>
-            </tr>`;
-        }
-        
-        document.getElementById('clientsList').innerHTML = html;
-        document.getElementById('totalClients').innerHTML = total;
-        console.log(`✅ ${total} clientes carregados do Supabase`);
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar clientes:', error);
-        document.getElementById('clientsList').innerHTML = `
-            <tr><td colspan="9" style="text-align:center; padding:20px; color:#ff4466;">
-                ❌ Erro ao carregar clientes: ${error.message}
-            </td></tr>
-        `;
-    }
-}
-
-// ============ AJUSTAR SALDO (VERSÃO ÚNICA E CORRETA) ============
-async function adjustBalance(id, currency) {
-    let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
-    if(!valor) return;
-    if(isNaN(valor) || parseFloat(valor) <= 0) {
-        alert("❌ Digite um valor válido!");
-        return;
-    }
-    
-    try {
-        const { data: balance, error: buscaError } = await supabase
-            .from('balances')
-            .select('id, amount')
-            .eq('user_id', id)
-            .eq('currency', currency)
-            .maybeSingle();
-        
-        if (buscaError) {
-            console.error("Erro ao buscar saldo:", buscaError);
-            alert("❌ Erro ao buscar saldo: " + buscaError.message);
-            return;
-        }
-        
-        const valorAtual = balance?.amount || 0;
-        const novoSaldo = valorAtual + parseFloat(valor);
-        
-        if (balance) {
-            const { error: updateError } = await supabase
-                .from('balances')
-                .update({ 
-                    amount: novoSaldo,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', balance.id);
-            
-            if (updateError) {
-                alert("❌ Erro ao atualizar saldo: " + updateError.message);
-                return;
-            }
-        } else {
-            const { error: insertError } = await supabase
-                .from('balances')
-                .insert({
-                    user_id: id,
-                    currency: currency,
-                    amount: parseFloat(valor),
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-            
-            if (insertError) {
-                alert("❌ Erro ao criar saldo: " + insertError.message);
-                return;
-            }
-        }
-        
-        const symbol = currency === 'USD' ? '$' : 
-                      (currency === 'EUR' ? '€' : 
-                      (currency === 'BRL' ? 'R$' : '£'));
-        
-        alert(`✅ Saldo ajustado!\n\n${symbol}${novoSaldo.toFixed(2)} ${currency}`);
-        addActivity(`💰 SALDO AJUSTADO: ${symbol}${valor} para ${currency}`);
-        await carregarClientes();
-        
-    } catch (error) {
-        console.error('❌ Erro ao ajustar saldo:', error);
-        alert('❌ Erro ao ajustar saldo: ' + error.message);
-    }
-}
-
-// ============ ATUALIZAR SELECT DE TRANSFERÊNCIA (CORRIGIDO) ============
-async function updateTransferSelect() {
-    let select = document.getElementById('transferClient');
-    if(!select) return;
-    
-    try {
-        const { data: clientes, error } = await supabase
-            .from('users')
-            .select('id, full_name, email')
-            .order('created_at', { ascending: false });
-        
-        if(error) {
-            console.error("Erro ao buscar clientes:", error);
-            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-            return;
-        }
-        
-        if(!clientes || clientes.length === 0) {
-            select.innerHTML = '<option value="">📭 Nenhum cliente encontrado</option>';
-            return;
-        }
-        
-        select.innerHTML = '<option value="">👇 Selecione um cliente</option>';
-        clientes.forEach(cliente => {
-            const displayName = cliente.full_name || cliente.email || 'Sem nome';
-            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
-        });
-        
-        console.log(`✅ Select de transferência atualizado com ${clientes.length} clientes`);
-        
-    } catch(erro) {
-        console.error("Erro inesperado:", erro);
-        select.innerHTML = '<option value="">⚠️ Erro ao carregar clientes</option>';
-    }
-}
-
-// ============ ATUALIZAR SELECT DE MENSAGENS (CORRIGIDO) ============
-async function updateMessageSelect() {
-    let select = document.getElementById('messageClientSelect');
-    if(!select) return;
-    
-    try {
-        const { data: clientes, error } = await supabase
-            .from('users')
-            .select('id, full_name, email')
-            .order('created_at', { ascending: false });
-        
-        if(error) {
-            console.error("Erro ao buscar clientes:", error);
-            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-            return;
-        }
-        
-        if(!clientes || clientes.length === 0) {
-            select.innerHTML = '<option value="">📭 Nenhum cliente</option>';
-            return;
-        }
-        
-        select.innerHTML = '<option value="">👇 Selecione um cliente...</option>';
-        clientes.forEach(cliente => {
-            const displayName = cliente.full_name || cliente.email || 'Sem nome';
-            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
-        });
-        
-        select.onchange = () => renderClientMessages();
-        console.log(`✅ Select de mensagens atualizado com ${clientes.length} clientes`);
-        
-    } catch(erro) {
-        console.error("Erro inesperado:", erro);
-        select.innerHTML = '<option value="">⚠️ Erro ao carregar</option>';
-    }
-}
-
-    // ============ OPERAÇÕES ============
+    // ============ OPERAÇÕES ==========
     function quickTransfer() {
         let clientId = document.getElementById('transferClient').value;
         let amount = parseFloat(document.getElementById('transferAmount').value);
@@ -1817,24 +1186,24 @@ async function updateMessageSelect() {
             syncAllWithBankSite();
         }
     }
-    
+
     function initiateSWIFT() {
         let clientId = document.getElementById('transferClient').value;
         let amount = parseFloat(document.getElementById('transferAmount').value);
         let currency = document.getElementById('transferCurrency').value;
-        let reason = document.getElementById('transferReason').value;
         if(!clientId || isNaN(amount) || amount <= 0) { alert("Selecione cliente e valor"); return; }
         let client = clientsList.find(c => c.id == clientId);
         let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
         alert(`🌐 SWIFT\n\nPara: ${client.name}\nConta: ${client.accountId}\nValor: ${symbol}${formatNumber(amount)}\nMoeda: ${currency}\nSWIFT: ZNTXUS33XXX`);
         addActivity(`🌐 SWIFT: ${symbol}${formatNumber(amount)} para ${client.name}`);
     }
-    
-    // ============ CRYPTO SWAP ============
+
+    // ============ CRYPTO SWAP ==========
     function showSwapCryptoModal() {
         let clientId = document.getElementById('transferClient').value;
         if(!clientId) { alert("Selecione um cliente primeiro"); return; }
         currentSwapClient = clientsList.find(c => c.id == clientId);
+        if(!currentSwapClient) { alert("Cliente não encontrado"); return; }
         document.getElementById('swapCustomerName').innerText = currentSwapClient.name;
         document.getElementById('swapFromCurrency').value = 'USD';
         document.getElementById('swapAmount').value = '';
@@ -1842,9 +1211,9 @@ async function updateMessageSelect() {
         document.getElementById('cryptoSwapResult').style.display = 'none';
         document.getElementById('cryptoSswapModal').classList.add('active');
     }
-    
+
     function closeSwapModal() { document.getElementById('cryptoSswapModal').classList.remove('active'); currentSwapClient = null; }
-    
+
     function confirmSwapToCrypto() {
         if (!currentSwapClient) return;
         let fromCurrency = document.getElementById('swapFromCurrency').value;
@@ -1871,8 +1240,8 @@ async function updateMessageSelect() {
             syncAllWithBankSite();
         }
     }
-    
-    // ============ UI ============
+
+    // ============ UI ==========
     function updateUI() {
         document.getElementById('totalClients').innerText = clientsList.length;
         document.getElementById('pendingLoans').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
@@ -1882,106 +1251,66 @@ async function updateMessageSelect() {
         document.getElementById('statRejected').innerHTML = loanRequests.filter(l => l.status === 'rejected').length;
         document.getElementById('statTotalDisbursed').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
         document.getElementById('pendingCount').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
-        carregarClientes();
         renderLoans();
-        updateTransferSelect();
-        updateMessageSelect();
         refreshReserves();
         updateUnreadCount();
     }
-    
-    // ============ ATUALIZAR SELECT DE TRANSFERÊNCIA (BUSCANDO DO SUPABASE) ============
-async function updateTransferSelect() {
-    let select = document.getElementById('transferClient');
-    if(!select) return;
-    
-    try {
-        const { data: clientes, error } = await supabase
-            .from('users')
-            .select('id, full_name, email')
-            .order('created_at', { ascending: false });
-        
-        if(error) {
-            console.error("Erro ao buscar clientes:", error);
-            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-            return;
-        }
-        
-        if(!clientes || clientes.length === 0) {
-            select.innerHTML = '<option value="">📭 Nenhum cliente encontrado</option>';
-            return;
-        }
-        
-        select.innerHTML = '<option value="">👇 Selecione um cliente</option>';
-        clientes.forEach(cliente => {
-            const displayName = cliente.full_name || cliente.email || 'Sem nome';
-            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
-        });
-        
-        console.log(`✅ Select de transferência atualizado com ${clientes.length} clientes`);
-        
-    } catch(erro) {
-        console.error("Erro inesperado:", erro);
-        select.innerHTML = '<option value="">⚠️ Erro ao carregar clientes</option>';
-    }
-}
-    
-    // ============ ATUALIZAR SELECT DE MENSAGENS (BUSCANDO DO SUPABASE) ============
-async function updateMessageSelect() {
-    let select = document.getElementById('messageClientSelect');
-    if(!select) return;
-    
-    try {
-        const { data: clientes, error } = await supabase
-            .from('users')
-            .select('id, full_name, email')
-            .order('created_at', { ascending: false });
-        
-        if(error) {
-            console.error("Erro ao buscar clientes:", error);
-            select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-            return;
-        }
-        
-        if(!clientes || clientes.length === 0) {
-            select.innerHTML = '<option value="">📭 Nenhum cliente</option>';
-            return;
-        }
-        
-        select.innerHTML = '<option value="">👇 Selecione um cliente...</option>';
-        clientes.forEach(cliente => {
-            const displayName = cliente.full_name || cliente.email || 'Sem nome';
-            select.innerHTML += `<option value="${cliente.id}">${displayName}</option>`;
-        });
-        
-        select.onchange = () => renderClientMessages();
-        console.log(`✅ Select de mensagens atualizado com ${clientes.length} clientes`);
-        
-    } catch(erro) {
-        console.error("Erro inesperado:", erro);
-        select.innerHTML = '<option value="">⚠️ Erro ao carregar</option>';
-    }
-}
+
     function renderActivityLog() {
         let html = '';
-        activityLogs.slice(0, 20).forEach(log => { let time = new Date(log.timestamp).toLocaleString(); html += `<div class="activity-item"><span>${log.action}</span><span>${time}</span></div>`; });
+        activityLogs.slice(0, 20).forEach(log => { let time = new Date(log.timestamp).toLocaleString(); html += `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #2a2b4e30; font-size:11px;"><span>${log.action}</span><span style="color:#666;">${time}</span></div>`; });
         document.getElementById('activityLog').innerHTML = html;
     }
-    
+
     function clearActivityLog() {
         if(confirm("Limpar todos os logs?")) { activityLogs = [{ action: "Log limpo", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }]; saveData(); renderActivityLog(); addActivity("Log limpo"); }
     }
-    
-    // ============ LOGIN CORRIGIDO ============
+
+    // ============ INTEGRAÇÃO ==========
+    function generateIntegrationCode() {
+        currentIntegrationCode = `<script>
+function carregarDadosBanco() {
+    let clientes = localStorage.getItem('zentronix_bank_clients');
+    let reservas = localStorage.getItem('zentronix_bank_reserves');
+    if (clientes) console.log("✅ Clientes:", JSON.parse(clientes).length);
+    return { clientes: clientes ? JSON.parse(clientes) : [], reservas: reservas ? JSON.parse(reservas) : {} };
+}
+function solicitarEmprestimo(clienteId, clienteNome, valor, moeda) {
+    let emp = JSON.parse(localStorage.getItem('zentronix_loans') || '[]');
+    emp.push({ id: Date.now(), clientId: clienteId, clientName: clienteNome, amount: valor, status: "pending", requestedCurrency: moeda });
+    localStorage.setItem('zentronix_loans', JSON.stringify(emp));
+    alert("✅ Empréstimo solicitado!");
+}
+carregarDadosBanco();
+console.log("🏦 Integração ativa");
+<\/script>`;
+        document.getElementById('integrationCodeText').innerText = currentIntegrationCode;
+        document.getElementById('integrationCodeModal').classList.add('active');
+        addActivity(`📋 Código de integração gerado.`);
+    }
+
+    function copyIntegrationCode() {
+        navigator.clipboard.writeText(currentIntegrationCode).then(() => { alert("✅ Código copiado!"); }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = currentIntegrationCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert("✅ Código copiado!");
+        });
+    }
+
+    function closeIntegrationCodeModal() { document.getElementById('integrationCodeModal').classList.remove('active'); }
+
+    // ============ LOGIN ==========
     function doLogin() {
         let user = document.getElementById('adminUser').value;
         let pass = document.getElementById('adminPass').value;
         
         if(user === "admin" && pass === "admin123") {
-            // Salvar sessão no sessionStorage
             sessionStorage.setItem('adminLoggedIn', 'true');
             sessionStorage.setItem('adminName', 'Master Admin');
-            
             currentUser = { name: "Master Admin" };
             loadData();
             addActivity(`Login: Master Admin`);
@@ -1989,54 +1318,57 @@ async function updateMessageSelect() {
             document.getElementById('dashboardArea').style.display = 'block';
             document.getElementById('currentAdminName').innerHTML = "Master Admin";
             updateUI();
+            carregarClientes();
+            updateTransferSelect();
+            updateMessageSelect();
             syncAllWithBankSite();
         } else {
             document.getElementById('loginError').innerText = 'Credenciais inválidas! Use admin / admin123';
         }
     }
-    
+
     function showLogoutConfirm() { document.getElementById('logoutConfirmModal').classList.add('active'); }
     function closeLogoutModal() { document.getElementById('logoutConfirmModal').classList.remove('active'); }
     function confirmLogout() { 
         closeLogoutModal(); 
         if(currentUser) addActivity(`Logout: ${currentUser.name}`); 
         currentUser = null; 
+        sessionStorage.removeItem('adminLoggedIn');
+        sessionStorage.removeItem('adminName');
         document.getElementById('loginArea').style.display = 'flex'; 
         document.getElementById('dashboardArea').style.display = 'none'; 
         document.getElementById('adminUser').value = '';
         document.getElementById('adminPass').value = '';
     }
 
-    // ============ VERIFICAR SESSÃO AO CARREGAR ============
     function checkAdminSession() {
         const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
         if (isLoggedIn === 'true') {
-            // Restaura o estado do admin
             currentUser = { name: sessionStorage.getItem('adminName') };
-            
-            // Mostra o dashboard em vez do login
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('dashboardArea').style.display = 'block';
             document.getElementById('currentAdminName').innerHTML = currentUser.name;
-            
-            // Recarregar dados
             loadData();
             updateUI();
+            carregarClientes();
+            updateTransferSelect();
+            updateMessageSelect();
             syncAllWithBankSite();
             console.log("✅ Sessão restaurada - Admin logado");
         }
     }
-    // ============ INIT ============
+
+    // ============ INIT ==========
     loadData();
     
     window.onload = async () => {
         checkAdminSession();
         refreshReserves();
         renderActivityLog();
+        await carregarClientes();
         await updateTransferSelect();
         await updateMessageSelect();
         updateUnreadCount();
-        await carregarClientes();
         console.log("✅ Sistema iniciado - Use admin / admin123");
     };
 </script>
