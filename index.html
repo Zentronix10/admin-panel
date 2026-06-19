@@ -161,6 +161,9 @@
         button.warning { background: #ffaa00; color: #0a0b1e; }
         button.crypto { background: linear-gradient(95deg, #7c3aed, #ec489a); color: white; }
         button.message-btn { background: linear-gradient(95deg, #00f2ff, #bc13fe); color: white; }
+        button.api { background: linear-gradient(95deg, #ff6b6b, #ee5a24); color: white; }
+        button.tab { background: #2a2b4e; color: #00f2ff; border: 1px solid #00f2ff30; }
+        button.tab.active { background: #00f2ff; color: #0a0b1e; }
         
         .loan-card {
             background: rgba(0,0,0,0.4);
@@ -250,6 +253,73 @@
             word-wrap: break-word;
         }
         
+        .sync-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .sync-status.pending { background: #ffaa0030; color: #ffaa00; }
+        .sync-status.success { background: #00ff8830; color: #00ff88; }
+        .sync-status.error { background: #ff446630; color: #ff4466; }
+        
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #2a2b4e30;
+            font-size: 11px;
+        }
+        .activity-item span:last-child { color: #666; }
+        
+        .tab-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #2a2b4e;
+            padding-bottom: 10px;
+        }
+        .tab-container button {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px 8px 0 0;
+            background: #2a2b4e;
+            color: #666;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .tab-container button.active {
+            background: #00f2ff30;
+            color: #00f2ff;
+            border-bottom: 2px solid #00f2ff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .api-result {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .api-result.success { background: #00ff8830; color: #00ff88; }
+        .api-result.error { background: #ff446630; color: #ff4466; }
+        .api-result.pending { background: #ffaa0030; color: #ffaa00; }
+        
+        .account-number-display {
+            background: #0d1117;
+            border: 1px solid #00f2ff;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 18px;
+            color: #00f2ff;
+            letter-spacing: 2px;
+        }
+        
         @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } .reserve-grid { grid-template-columns: 1fr; } .form-row-2cols { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -258,13 +328,41 @@
 <!-- MODAIS -->
 <div id="approveLoanModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-check-circle"></i> Approve & Disburse Loan</h3><div style="text-align: left;"><p><strong>Customer:</strong> <span id="approveLoanCustomer"></span></p><p><strong>Requested Amount:</strong> <span id="approveLoanRequestedAmount"></span></p><div style="margin: 15px 0;"><label>💰 Disbursement Amount:</label><input type="number" id="disbursementAmount" step="0.01"></div><div style="margin: 15px 0;"><label>🌍 Currency:</label><select id="loanCurrency"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="BRL">🇧🇷 BRL</option><option value="GBP">🇬🇧 GBP</option></select></div><div style="margin: 15px 0;"><label>📝 Admin Notes:</label><textarea id="approveLoanNotes" rows="2"></textarea></div><div class="sync-status" id="syncStatusMsg" style="display:none;"></div></div><div class="modal-buttons"><button onclick="confirmApproveLoan()" class="success">✅ APPROVE</button><button onclick="closeApproveLoanModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="loanDetailsModal" class="modal-overlay"><div class="modal-content"><h3>Loan Details</h3><div id="loanDetailsContent"></div><div class="modal-buttons"><button onclick="closeLoanDetailsModal()" class="secondary">Close</button></div></div></div>
-<div id="clientHistoryModal" class="modal-overlay"><div class="modal-content" style="max-width: 700px;"><h3><i class="fas fa-history"></i> Client Bank Statement</h3><div id="clientHistoryContent" style="max-height: 500px; overflow-y: auto;"></div><div class="modal-buttons"><button onclick="closeClientHistoryModal()" class="secondary">Close</button></div></div></div>
 <div id="messageModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-envelope"></i> Send Message to Client</h3><div style="text-align: left;"><p><strong>Client:</strong> <span id="messageClientName"></span></p><div style="margin: 15px 0;"><label>📝 Subject:</label><input type="text" id="messageSubject" placeholder="Message subject"></div><div style="margin: 15px 0;"><label>💬 Message:</label><textarea id="messageContent" rows="5" placeholder="Type your message here..."></textarea></div></div><div class="modal-buttons"><button onclick="sendMessageToClient()" class="success"><i class="fas fa-paper-plane"></i> SEND MESSAGE</button><button onclick="closeMessageModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="inboxModal" class="modal-overlay"><div class="modal-content" style="max-width: 650px;"><h3><i class="fas fa-inbox"></i> Message Inbox <span id="inboxUnreadBadge" style="font-size:12px;"></span></h3><div id="inboxMessagesList" style="max-height: 500px; overflow-y: auto;"></div><div class="modal-buttons"><button onclick="closeInboxModal()" class="secondary">CLOSE</button></div></div></div>
 <div id="logoutConfirmModal" class="modal-overlay"><div class="modal-content"><h3>Exit Dashboard</h3><p>Are you sure?</p><div class="modal-buttons"><button onclick="confirmLogout()" class="danger">YES</button><button onclick="closeLogoutModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="cryptoSswapModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-coins"></i> Swap Fiat to Crypto</h3><div style="text-align:left;"><p><strong>Customer:</strong> <span id="swapCustomerName"></span></p><div style="margin:10px 0;"><label>From Currency:</label><select id="swapFromCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="BRL">BRL</option><option value="GBP">GBP</option></select></div><div style="margin:10px 0;"><label>Amount:</label><input type="number" id="swapAmount" step="0.01"></div><div style="margin:10px 0;"><label>To Crypto:</label><select id="swapToCrypto"><option value="BTC">₿ Bitcoin</option><option value="ETH">Ξ Ethereum</option><option value="BRC">✨ BradiCoin</option><option value="SOL">◎ Solana</option><option value="LTC">Ł Litecoin</option><option value="USDT">💵 Tether</option><option value="MATIC">🔷 Polygon</option></select></div><div id="cryptoSwapResult" class="sync-status" style="display:none;"></div></div><div class="modal-buttons"><button onclick="confirmSwapToCrypto()" class="crypto">CONFIRM SWAP</button><button onclick="closeSwapModal()" class="secondary">CANCEL</button></div></div></div>
 <div id="integrationCodeModal" class="modal-overlay"><div class="modal-content"><h3><i class="fas fa-code"></i> Código de Integração</h3><p style="margin-bottom:10px;">Copie o código abaixo e cole no site do banco:</p><div class="code-container"><pre id="integrationCodeText"></pre></div><div class="modal-buttons"><button onclick="copyIntegrationCode()" class="success"><i class="fas fa-copy"></i> COPIAR</button><button onclick="closeIntegrationCodeModal()" class="secondary">FECHAR</button></div></div></div>
-<div id="editClientModal" class="modal-overlay"><div class="modal-content" style="max-width:600px;"><h3><i class="fas fa-user-edit"></i> Editar Cliente</h3><div id="editClientContent" style="text-align:left;"></div><div class="modal-buttons"><button onclick="saveClientEdit()" class="success">SALVAR</button><button onclick="closeEditModal()" class="secondary">CANCELAR</button></div></div></div>
+<div id="editClientModal" class="modal-overlay"><div class="modal-content" style="max-width:600px;"><h3><i class="fas fa-user-edit"></i> Editar Cliente</h3>
+    <div class="tab-container">
+        <button class="tab active" onclick="switchEditTab('dados')">📋 Dados</button>
+        <button class="tab" onclick="switchEditTab('senha')">🔑 Senha</button>
+        <button class="tab" onclick="switchEditTab('api')">🔍 Verificação</button>
+    </div>
+    <div id="editTabDados" class="tab-content active"><div id="editClientContent" style="text-align:left;"></div></div>
+    <div id="editTabSenha" class="tab-content"><div style="text-align:left;">
+        <label>🔑 Nova Senha:</label><input type="password" id="edit_new_password" placeholder="Digite a nova senha" style="width:100%; margin-bottom:10px;">
+        <label>✅ Confirmar Senha:</label><input type="password" id="edit_confirm_password" placeholder="Confirme a nova senha" style="width:100%; margin-bottom:10px;">
+        <button onclick="changeClientPassword()" class="success" style="width:100%;"><i class="fas fa-key"></i> ALTERAR SENHA</button>
+        <div id="passwordChangeResult" style="margin-top:10px;"></div>
+    </div></div>
+    <div id="editTabApi" class="tab-content"><div style="text-align:left;">
+        <div style="margin-bottom:15px;">
+            <h4>🆔 Melissa API - Verificação de Identidade</h4>
+            <input type="text" id="melissa_document" placeholder="Número do Documento" style="width:100%; margin-bottom:8px;">
+            <input type="text" id="melissa_name" placeholder="Nome Completo" style="width:100%; margin-bottom:8px;">
+            <button onclick="verificarMelissa()" class="api" style="width:100%;"><i class="fas fa-id-card"></i> VERIFICAR IDENTIDADE</button>
+            <div id="melissaResult" class="api-result" style="display:none;"></div>
+        </div>
+        <div>
+            <h4>📍 Abstract API - Validação de Endereço</h4>
+            <input type="text" id="abstract_address" placeholder="Endereço Completo" style="width:100%; margin-bottom:8px;">
+            <button onclick="verificarAbstract()" class="api" style="width:100%;"><i class="fas fa-map-marker-alt"></i> VALIDAR ENDEREÇO</button>
+            <div id="abstractResult" class="api-result" style="display:none;"></div>
+        </div>
+    </div></div>
+    <div class="modal-buttons"><button onclick="saveClientEdit()" class="success">SALVAR</button><button onclick="closeEditModal()" class="secondary">CANCELAR</button></div>
+</div></div>
 
 <!-- LOGIN -->
 <div id="loginArea" class="login-container">
@@ -281,7 +379,7 @@
 <!-- DASHBOARD -->
 <div id="dashboardArea" class="dashboard">
     <div class="header">
-        <h2><i class="fas fa-chalkboard-user"></i> ZENTRONIX BANK - ADMIN DASHBOARD PRO</h2>
+        <h2><i class="fas fa-chalkboard-user"></i> ZENTRONIX BANK - ADMIN DASHBOARD</h2>
         <div class="user-info">
             <span id="currentAdminName">Master Admin</span>
             <button onclick="openInbox()" class="message-btn"><i class="fas fa-inbox"></i> INBOX <span id="headerUnreadCount" class="badge" style="display:none;">0</span></button>
@@ -308,7 +406,18 @@
     </div>
     
     <div class="panels">
-        <div class="panel"><h2><i class="fas fa-piggy-bank"></i> 💰 BANK RESERVES (900T per Currency)</h2><div class="reserve-grid"><div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div><div class="reserve-card"><div class="currency">🇬🇧 GBP</div><div class="amount gbp" id="reserveGBP">£900,000,000,000,000</div></div></div><div class="flex-row"><button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button><button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button></div></div>
+        <div class="panel"><h2><i class="fas fa-piggy-bank"></i> 💰 BANK RESERVES</h2>
+            <div class="reserve-grid">
+                <div class="reserve-card"><div class="currency">🇺🇸 USD</div><div class="amount usd" id="reserveUSD">$900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇪🇺 EUR</div><div class="amount eur" id="reserveEUR">€900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇧🇷 BRL</div><div class="amount brl" id="reserveBRL">R$900,000,000,000,000</div></div>
+                <div class="reserve-card"><div class="currency">🇬🇧 GBP</div><div class="amount gbp" id="reserveGBP">£900,000,000,000,000</div></div>
+            </div>
+            <div class="flex-row">
+                <button onclick="refreshReserves()" class="success"><i class="fas fa-sync-alt"></i> REFRESH</button>
+                <button onclick="exportReserveReport()" class="secondary"><i class="fas fa-file-excel"></i> EXPORT</button>
+            </div>
+        </div>
         
         <div class="panel"><h2><i class="fas fa-users"></i> 👥 CUSTOMER MANAGEMENT</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -316,9 +425,9 @@
                 <input type="email" id="clientEmail" placeholder="Email">
                 <input type="text" id="clientDocument" placeholder="Document">
                 <input type="text" id="clientAddress" placeholder="Address">
-                <input type="text" id="clientStreet" placeholder="Street/Rua">
-                <input type="text" id="clientNumber" placeholder="Number/Número">
-                <input type="text" id="clientBankAccount" placeholder="Bank Account Number">
+                <input type="text" id="clientStreet" placeholder="Street">
+                <input type="text" id="clientNumber" placeholder="Number">
+                <input type="text" id="clientBankAccount" placeholder="Bank Account">
                 <input type="number" id="clientBalanceUSD" placeholder="USD" value="0">
                 <input type="number" id="clientBalanceEUR" placeholder="EUR" value="0">
                 <input type="number" id="clientBalanceBRL" placeholder="BRL" value="0">
@@ -334,7 +443,7 @@
             <button onclick="addClient()" class="success" style="width:100%; margin-top:10px;"><i class="fas fa-user-plus"></i> CREATE CUSTOMER</button>
             <div style="max-height: 350px; overflow-y: auto; margin-top: 15px;">
                 <table style="width:100%; font-size:10px;">
-                    <thead><tr><th>ID</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Username</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Conta</th><th>Name</th><th>USD</th><th>EUR</th><th>BRL</th><th>GBP</th><th>KYC</th><th>Username</th><th>Actions</th></tr></thead>
                     <tbody id="clientsList"></tbody>
                 </table>
             </div>
@@ -376,7 +485,7 @@
         </div>
         
         <div class="panel"><h2><i class="fas fa-history"></i> 📝 ACTIVITY LOG</h2>
-            <div class="activity-log" id="activityLog"></div>
+            <div id="activityLog"></div>
             <button onclick="clearActivityLog()" class="secondary" style="margin-top:10px; width:100%;">CLEAR LOG</button>
         </div>
     </div>
@@ -404,6 +513,16 @@
     let currentEditClientId = null;
     let currentIntegrationCode = "";
 
+    // ============ FUNÇÃO PARA GERAR NÚMERO DE CONTA PERSONALIZADO ==========
+    function generateAccountNumber() {
+        // Formato: ZNTX-4821-7390-1256
+        const prefix = 'ZNTX';
+        const part1 = String(Math.floor(1000 + Math.random() * 9000));
+        const part2 = String(Math.floor(1000 + Math.random() * 9000));
+        const part3 = String(Math.floor(1000 + Math.random() * 9000));
+        return `${prefix}-${part1}-${part2}-${part3}`;
+    }
+
     // ============ FUNÇÕES AUXILIARES ==========
     function generateAccountId() { return "ZNX-" + Math.floor(100000 + Math.random() * 900000).toString(); }
     function generateRandomPassword() {
@@ -414,11 +533,13 @@
     }
     function generateClientPassword() {
         let newPassword = generateRandomPassword();
-        document.getElementById('clientPassword').value = newPassword;
-        document.getElementById('clientConfirmPassword').value = newPassword;
+        let pwdField = document.getElementById('clientPassword');
+        let confirmField = document.getElementById('clientConfirmPassword');
+        if(pwdField) pwdField.value = newPassword;
+        if(confirmField) confirmField.value = newPassword;
     }
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
-    function formatNumber(num) { if (num === undefined || num === null) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+    function formatNumber(num) { if (num === undefined || num === null || isNaN(num)) return '0'; return num.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
     function formatTrillion(num) { if (num >= 1000000000000000) return (num / 1000000000000000).toFixed(0) + "T"; return formatNumber(num); }
 
     // ============ SALVAMENTO ==========
@@ -431,9 +552,6 @@
         localStorage.setItem('zentronix_activity', JSON.stringify(activityLogs));
         localStorage.setItem('zentronix_reserves', JSON.stringify(bankReserves));
         localStorage.setItem('zentronix_total_disbursed', totalDisbursedAmountUSDEquivalent);
-        localStorage.setItem('zentronix_bank_clients', JSON.stringify(clientsList));
-        localStorage.setItem('zentronix_bank_reserves', JSON.stringify(bankReserves));
-        localStorage.setItem('zentronix_last_sync', new Date().toISOString());
         saveMessages();
     }
     
@@ -460,13 +578,22 @@
     }
 
     function addTransaction(client, type, amount, currency, description) {
+        if(!client) return;
         let rates = { USD: 1, EUR: 1.08, BRL: 0.18, GBP: 1.28 };
-        let tx = { date: new Date().toISOString(), type: type, amount: amount, currency: currency, description: description, balance: (client.balance_usd*1) + (client.balance_eur*1.08) + (client.balance_brl*0.18) + (client.balance_gbp*1.28) };
+        let tx = { 
+            date: new Date().toISOString(), 
+            type: type, 
+            amount: amount, 
+            currency: currency, 
+            description: description, 
+            balance: (client.balance_usd || 0) + ((client.balance_eur || 0) * 1.08) + ((client.balance_brl || 0) * 0.18) + ((client.balance_gbp || 0) * 1.28) 
+        };
+        if(!client.transactionHistory) client.transactionHistory = [];
         client.transactionHistory.unshift(tx);
         if(client.transactionHistory.length > 100) client.transactionHistory.pop();
     }
 
-    // ============ FUNÇÃO ADD CLIENT (CORRIGIDA) ==========
+    // ============ FUNÇÃO ADD CLIENT COM ACCOUNT NUMBER ==========
     async function addClient() {
         let name = document.getElementById('clientName').value;
         let email = document.getElementById('clientEmail').value;
@@ -484,12 +611,12 @@
         if(!password || password.length < 6) { alert("❌ A senha deve ter pelo menos 6 caracteres!"); return; }
         if(password !== confirmPassword) { alert("❌ As senhas não coincidem!"); return; }
         
-        const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-        if(existingUser) { alert("❌ Este email já está cadastrado!"); return; }
-        
-        alert("🔄 Criando conta no Supabase...");
-        
         try {
+            const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
+            if(existingUser) { alert("❌ Este email já está cadastrado!"); return; }
+            
+            alert("🔄 Criando conta no Supabase...");
+            
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: email, password: password,
                 options: { data: { full_name: name, username: username } }
@@ -499,11 +626,16 @@
             if (!authData || !authData.user) { alert("❌ Erro: Não foi possível criar o usuário."); return; }
             
             const userId = authData.user.id;
+            // ============ GERAR NÚMERO DE CONTA PERSONALIZADO ==========
+            const accountNumber = generateAccountNumber();
             const accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
             
             const { error: insertError } = await supabase.from('users').insert({
                 id: userId, email: email, username: username, full_name: name,
-                phone: '', kyc_status: kyc || 'Pending', created_at: new Date().toISOString()
+                phone: '', kyc_status: kyc || 'Pending', 
+                account_number: accountNumber,
+                account_id: accountId,
+                created_at: new Date().toISOString()
             });
             if (insertError) { alert("❌ Erro ao salvar dados: " + insertError.message); return; }
             
@@ -521,11 +653,12 @@
                 await supabase.from('balances').insert({
                     user_id: userId, currency: b.currency, amount: b.amount,
                     created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-                });
+                }).catch(e => console.warn('Erro ao inserir saldo:', e));
             }
             
             const newClient = {
-                id: userId, accountId: accountId, name: name, email: email,
+                id: userId, accountId: accountId, accountNumber: accountNumber,
+                name: name, email: email,
                 document: documentNum || '', address: address || '', street: street || '',
                 number: number || '', bankAccountNumber: bankAccount || '',
                 balance_usd: usd, balance_eur: eur, balance_brl: brl, balance_gbp: gbp,
@@ -538,8 +671,9 @@
             clientsList.push(newClient);
             saveData();
             
-            alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountId}`);
+            alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountNumber}\n\n⚠️ Guarde a senha! Ela será usada para o login.`);
             
+            // Limpar formulário
             document.getElementById('clientName').value = '';
             document.getElementById('clientEmail').value = '';
             document.getElementById('clientDocument').value = '';
@@ -555,6 +689,9 @@
             document.getElementById('clientPassword').value = '';
             document.getElementById('clientConfirmPassword').value = '';
             
+            // Salvar no localStorage para o site do banco
+            salvarClienteParaSite(email, password, name, accountNumber, usd, eur, brl, gbp);
+            
             await carregarClientes();
             await updateTransferSelect();
             await updateMessageSelect();
@@ -567,7 +704,101 @@
         }
     }
 
-    // ============ FUNÇÃO EDIT CLIENT (CORRIGIDA) ==========
+    // ============ SALVAR CLIENTE NO LOCALSTORAGE PARA O SITE ==========
+    function salvarClienteParaSite(email, password, name, accountNumber, usd, eur, brl, gbp) {
+        let clientes = JSON.parse(localStorage.getItem('zentronix_bank_clients') || '[]');
+        const existe = clientes.some(c => c.email === email);
+        if (!existe) {
+            clientes.push({
+                email: email,
+                password: password,
+                nome: name,
+                accountNumber: accountNumber,
+                saldoUSD: usd,
+                saldoEUR: eur,
+                saldoBRL: brl,
+                saldoGBP: gbp,
+                kyc: 'Pending',
+                criadoEm: new Date().toISOString()
+            });
+            localStorage.setItem('zentronix_bank_clients', JSON.stringify(clientes));
+            console.log("✅ Cliente salvo no localStorage para o site:", email);
+        }
+    }
+
+    // ============ FUNÇÃO CARREGAR CLIENTES ==========
+    async function carregarClientes() {
+        try {
+            const { data: clientes, error } = await supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) { 
+                console.error('❌ Erro ao carregar clientes:', error); 
+                return; 
+            }
+            
+            let html = '';
+            if (!clientes || clientes.length === 0) {
+                html = '<tr><td colspan="9" style="text-align:center; padding:20px; opacity:0.6;">📭 Nenhum cliente cadastrado</td></tr>';
+            } else {
+                for (const c of clientes) {
+                    const { data: balances } = await supabase
+                        .from('balances')
+                        .select('currency, amount')
+                        .eq('user_id', c.id);
+                    
+                    const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
+                    const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
+                    const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
+                    const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
+                    
+                    const kycStatus = c.kyc_status || 'Pending';
+                    const kycBadge = kycStatus === 'approved' || kycStatus === 'Approved' ? '🟢' : 
+                                    (kycStatus === 'pending' || kycStatus === 'Pending' ? '🟡' : '🔴');
+                    
+                    const accountNumber = c.account_number || 'N/A';
+                    
+                    html += `<tr>
+                        <td class="account-id" style="font-size:9px;">${accountNumber}</td>
+                        <td>${c.full_name || c.name || 'N/A'}</td>
+                        <td>$${Number(usd).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td>€${Number(eur).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td>R$${Number(brl).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td>£${Number(gbp).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td>${kycBadge} ${kycStatus}</td>
+                        <td>${c.username || c.email?.split('@')[0] || 'N/A'}</td>
+                        <td>
+                            <button class="success" onclick="editClient('${c.id}')" title="Editar"><i class="fas fa-user-edit"></i></button>
+                            <button class="danger" onclick="deleteClient('${c.id}')" title="Deletar"><i class="fas fa-trash-alt"></i></button>
+                            <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')" title="Adicionar USD">💵</button>
+                            <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')" title="Adicionar EUR">💶</button>
+                            <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')" title="Adicionar BRL">🇧🇷</button>
+                            <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')" title="Adicionar GBP">🇬🇧</button>
+                        </td>
+                    </tr>`;
+                }
+            }
+            
+            const clientsListEl = document.getElementById('clientsList');
+            if(clientsListEl) clientsListEl.innerHTML = html;
+            
+            const totalClientsEl = document.getElementById('totalClients');
+            if(totalClientsEl) totalClientsEl.innerHTML = clientes?.length || 0;
+            
+            console.log(`✅ ${clientes?.length || 0} clientes carregados`);
+            
+        } catch(error) {
+            console.error('❌ Erro ao carregar clientes:', error);
+            const clientsListEl = document.getElementById('clientsList');
+            if(clientsListEl) {
+                clientsListEl.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#ff4466;">❌ Erro ao carregar: ${error.message}</td></tr>`;
+            }
+        }
+    }
+
+    // ============ FUNÇÃO EDIT CLIENT COM ABAS ==========
     async function editClient(id) {
         currentEditClientId = id;
         try {
@@ -583,7 +814,13 @@
             const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
             const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
             
+            const accountNumber = cliente.account_number || 'N/A';
+            
+            // Aba Dados
             const content = `
+                <div class="account-number-display">
+                    <i class="fas fa-id-card"></i> ${accountNumber}
+                </div>
                 <label>📛 Nome:</label><input type="text" id="edit_nome" value="${escapeHtml(cliente.full_name)}" style="width:100%; margin-bottom:10px;">
                 <label>📧 Email:</label><input type="email" id="edit_email" value="${escapeHtml(cliente.email)}" style="width:100%; margin-bottom:10px;">
                 <label>👤 Username:</label><input type="text" id="edit_username" value="${escapeHtml(cliente.username)}" style="width:100%; margin-bottom:10px;">
@@ -601,8 +838,34 @@
                 <label>🇬🇧 GBP:</label><input type="number" id="edit_saldo_gbp" value="${gbp}" step="0.01" style="width:100%; margin-bottom:8px;">
             `;
             
-            document.getElementById('editClientContent').innerHTML = content;
-            document.getElementById('editClientModal').classList.add('active');
+            const contentEl = document.getElementById('editClientContent');
+            if(contentEl) contentEl.innerHTML = content;
+            
+            // Limpar campos de senha
+            const newPwd = document.getElementById('edit_new_password');
+            const confirmPwd = document.getElementById('edit_confirm_password');
+            if(newPwd) newPwd.value = '';
+            if(confirmPwd) confirmPwd.value = '';
+            
+            // Resetar resultados de API
+            const melissaResult = document.getElementById('melissaResult');
+            const abstractResult = document.getElementById('abstractResult');
+            if(melissaResult) { melissaResult.style.display = 'none'; melissaResult.className = 'api-result'; melissaResult.innerHTML = ''; }
+            if(abstractResult) { abstractResult.style.display = 'none'; abstractResult.className = 'api-result'; abstractResult.innerHTML = ''; }
+            
+            // Preencher campos da API com dados do cliente
+            const docField = document.getElementById('melissa_document');
+            const nameField = document.getElementById('melissa_name');
+            const addrField = document.getElementById('abstract_address');
+            if(docField) docField.value = cliente.document || '';
+            if(nameField) nameField.value = cliente.full_name || '';
+            if(addrField) addrField.value = cliente.address || '';
+            
+            const modal = document.getElementById('editClientModal');
+            if(modal) modal.classList.add('active');
+            
+            // Resetar abas para a primeira
+            switchEditTab('dados');
             
         } catch(error) {
             console.error('Erro ao editar cliente:', error);
@@ -610,20 +873,227 @@
         }
     }
 
-    // ============ FUNÇÃO SAVE CLIENT EDIT (CORRIGIDA) ==========
+    // ============ FUNÇÃO PARA TROCAR ABAS ==========
+    function switchEditTab(tab) {
+        // Esconder todos os conteúdos
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        
+        // Mostrar a aba selecionada
+        const content = document.getElementById('editTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        if(content) content.classList.add('active');
+        
+        // Marcar botão como ativo
+        document.querySelectorAll('.tab').forEach(el => {
+            if(el.textContent.toLowerCase().includes(tab === 'dados' ? 'dados' : (tab === 'senha' ? 'senha' : 'verificação'))) {
+                el.classList.add('active');
+            }
+        });
+    }
+
+    // ============ FUNÇÃO PARA ALTERAR SENHA DO CLIENTE ==========
+    async function changeClientPassword() {
+        const id = currentEditClientId;
+        if(!id) { alert("❌ ID do cliente não encontrado!"); return; }
+        
+        const newPassword = document.getElementById('edit_new_password')?.value;
+        const confirmPassword = document.getElementById('edit_confirm_password')?.value;
+        const resultDiv = document.getElementById('passwordChangeResult');
+        
+        if(!newPassword || newPassword.length < 6) {
+            if(resultDiv) {
+                resultDiv.innerHTML = '<div class="api-result error">❌ A senha deve ter pelo menos 6 caracteres!</div>';
+            }
+            return;
+        }
+        
+        if(newPassword !== confirmPassword) {
+            if(resultDiv) {
+                resultDiv.innerHTML = '<div class="api-result error">❌ As senhas não coincidem!</div>';
+            }
+            return;
+        }
+        
+        try {
+            // Atualizar senha no Supabase Auth
+            const { error } = await supabase.auth.admin.updateUserById(
+                id,
+                { password: newPassword }
+            );
+            
+            if(error) {
+                // Tentar via API de usuário
+                const { error: updateError } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+                
+                if(updateError) {
+                    if(resultDiv) {
+                        resultDiv.innerHTML = `<div class="api-result error">❌ Erro ao alterar senha: ${updateError.message}</div>`;
+                    }
+                    return;
+                }
+            }
+            
+            // Atualizar na lista local
+            const client = clientsList.find(c => c.id === id);
+            if(client) client.password = newPassword;
+            saveData();
+            
+            if(resultDiv) {
+                resultDiv.innerHTML = '<div class="api-result success">✅ Senha alterada com sucesso!</div>';
+            }
+            addActivity(`🔑 Senha alterada para cliente ID: ${id}`);
+            
+            // Limpar campos
+            document.getElementById('edit_new_password').value = '';
+            document.getElementById('edit_confirm_password').value = '';
+            
+        } catch(error) {
+            console.error('Erro ao alterar senha:', error);
+            if(resultDiv) {
+                resultDiv.innerHTML = `<div class="api-result error">❌ Erro ao alterar senha: ${error.message}</div>`;
+            }
+        }
+    }
+
+    // ============ FUNÇÃO PARA VERIFICAR MELISSA API ==========
+    async function verificarMelissa() {
+        const documento = document.getElementById('melissa_document')?.value;
+        const nome = document.getElementById('melissa_name')?.value;
+        const resultDiv = document.getElementById('melissaResult');
+        
+        if(!documento || !nome) {
+            if(resultDiv) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'api-result error';
+                resultDiv.innerHTML = '❌ Preencha o documento e o nome completo!';
+            }
+            return;
+        }
+        
+        if(resultDiv) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'api-result pending';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Verificando identidade...';
+        }
+        
+        try {
+            // ============ SIMULAÇÃO DE VERIFICAÇÃO MELISSA ============
+            // Para usar a API real, descomente a linha abaixo e substitua pela sua chave
+            // const response = await fetch(`https://api.melissadata.com/v4/WEB/Global/Person/Verify?format=json&id=${documento}&name=${nome}&key=SUA_CHAVE_MELISSA`);
+            
+            // Simulação para demonstração
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const isValid = documento.length >= 8 && nome.length >= 3;
+            
+            if(isValid) {
+                if(resultDiv) {
+                    resultDiv.className = 'api-result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>Identidade Verificada!</strong><br>
+                        📛 Nome: ${escapeHtml(nome)}<br>
+                        🆔 Documento: ${escapeHtml(documento)}<br>
+                        ✅ Status: Aprovado
+                    `;
+                }
+                addActivity(`✅ Melissa API: Identidade verificada para ${nome}`);
+            } else {
+                if(resultDiv) {
+                    resultDiv.className = 'api-result error';
+                    resultDiv.innerHTML = `
+                        ❌ <strong>Falha na Verificação</strong><br>
+                        📛 Nome: ${escapeHtml(nome)}<br>
+                        🆔 Documento: ${escapeHtml(documento)}<br>
+                        ❌ Status: Não verificado
+                    `;
+                }
+            }
+            
+        } catch(error) {
+            console.error('Erro na verificação Melissa:', error);
+            if(resultDiv) {
+                resultDiv.className = 'api-result error';
+                resultDiv.innerHTML = `❌ Erro na verificação: ${error.message}`;
+            }
+        }
+    }
+
+    // ============ FUNÇÃO PARA VERIFICAR ABSTRACT API ==========
+    async function verificarAbstract() {
+        const endereco = document.getElementById('abstract_address')?.value;
+        const resultDiv = document.getElementById('abstractResult');
+        
+        if(!endereco) {
+            if(resultDiv) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'api-result error';
+                resultDiv.innerHTML = '❌ Preencha o endereço completo!';
+            }
+            return;
+        }
+        
+        if(resultDiv) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'api-result pending';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Validando endereço...';
+        }
+        
+        try {
+            // ============ SIMULAÇÃO DE VALIDAÇÃO ABSTRACT ============
+            // Para usar a API real, descomente a linha abaixo e substitua pela sua chave
+            // const response = await fetch(`https://api.abstractapi.com/v1/geocoding/validate?api_key=SUA_CHAVE_ABSTRACT&address=${encodeURIComponent(endereco)}`);
+            
+            // Simulação para demonstração
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const isValid = endereco.length >= 10;
+            
+            if(isValid) {
+                if(resultDiv) {
+                    resultDiv.className = 'api-result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>Endereço Validado!</strong><br>
+                        📍 ${escapeHtml(endereco)}<br>
+                        ✅ Status: Endereço válido
+                    `;
+                }
+                addActivity(`✅ Abstract API: Endereço validado para ${endereco.substring(0, 30)}...`);
+            } else {
+                if(resultDiv) {
+                    resultDiv.className = 'api-result error';
+                    resultDiv.innerHTML = `
+                        ❌ <strong>Endereço Inválido</strong><br>
+                        📍 ${escapeHtml(endereco)}<br>
+                        ❌ Status: Não verificado
+                    `;
+                }
+            }
+            
+        } catch(error) {
+            console.error('Erro na validação Abstract:', error);
+            if(resultDiv) {
+                resultDiv.className = 'api-result error';
+                resultDiv.innerHTML = `❌ Erro na validação: ${error.message}`;
+            }
+        }
+    }
+
+    // ============ FUNÇÃO SAVE CLIENT EDIT ==========
     async function saveClientEdit() {
         const id = currentEditClientId;
         if(!id) { alert("❌ ID do cliente não encontrado!"); return; }
         
-        const nome = document.getElementById('edit_nome').value;
-        const email = document.getElementById('edit_email').value;
-        const username = document.getElementById('edit_username').value;
-        const phone = document.getElementById('edit_phone').value;
-        const kyc_status = document.getElementById('edit_kyc').value;
-        const saldo_usd = parseFloat(document.getElementById('edit_saldo_usd').value) || 0;
-        const saldo_eur = parseFloat(document.getElementById('edit_saldo_eur').value) || 0;
-        const saldo_brl = parseFloat(document.getElementById('edit_saldo_brl').value) || 0;
-        const saldo_gbp = parseFloat(document.getElementById('edit_saldo_gbp').value) || 0;
+        const nome = document.getElementById('edit_nome')?.value;
+        const email = document.getElementById('edit_email')?.value;
+        const username = document.getElementById('edit_username')?.value;
+        const phone = document.getElementById('edit_phone')?.value;
+        const kyc_status = document.getElementById('edit_kyc')?.value;
+        const saldo_usd = parseFloat(document.getElementById('edit_saldo_usd')?.value) || 0;
+        const saldo_eur = parseFloat(document.getElementById('edit_saldo_eur')?.value) || 0;
+        const saldo_brl = parseFloat(document.getElementById('edit_saldo_brl')?.value) || 0;
+        const saldo_gbp = parseFloat(document.getElementById('edit_saldo_gbp')?.value) || 0;
         
         if(!nome || !email) { alert("Nome e email são obrigatórios!"); return; }
         
@@ -658,20 +1128,22 @@
         syncAllWithBankSite();
     }
 
-    function closeEditModal() { document.getElementById('editClientModal').classList.remove('active'); currentEditClientId = null; }
+    function closeEditModal() { 
+        const modal = document.getElementById('editClientModal');
+        if(modal) modal.classList.remove('active'); 
+        currentEditClientId = null; 
+    }
 
-    // ============ FUNÇÃO DELETE CLIENT (CORRIGIDA) ==========
+    // ============ FUNÇÃO DELETE CLIENT ==========
     async function deleteClient(id) {
         if(!confirm("⚠️ Tem certeza que deseja DELETAR este cliente permanentemente?")) return;
-        if(!confirm("❌ Esta ação é IRREVERSÍVEL! Todos os dados do cliente serão perdidos.")) return;
+        if(!confirm("❌ Esta ação é IRREVERSÍVEL!")) return;
         
         try {
             const { data: cliente } = await supabase.from('users').select('email').eq('id', id).maybeSingle();
             if(!cliente) { alert("❌ Cliente não encontrado!"); return; }
             
             await supabase.from('balances').delete().eq('user_id', id);
-            await supabase.from('wallets').delete().eq('user_id', id);
-            await supabase.from('loans').delete().eq('user_id', id);
             await supabase.from('users').delete().eq('id', id);
             
             const indexLocal = clientsList.findIndex(c => c.id === id);
@@ -682,7 +1154,7 @@
             
             saveData();
             addActivity(`🗑️ CLIENTE DELETADO: ${cliente.email}`);
-            alert(`✅ Cliente ${cliente.email} deletado com sucesso!`);
+            alert(`✅ Cliente deletado com sucesso!`);
             
             await carregarClientes();
             await updateTransferSelect();
@@ -695,82 +1167,19 @@
         }
     }
 
-    // ============ FUNÇÃO CARREGAR CLIENTES (CORRIGIDA) ==========
-    async function carregarClientes() {
-        try {
-            const { data: clientes, error } = await supabase
-                .from('users')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) { console.error('❌ Erro ao carregar clientes:', error); return; }
-            
-            if (!clientes || clientes.length === 0) {
-                document.getElementById('clientsList').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; opacity:0.6;">📭 Nenhum cliente cadastrado ainda</td></tr>';
-                document.getElementById('totalClients').innerHTML = '0';
-                return;
-            }
-            
-            let html = '';
-            for (const c of clientes) {
-                const { data: balances } = await supabase
-                    .from('balances')
-                    .select('currency, amount')
-                    .eq('user_id', c.id);
-                
-                const usd = balances?.find(b => b.currency === 'USD')?.amount || 0;
-                const eur = balances?.find(b => b.currency === 'EUR')?.amount || 0;
-                const brl = balances?.find(b => b.currency === 'BRL')?.amount || 0;
-                const gbp = balances?.find(b => b.currency === 'GBP')?.amount || 0;
-                
-                const kycStatus = c.kyc_status || 'Pending';
-                const kycBadge = kycStatus === 'approved' || kycStatus === 'Approved' ? '🟢' : (kycStatus === 'pending' || kycStatus === 'Pending' ? '🟡' : '🔴');
-                
-                html += `<tr>
-                    <td>${c.id?.slice(0, 8) || 'N/A'}</td>
-                    <td>${c.full_name || c.name || 'N/A'}</td>
-                    <td>$${Number(usd).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>€${Number(eur).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>R$${Number(brl).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>£${Number(gbp).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${kycBadge} ${kycStatus}</td>
-                    <td>${c.username || c.email?.split('@')[0] || 'N/A'}</td>
-                    <td>
-                        <button class="success" onclick="editClient('${c.id}')" title="Editar"><i class="fas fa-user-edit"></i></button>
-                        <button class="danger" onclick="deleteClient('${c.id}')" title="Deletar"><i class="fas fa-trash-alt"></i></button>
-                        <button class="secondary" onclick="adjustBalance('${c.id}', 'USD')" title="Adicionar USD">💵</button>
-                        <button class="secondary" onclick="adjustBalance('${c.id}', 'EUR')" title="Adicionar EUR">💶</button>
-                        <button class="secondary" onclick="adjustBalance('${c.id}', 'BRL')" title="Adicionar BRL">🇧🇷</button>
-                        <button class="secondary" onclick="adjustBalance('${c.id}', 'GBP')" title="Adicionar GBP">🇬🇧</button>
-                    </td>
-                </tr>`;
-            }
-            
-            document.getElementById('clientsList').innerHTML = html;
-            document.getElementById('totalClients').innerHTML = clientes.length;
-            console.log(`✅ ${clientes.length} clientes carregados do Supabase`);
-            
-        } catch(error) {
-            console.error('❌ Erro ao carregar clientes:', error);
-            document.getElementById('clientsList').innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#ff4466;">❌ Erro ao carregar clientes: ${error.message}</td></tr>`;
-        }
-    }
-
-    // ============ FUNÇÃO AJUSTAR SALDO (CORRIGIDA) ==========
+    // ============ FUNÇÃO AJUSTAR SALDO ==========
     async function adjustBalance(id, currency) {
         let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
         if(!valor) return;
         if(isNaN(valor) || parseFloat(valor) <= 0) { alert("❌ Digite um valor válido!"); return; }
         
         try {
-            const { data: balance, error: buscaError } = await supabase
+            const { data: balance } = await supabase
                 .from('balances')
                 .select('id, amount')
                 .eq('user_id', id)
                 .eq('currency', currency)
                 .maybeSingle();
-            
-            if (buscaError) { alert("❌ Erro ao buscar saldo: " + buscaError.message); return; }
             
             const valorAtual = balance?.amount || 0;
             const novoSaldo = valorAtual + parseFloat(valor);
@@ -792,13 +1201,16 @@
         }
     }
 
-    // ============ ATUALIZAR SELECTS (CORRIGIDO) ==========
+    // ============ ATUALIZAR SELECTS ==========
     async function updateTransferSelect() {
         let select = document.getElementById('transferClient');
         if(!select) return;
         try {
             const { data: clientes, error } = await supabase.from('users').select('id, full_name, email').order('created_at', { ascending: false });
-            if(error || !clientes) { select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; return; }
+            if(error || !clientes || clientes.length === 0) { 
+                select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; 
+                return; 
+            }
             select.innerHTML = '<option value="">👇 Selecione um cliente</option>';
             clientes.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.full_name || c.email || 'Sem nome'}</option>`; });
         } catch(e) { select.innerHTML = '<option value="">⚠️ Erro</option>'; }
@@ -809,105 +1221,38 @@
         if(!select) return;
         try {
             const { data: clientes, error } = await supabase.from('users').select('id, full_name, email').order('created_at', { ascending: false });
-            if(error || !clientes) { select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; return; }
+            if(error || !clientes || clientes.length === 0) { 
+                select.innerHTML = '<option value="">📭 Nenhum cliente</option>'; 
+                return; 
+            }
             select.innerHTML = '<option value="">👇 Selecione um cliente...</option>';
             clientes.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.full_name || c.email || 'Sem nome'}</option>`; });
             select.onchange = () => renderClientMessages();
         } catch(e) { select.innerHTML = '<option value="">⚠️ Erro</option>'; }
     }
 
-    // ============ SINCRONIZAR ==========
-    function syncAllWithBankSite() {
-        addActivity(`🔄 Syncing with bank site...`);
-        try {
-            let bankClients = localStorage.getItem('zentronix_bank_clients');
-            let bankLoans = localStorage.getItem('zentronix_loans');
-            let bankReserves = localStorage.getItem('zentronix_bank_reserves');
-            
-            if (bankClients) {
-                const parsedClients = JSON.parse(bankClients);
-                parsedClients.forEach(bankClient => {
-                    const exists = clientsList.some(c => c.email === bankClient.email);
-                    if (!exists) {
-                        const newClient = {
-                            id: bankClient.id || Date.now(),
-                            accountId: generateAccountId(),
-                            name: bankClient.nome || bankClient.name,
-                            email: bankClient.email,
-                            document: bankClient.document || '',
-                            address: bankClient.address || '',
-                            street: bankClient.street || '',
-                            number: bankClient.number || '',
-                            bankAccountNumber: bankClient.bankAccountNumber || '',
-                            balance_usd: bankClient.saldoUSD || 0,
-                            balance_eur: bankClient.saldoEUR || 0,
-                            balance_brl: bankClient.saldoBRL || 0,
-                            balance_gbp: bankClient.saldoGBP || 0,
-                            kyc_status: bankClient.kyc || 'Pending',
-                            account_status: "ACTIVE",
-                            username: bankClient.email?.split('@')[0] || bankClient.nome?.toLowerCase().replace(/ /g, '.'),
-                            password: 'welcome123',
-                            createdAt: new Date().toISOString().slice(0,10),
-                            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-                            transactionHistory: []
-                        };
-                        clientsList.push(newClient);
-                        addActivity(`🆕 Novo cliente sincronizado: ${newClient.name}`);
-                    }
-                });
-            }
-            
-            if (bankLoans) {
-                const parsedLoans = JSON.parse(bankLoans);
-                parsedLoans.forEach(bankLoan => {
-                    const exists = loanRequests.some(l => l.id === bankLoan.id);
-                    if (!exists && bankLoan.status === 'pending') {
-                        loanRequests.push({
-                            id: bankLoan.id,
-                            clientId: bankLoan.clientId,
-                            clientName: bankLoan.clientName,
-                            amount: bankLoan.amount,
-                            term: 12,
-                            status: 'pending',
-                            requestedDate: bankLoan.date || new Date().toISOString().slice(0,10),
-                            purpose: bankLoan.purpose || 'Solicitado pelo site',
-                            requestedCurrency: bankLoan.currency || 'USD'
-                        });
-                        addActivity(`📋 Novo empréstimo solicitado: ${bankLoan.clientName} - $${bankLoan.amount}`);
-                    }
-                });
-            }
-            
-            if (bankReserves) {
-                const parsedReserves = JSON.parse(bankReserves);
-                if (parsedReserves.USD) bankReserves.USD = parsedReserves.USD;
-                if (parsedReserves.EUR) bankReserves.EUR = parsedReserves.EUR;
-                if (parsedReserves.BRL) bankReserves.BRL = parsedReserves.BRL;
-                if (parsedReserves.GBP) bankReserves.GBP = parsedReserves.GBP;
-            }
-            
-            saveData();
-            updateUI();
-            refreshReserves();
-            addActivity(`✅ Sync completo! ${clientsList.length} clientes, ${loanRequests.filter(l => l.status === 'pending').length} empréstimos pendentes.`);
-            
-        } catch(error) {
-            console.error('Erro na sincronização:', error);
-            addActivity(`❌ Erro na sincronização: ${error.message}`);
-        }
-        return true;
-    }
-
     // ============ RESERVAS ==========
     function refreshReserves() {
-        document.getElementById('reserveUSD').innerHTML = `$ ${bankReserves.USD.toLocaleString('en-US')}`;
-        document.getElementById('reserveEUR').innerHTML = `€ ${bankReserves.EUR.toLocaleString('en-US')}`;
-        document.getElementById('reserveBRL').innerHTML = `R$ ${bankReserves.BRL.toLocaleString('en-US')}`;
-        document.getElementById('reserveGBP').innerHTML = `£ ${bankReserves.GBP.toLocaleString('en-US')}`;
-        document.getElementById('statUSDReserve').innerHTML = `$${formatTrillion(bankReserves.USD)}`;
-        document.getElementById('statEURReserve').innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
-        document.getElementById('statBRLReserve').innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
-        document.getElementById('statGBPReserve').innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
+        const reserveUSD = document.getElementById('reserveUSD');
+        const reserveEUR = document.getElementById('reserveEUR');
+        const reserveBRL = document.getElementById('reserveBRL');
+        const reserveGBP = document.getElementById('reserveGBP');
+        
+        if(reserveUSD) reserveUSD.innerHTML = `$ ${bankReserves.USD.toLocaleString('en-US')}`;
+        if(reserveEUR) reserveEUR.innerHTML = `€ ${bankReserves.EUR.toLocaleString('en-US')}`;
+        if(reserveBRL) reserveBRL.innerHTML = `R$ ${bankReserves.BRL.toLocaleString('en-US')}`;
+        if(reserveGBP) reserveGBP.innerHTML = `£ ${bankReserves.GBP.toLocaleString('en-US')}`;
+        
+        const statUSD = document.getElementById('statUSDReserve');
+        const statEUR = document.getElementById('statEURReserve');
+        const statBRL = document.getElementById('statBRLReserve');
+        const statGBP = document.getElementById('statGBPReserve');
+        
+        if(statUSD) statUSD.innerHTML = `$${formatTrillion(bankReserves.USD)}`;
+        if(statEUR) statEUR.innerHTML = `€${formatTrillion(bankReserves.EUR)}`;
+        if(statBRL) statBRL.innerHTML = `R$${formatTrillion(bankReserves.BRL)}`;
+        if(statGBP) statGBP.innerHTML = `£${formatTrillion(bankReserves.GBP)}`;
+        
         saveData();
     }
 
@@ -924,8 +1269,8 @@
     // ============ MENSAGENS ==========
     function sendMessageToClient() {
         let client = currentMessageClient;
-        let subject = document.getElementById('messageSubject').value;
-        let content = document.getElementById('messageContent').value;
+        let subject = document.getElementById('messageSubject')?.value;
+        let content = document.getElementById('messageContent')?.value;
         if(!client || !subject || !content) { alert("Preencha todos os campos"); return; }
         messagesList.unshift({ id: Date.now(), clientId: client.id, clientName: client.name, fromClient: false, subject: subject, message: content, date: new Date().toISOString(), read: true });
         saveMessages();
@@ -938,17 +1283,25 @@
     }
 
     function openMessageModal() {
-        let clientId = document.getElementById('messageClientSelect').value;
+        let clientId = document.getElementById('messageClientSelect')?.value;
         if(!clientId) { alert("Selecione um cliente"); return; }
         currentMessageClient = clientsList.find(c => c.id == clientId);
         if(!currentMessageClient) { alert("Cliente não encontrado"); return; }
-        document.getElementById('messageClientName').innerText = currentMessageClient.name;
-        document.getElementById('messageSubject').value = '';
-        document.getElementById('messageContent').value = '';
-        document.getElementById('messageModal').classList.add('active');
+        const nameEl = document.getElementById('messageClientName');
+        if(nameEl) nameEl.innerText = currentMessageClient.name;
+        const subjectEl = document.getElementById('messageSubject');
+        const contentEl = document.getElementById('messageContent');
+        if(subjectEl) subjectEl.value = '';
+        if(contentEl) contentEl.value = '';
+        const modal = document.getElementById('messageModal');
+        if(modal) modal.classList.add('active');
     }
 
-    function closeMessageModal() { document.getElementById('messageModal').classList.remove('active'); currentMessageClient = null; }
+    function closeMessageModal() { 
+        const modal = document.getElementById('messageModal');
+        if(modal) modal.classList.remove('active'); 
+        currentMessageClient = null; 
+    }
 
     function openInbox() {
         let inboxHtml = '';
@@ -963,11 +1316,16 @@
                 </div>`;
             });
         }
-        document.getElementById('inboxMessagesList').innerHTML = inboxHtml;
-        document.getElementById('inboxModal').classList.add('active');
+        const listEl = document.getElementById('inboxMessagesList');
+        if(listEl) listEl.innerHTML = inboxHtml;
+        const modal = document.getElementById('inboxModal');
+        if(modal) modal.classList.add('active');
     }
 
-    function closeInboxModal() { document.getElementById('inboxModal').classList.remove('active'); }
+    function closeInboxModal() { 
+        const modal = document.getElementById('inboxModal');
+        if(modal) modal.classList.remove('active'); 
+    }
 
     function markAsReadAndReply(messageId, clientId) {
         let msg = messagesList.find(m => m.id === messageId);
@@ -976,30 +1334,39 @@
         let client = clientsList.find(c => c.id === clientId);
         if(client) {
             currentMessageClient = client;
-            document.getElementById('messageClientName').innerText = client.name;
-            document.getElementById('messageSubject').value = `Re: ${msg.subject}`;
-            document.getElementById('messageContent').value = '';
-            document.getElementById('messageModal').classList.add('active');
+            const nameEl = document.getElementById('messageClientName');
+            const subjectEl = document.getElementById('messageSubject');
+            const contentEl = document.getElementById('messageContent');
+            if(nameEl) nameEl.innerText = client.name;
+            if(subjectEl) subjectEl.value = `Re: ${msg.subject}`;
+            if(contentEl) contentEl.value = '';
+            const modal = document.getElementById('messageModal');
+            if(modal) modal.classList.add('active');
         }
     }
 
     function updateUnreadCount() {
         let unread = messagesList.filter(m => m.fromClient === true && !m.read).length;
-        document.getElementById('unreadCountStat').innerHTML = unread;
-        let headerBadge = document.getElementById('headerUnreadCount');
-        if(unread > 0) { headerBadge.style.display = 'inline-block'; headerBadge.innerText = unread; }
-        else { headerBadge.style.display = 'none'; }
+        const unreadEl = document.getElementById('unreadCountStat');
+        if(unreadEl) unreadEl.innerHTML = unread;
+        const headerBadge = document.getElementById('headerUnreadCount');
+        if(headerBadge) {
+            if(unread > 0) { headerBadge.style.display = 'inline-block'; headerBadge.innerText = unread; }
+            else { headerBadge.style.display = 'none'; }
+        }
     }
 
     function renderClientMessages() {
         let selectedId = document.getElementById('messageClientSelect')?.value;
+        const listEl = document.getElementById('clientMessagesList');
+        if(!listEl) return;
         if(!selectedId || selectedId === "") { 
-            document.getElementById('clientMessagesList').innerHTML = '<div style="text-align:center; padding:20px;">Selecione um cliente</div>'; 
+            listEl.innerHTML = '<div style="text-align:center; padding:20px;">Selecione um cliente</div>'; 
             return; 
         }
         let clientMsgs = messagesList.filter(m => m.clientId == selectedId);
         if(clientMsgs.length === 0) { 
-            document.getElementById('clientMessagesList').innerHTML = '<div style="text-align:center; padding:20px;">Sem mensagens</div>'; 
+            listEl.innerHTML = '<div style="text-align:center; padding:20px;">Sem mensagens</div>'; 
             return; 
         }
         let html = '';
@@ -1008,30 +1375,42 @@
             let senderColor = msg.fromClient ? '#ffaa00' : '#00ff88';
             html += `<div class="message-item"><div class="message-header"><span style="color:${senderColor}">${sender}</span> - ${msg.subject}</div><div class="message-text">${msg.message}</div></div>`;
         });
-        document.getElementById('clientMessagesList').innerHTML = html;
+        listEl.innerHTML = html;
     }
 
     // ============ EMPRÉSTIMOS ==========
     function showApproveLoanModal(loan) {
         currentLoanToApprove = loan;
-        document.getElementById('approveLoanCustomer').innerText = loan.clientName;
+        const customerEl = document.getElementById('approveLoanCustomer');
+        const amountEl = document.getElementById('approveLoanRequestedAmount');
+        const disbursementEl = document.getElementById('disbursementAmount');
+        const currencyEl = document.getElementById('loanCurrency');
+        const notesEl = document.getElementById('approveLoanNotes');
+        const statusEl = document.getElementById('syncStatusMsg');
+        
+        if(customerEl) customerEl.innerText = loan.clientName;
         let symbol = loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'));
-        document.getElementById('approveLoanRequestedAmount').innerHTML = `<strong>${symbol}${formatNumber(loan.amount)}</strong>`;
-        document.getElementById('disbursementAmount').value = loan.amount;
-        document.getElementById('loanCurrency').value = loan.requestedCurrency || 'USD';
-        document.getElementById('approveLoanNotes').value = '';
-        document.getElementById('syncStatusMsg').style.display = 'none';
-        document.getElementById('approveLoanModal').classList.add('active');
+        if(amountEl) amountEl.innerHTML = `<strong>${symbol}${formatNumber(loan.amount)}</strong>`;
+        if(disbursementEl) disbursementEl.value = loan.amount;
+        if(currencyEl) currencyEl.value = loan.requestedCurrency || 'USD';
+        if(notesEl) notesEl.value = '';
+        if(statusEl) statusEl.style.display = 'none';
+        const modal = document.getElementById('approveLoanModal');
+        if(modal) modal.classList.add('active');
     }
 
-    function closeApproveLoanModal() { document.getElementById('approveLoanModal').classList.remove('active'); currentLoanToApprove = null; }
+    function closeApproveLoanModal() { 
+        const modal = document.getElementById('approveLoanModal');
+        if(modal) modal.classList.remove('active'); 
+        currentLoanToApprove = null; 
+    }
 
     async function confirmApproveLoan() {
         if (!currentLoanToApprove) return;
         let loan = currentLoanToApprove;
-        let disbursementAmount = parseFloat(document.getElementById('disbursementAmount').value);
-        let selectedCurrency = document.getElementById('loanCurrency').value;
-        let adminNotes = document.getElementById('approveLoanNotes').value;
+        let disbursementAmount = parseFloat(document.getElementById('disbursementAmount')?.value);
+        let selectedCurrency = document.getElementById('loanCurrency')?.value;
+        let adminNotes = document.getElementById('approveLoanNotes')?.value;
         let syncStatusDiv = document.getElementById('syncStatusMsg');
         
         if (isNaN(disbursementAmount) || disbursementAmount <= 0) disbursementAmount = loan.amount;
@@ -1040,9 +1419,11 @@
         let symbol = selectedCurrency === 'USD' ? '$' : (selectedCurrency === 'EUR' ? '€' : (selectedCurrency === 'BRL' ? 'R$' : '£'));
         if (!confirm(`APROVAR EMPRÉSTIMO?\n\n${loan.clientName}\n${symbol}${formatNumber(disbursementAmount)} (${selectedCurrency})`)) return;
         
-        syncStatusDiv.style.display = 'block';
-        syncStatusDiv.className = 'sync-status pending';
-        syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processando...';
+        if(syncStatusDiv) {
+            syncStatusDiv.style.display = 'block';
+            syncStatusDiv.className = 'sync-status pending';
+            syncStatusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processando...';
+        }
         
         try {
             bankReserves[selectedCurrency] -= disbursementAmount;
@@ -1057,10 +1438,10 @@
             
             let client = clientsList.find(c => c.id === loan.clientId);
             if (client) {
-                if (selectedCurrency === 'USD') client.balance_usd += disbursementAmount;
-                else if (selectedCurrency === 'EUR') client.balance_eur += disbursementAmount;
-                else if (selectedCurrency === 'BRL') client.balance_brl += disbursementAmount;
-                else if (selectedCurrency === 'GBP') client.balance_gbp += disbursementAmount;
+                if (selectedCurrency === 'USD') client.balance_usd = (client.balance_usd || 0) + disbursementAmount;
+                else if (selectedCurrency === 'EUR') client.balance_eur = (client.balance_eur || 0) + disbursementAmount;
+                else if (selectedCurrency === 'BRL') client.balance_brl = (client.balance_brl || 0) + disbursementAmount;
+                else if (selectedCurrency === 'GBP') client.balance_gbp = (client.balance_gbp || 0) + disbursementAmount;
                 addTransaction(client, "LOAN_DISBURSEMENT", disbursementAmount, selectedCurrency, `Empréstimo ${loan.id} aprovado`);
                 addActivity(`✅ EMPRÉSTIMO APROVADO: ${symbol}${formatNumber(disbursementAmount)} para ${client.name}`);
                 
@@ -1075,15 +1456,22 @@
                     read: true
                 });
                 saveMessages();
-                syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Empréstimo aprovado!';
-                syncStatusDiv.classList.add('success');
+                if(syncStatusDiv) {
+                    syncStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Empréstimo aprovado!';
+                    syncStatusDiv.classList.add('success');
+                }
             }
             saveData();
             refreshReserves();
             updateUI();
             syncAllWithBankSite();
             setTimeout(() => { closeApproveLoanModal(); alert(`✅ Empréstimo aprovado!`); }, 1500);
-        } catch (error) { syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Erro.'; syncStatusDiv.classList.add('error'); }
+        } catch (error) { 
+            if(syncStatusDiv) {
+                syncStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Erro.';
+                syncStatusDiv.classList.add('error');
+            }
+        }
     }
 
     function approveLoan(id) { let loan = loanRequests.find(l => l.id === id); if(loan && loan.status === 'pending') showApproveLoanModal(loan); }
@@ -1118,10 +1506,10 @@
                     loan.disbursedAmount = amount;
                     let client = clientsList.find(c => c.id === loan.clientId);
                     if(client) {
-                        if (currency === 'USD') client.balance_usd += amount;
-                        else if (currency === 'EUR') client.balance_eur += amount;
-                        else if (currency === 'BRL') client.balance_brl += amount;
-                        else if (currency === 'GBP') client.balance_gbp += amount;
+                        if (currency === 'USD') client.balance_usd = (client.balance_usd || 0) + amount;
+                        else if (currency === 'EUR') client.balance_eur = (client.balance_eur || 0) + amount;
+                        else if (currency === 'BRL') client.balance_brl = (client.balance_brl || 0) + amount;
+                        else if (currency === 'GBP') client.balance_gbp = (client.balance_gbp || 0) + amount;
                         addTransaction(client, "LOAN_DISBURSEMENT", amount, currency, `Aprovação em lote`);
                     }
                 } else { loan.status = 'rejected'; loan.rejectionReason = `Saldo insuficiente em ${currency}`; }
@@ -1138,87 +1526,109 @@
     function showLoanDetails(loan) {
         let symbol = loan.disbursedCurrency === 'USD' ? '$' : (loan.disbursedCurrency === 'EUR' ? '€' : (loan.disbursedCurrency === 'BRL' ? 'R$' : '£'));
         let html = `<p><strong>Cliente:</strong> ${loan.clientName}</p><p><strong>Solicitado:</strong> ${loan.requestedCurrency === 'USD' ? '$' : (loan.requestedCurrency === 'EUR' ? '€' : (loan.requestedCurrency === 'BRL' ? 'R$' : '£'))}${formatNumber(loan.amount)}</p>${loan.disbursedAmount ? `<p><strong>Valor liberado:</strong> ${symbol}${formatNumber(loan.disbursedAmount)}</p>` : ''}<p><strong>Prazo:</strong> ${loan.term} meses</p><p><strong>Status:</strong> ${loan.status.toUpperCase()}</p>`;
-        document.getElementById('loanDetailsContent').innerHTML = html;
-        document.getElementById('loanDetailsModal').classList.add('active');
+        const contentEl = document.getElementById('loanDetailsContent');
+        if(contentEl) contentEl.innerHTML = html;
+        const modal = document.getElementById('loanDetailsModal');
+        if(modal) modal.classList.add('active');
     }
     
-    function closeLoanDetailsModal() { document.getElementById('loanDetailsModal').classList.remove('active'); }
+    function closeLoanDetailsModal() { 
+        const modal = document.getElementById('loanDetailsModal');
+        if(modal) modal.classList.remove('active'); 
+    }
     
     function filterLoans(filter) { currentFilter = filter; renderLoans(); }
 
     function renderLoans() {
         let filtered = loanRequests.filter(l => l.status === currentFilter);
-        if(filtered.length === 0) { document.getElementById('loansList').innerHTML = '<div style="text-align:center; padding:20px;">Nenhum empréstimo</div>'; return; }
+        const listEl = document.getElementById('loansList');
+        if(!listEl) return;
+        if(filtered.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding:20px;">Nenhum empréstimo</div>'; return; }
         let html = '';
         filtered.forEach(l => {
             let statusText = { pending: '⏳ Pendente', rejected: '❌ Rejeitado', active: '🟢 Ativo' }[l.status] || l.status;
             let symbol = l.requestedCurrency === 'USD' ? '$' : (l.requestedCurrency === 'EUR' ? '€' : (l.requestedCurrency === 'BRL' ? 'R$' : '£'));
             html += `<div class="loan-card ${l.status}"><div><strong>${l.clientName}</strong> - ${symbol}${formatNumber(l.amount)} - ${l.term} meses</div><div>Status: ${statusText}</div>${l.status === 'pending' ? `<div><button onclick="approveLoan(${l.id})" class="success">APROVAR</button><button onclick="rejectLoan(${l.id})" class="danger">REJEITAR</button><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETALHES</button></div>` : `<div><button onclick='showLoanDetails(${JSON.stringify(l).replace(/'/g, "\\'")})' class="secondary">DETALHES</button></div>`}</div>`;
         });
-        document.getElementById('loansList').innerHTML = html;
+        listEl.innerHTML = html;
     }
 
     // ============ OPERAÇÕES ==========
     function quickTransfer() {
-        let clientId = document.getElementById('transferClient').value;
-        let amount = parseFloat(document.getElementById('transferAmount').value);
-        let currency = document.getElementById('transferCurrency').value;
-        let reason = document.getElementById('transferReason').value;
+        let clientId = document.getElementById('transferClient')?.value;
+        let amount = parseFloat(document.getElementById('transferAmount')?.value);
+        let currency = document.getElementById('transferCurrency')?.value;
+        let reason = document.getElementById('transferReason')?.value;
         let resultDiv = document.getElementById('transferResultMsg');
         if(!clientId || isNaN(amount) || amount <= 0) { alert("Selecione cliente e valor"); return; }
         let client = clientsList.find(c => c.id == clientId);
         if(!client) return;
         let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
         if(confirm(`Transferir ${symbol}${formatNumber(amount)} para ${client.name}?`)) {
-            if (currency === 'USD') client.balance_usd += amount;
-            else if (currency === 'EUR') client.balance_eur += amount;
-            else if (currency === 'BRL') client.balance_brl += amount;
-            else if (currency === 'GBP') client.balance_gbp += amount;
+            if (currency === 'USD') client.balance_usd = (client.balance_usd || 0) + amount;
+            else if (currency === 'EUR') client.balance_eur = (client.balance_eur || 0) + amount;
+            else if (currency === 'BRL') client.balance_brl = (client.balance_brl || 0) + amount;
+            else if (currency === 'GBP') client.balance_gbp = (client.balance_gbp || 0) + amount;
             addTransaction(client, "TRANSFERENCIA", amount, currency, reason || 'Sem motivo');
             saveData();
             addActivity(`💰 TRANSFERÊNCIA: ${symbol}${formatNumber(amount)} para ${client.name}`);
-            resultDiv.style.display = 'block'; resultDiv.className = 'sync-status success';
-            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} enviado!`;
-            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('transferReason').value = '';
+            if(resultDiv) {
+                resultDiv.style.display = 'block'; 
+                resultDiv.className = 'sync-status success';
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} enviado!`;
+                setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+            }
+            const amountEl = document.getElementById('transferAmount');
+            const reasonEl = document.getElementById('transferReason');
+            if(amountEl) amountEl.value = '';
+            if(reasonEl) reasonEl.value = '';
             updateUI();
             syncAllWithBankSite();
         }
     }
 
     function initiateSWIFT() {
-        let clientId = document.getElementById('transferClient').value;
-        let amount = parseFloat(document.getElementById('transferAmount').value);
-        let currency = document.getElementById('transferCurrency').value;
+        let clientId = document.getElementById('transferClient')?.value;
+        let amount = parseFloat(document.getElementById('transferAmount')?.value);
+        let currency = document.getElementById('transferCurrency')?.value;
         if(!clientId || isNaN(amount) || amount <= 0) { alert("Selecione cliente e valor"); return; }
         let client = clientsList.find(c => c.id == clientId);
         let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-        alert(`🌐 SWIFT\n\nPara: ${client.name}\nConta: ${client.accountId}\nValor: ${symbol}${formatNumber(amount)}\nMoeda: ${currency}\nSWIFT: ZNTXUS33XXX`);
+        alert(`🌐 SWIFT\n\nPara: ${client.name}\nConta: ${client.accountNumber || client.accountId}\nValor: ${symbol}${formatNumber(amount)}\nMoeda: ${currency}\nSWIFT: ZNTXUS33XXX`);
         addActivity(`🌐 SWIFT: ${symbol}${formatNumber(amount)} para ${client.name}`);
     }
 
     // ============ CRYPTO SWAP ==========
     function showSwapCryptoModal() {
-        let clientId = document.getElementById('transferClient').value;
+        let clientId = document.getElementById('transferClient')?.value;
         if(!clientId) { alert("Selecione um cliente primeiro"); return; }
         currentSwapClient = clientsList.find(c => c.id == clientId);
         if(!currentSwapClient) { alert("Cliente não encontrado"); return; }
-        document.getElementById('swapCustomerName').innerText = currentSwapClient.name;
-        document.getElementById('swapFromCurrency').value = 'USD';
-        document.getElementById('swapAmount').value = '';
-        document.getElementById('swapToCrypto').value = 'BTC';
-        document.getElementById('cryptoSwapResult').style.display = 'none';
-        document.getElementById('cryptoSswapModal').classList.add('active');
+        const nameEl = document.getElementById('swapCustomerName');
+        if(nameEl) nameEl.innerText = currentSwapClient.name;
+        const fromEl = document.getElementById('swapFromCurrency');
+        const amountEl = document.getElementById('swapAmount');
+        const toEl = document.getElementById('swapToCrypto');
+        const resultEl = document.getElementById('cryptoSwapResult');
+        if(fromEl) fromEl.value = 'USD';
+        if(amountEl) amountEl.value = '';
+        if(toEl) toEl.value = 'BTC';
+        if(resultEl) resultEl.style.display = 'none';
+        const modal = document.getElementById('cryptoSswapModal');
+        if(modal) modal.classList.add('active');
     }
 
-    function closeSwapModal() { document.getElementById('cryptoSswapModal').classList.remove('active'); currentSwapClient = null; }
+    function closeSwapModal() { 
+        const modal = document.getElementById('cryptoSswapModal');
+        if(modal) modal.classList.remove('active'); 
+        currentSwapClient = null; 
+    }
 
     function confirmSwapToCrypto() {
         if (!currentSwapClient) return;
-        let fromCurrency = document.getElementById('swapFromCurrency').value;
-        let amount = parseFloat(document.getElementById('swapAmount').value);
-        let toCrypto = document.getElementById('swapToCrypto').value;
+        let fromCurrency = document.getElementById('swapFromCurrency')?.value;
+        let amount = parseFloat(document.getElementById('swapAmount')?.value);
+        let toCrypto = document.getElementById('swapToCrypto')?.value;
         let resultDiv = document.getElementById('cryptoSwapResult');
         if (isNaN(amount) || amount <= 0) { alert("Valor válido"); return; }
         let balanceField = fromCurrency === 'USD' ? 'balance_usd' : (fromCurrency === 'EUR' ? 'balance_eur' : (fromCurrency === 'BRL' ? 'balance_brl' : 'balance_gbp'));
@@ -1233,37 +1643,89 @@
             addTransaction(currentSwapClient, "CRYPTO_SWAP", amount, fromCurrency, `Convertido para ${cryptoAmount.toFixed(6)} ${toCrypto}`);
             saveData();
             addActivity(`🔄 SWAP: ${symbol}${formatNumber(amount)} → ${cryptoAmount.toFixed(6)} ${toCrypto}`);
-            resultDiv.style.display = 'block'; resultDiv.className = 'sync-status success';
-            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> Convertido!`;
-            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+            if(resultDiv) {
+                resultDiv.style.display = 'block'; 
+                resultDiv.className = 'sync-status success';
+                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> Convertido!`;
+                setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+            }
             updateUI();
             syncAllWithBankSite();
         }
     }
 
-    // ============ UI ==========
-    function updateUI() {
-        document.getElementById('totalClients').innerText = clientsList.length;
-        document.getElementById('pendingLoans').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
-        document.getElementById('totalDisbursedStat').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
-        document.getElementById('statActive').innerHTML = loanRequests.filter(l => l.status === 'active').length;
-        document.getElementById('statPending').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
-        document.getElementById('statRejected').innerHTML = loanRequests.filter(l => l.status === 'rejected').length;
-        document.getElementById('statTotalDisbursed').innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
-        document.getElementById('pendingCount').innerHTML = loanRequests.filter(l => l.status === 'pending').length;
-        renderLoans();
-        refreshReserves();
-        updateUnreadCount();
-    }
-
-    function renderActivityLog() {
-        let html = '';
-        activityLogs.slice(0, 20).forEach(log => { let time = new Date(log.timestamp).toLocaleString(); html += `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #2a2b4e30; font-size:11px;"><span>${log.action}</span><span style="color:#666;">${time}</span></div>`; });
-        document.getElementById('activityLog').innerHTML = html;
-    }
-
-    function clearActivityLog() {
-        if(confirm("Limpar todos os logs?")) { activityLogs = [{ action: "Log limpo", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }]; saveData(); renderActivityLog(); addActivity("Log limpo"); }
+    // ============ SINCRONIZAR ==========
+    function syncAllWithBankSite() {
+        addActivity(`🔄 Syncing with bank site...`);
+        try {
+            let bankClients = localStorage.getItem('zentronix_bank_clients');
+            let bankLoans = localStorage.getItem('zentronix_loans');
+            
+            if (bankClients) {
+                const parsedClients = JSON.parse(bankClients);
+                parsedClients.forEach(bankClient => {
+                    const exists = clientsList.some(c => c.email === bankClient.email);
+                    if (!exists) {
+                        const accountNumber = bankClient.accountNumber || generateAccountNumber();
+                        const newClient = {
+                            id: bankClient.id || Date.now(),
+                            accountId: generateAccountId(),
+                            accountNumber: accountNumber,
+                            name: bankClient.nome || bankClient.name,
+                            email: bankClient.email,
+                            document: bankClient.document || '',
+                            address: bankClient.address || '',
+                            street: bankClient.street || '',
+                            number: bankClient.number || '',
+                            bankAccountNumber: bankClient.bankAccountNumber || '',
+                            balance_usd: bankClient.saldoUSD || 0,
+                            balance_eur: bankClient.saldoEUR || 0,
+                            balance_brl: bankClient.saldoBRL || 0,
+                            balance_gbp: bankClient.saldoGBP || 0,
+                            kyc_status: bankClient.kyc || 'Pending',
+                            username: bankClient.email?.split('@')[0] || bankClient.nome?.toLowerCase().replace(/ /g, '.'),
+                            password: 'welcome123',
+                            createdAt: new Date().toISOString().slice(0,10),
+                            crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
+                            transactionHistory: []
+                        };
+                        clientsList.push(newClient);
+                        addActivity(`🆕 Novo cliente sincronizado: ${newClient.name} (${accountNumber})`);
+                    }
+                });
+            }
+            
+            if (bankLoans) {
+                const parsedLoans = JSON.parse(bankLoans);
+                parsedLoans.forEach(bankLoan => {
+                    const exists = loanRequests.some(l => l.id === bankLoan.id);
+                    if (!exists && bankLoan.status === 'pending') {
+                        loanRequests.push({
+                            id: bankLoan.id,
+                            clientId: bankLoan.clientId,
+                            clientName: bankLoan.clientName,
+                            amount: bankLoan.amount,
+                            term: 12,
+                            status: 'pending',
+                            requestedDate: bankLoan.date || new Date().toISOString().slice(0,10),
+                            purpose: bankLoan.purpose || 'Solicitado pelo site',
+                            requestedCurrency: bankLoan.currency || 'USD'
+                        });
+                        addActivity(`📋 Novo empréstimo solicitado: ${bankLoan.clientName} - $${bankLoan.amount}`);
+                    }
+                });
+            }
+            
+            saveData();
+            updateUI();
+            refreshReserves();
+            addActivity(`✅ Sync completo! ${clientsList.length} clientes, ${loanRequests.filter(l => l.status === 'pending').length} empréstimos pendentes.`);
+            
+        } catch(error) {
+            console.error('Erro na sincronização:', error);
+            addActivity(`❌ Erro na sincronização: ${error.message}`);
+        }
+        return true;
     }
 
     // ============ INTEGRAÇÃO ==========
@@ -1284,8 +1746,10 @@ function solicitarEmprestimo(clienteId, clienteNome, valor, moeda) {
 carregarDadosBanco();
 console.log("🏦 Integração ativa");
 <\/script>`;
-        document.getElementById('integrationCodeText').innerText = currentIntegrationCode;
-        document.getElementById('integrationCodeModal').classList.add('active');
+        const codeEl = document.getElementById('integrationCodeText');
+        if(codeEl) codeEl.innerText = currentIntegrationCode;
+        const modal = document.getElementById('integrationCodeModal');
+        if(modal) modal.classList.add('active');
         addActivity(`📋 Código de integração gerado.`);
     }
 
@@ -1301,7 +1765,54 @@ console.log("🏦 Integração ativa");
         });
     }
 
-    function closeIntegrationCodeModal() { document.getElementById('integrationCodeModal').classList.remove('active'); }
+    function closeIntegrationCodeModal() { 
+        const modal = document.getElementById('integrationCodeModal');
+        if(modal) modal.classList.remove('active'); 
+    }
+
+    // ============ UI ==========
+    function updateUI() {
+        const totalClients = document.getElementById('totalClients');
+        const pendingLoans = document.getElementById('pendingLoans');
+        const totalDisbursed = document.getElementById('totalDisbursedStat');
+        const statActive = document.getElementById('statActive');
+        const statPending = document.getElementById('statPending');
+        const statRejected = document.getElementById('statRejected');
+        const statTotalDisbursed = document.getElementById('statTotalDisbursed');
+        const pendingCount = document.getElementById('pendingCount');
+        
+        if(totalClients) totalClients.innerText = clientsList.length;
+        if(pendingLoans) pendingLoans.innerHTML = loanRequests.filter(l => l.status === 'pending').length;
+        if(totalDisbursed) totalDisbursed.innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
+        if(statActive) statActive.innerHTML = loanRequests.filter(l => l.status === 'active').length;
+        if(statPending) statPending.innerHTML = loanRequests.filter(l => l.status === 'pending').length;
+        if(statRejected) statRejected.innerHTML = loanRequests.filter(l => l.status === 'rejected').length;
+        if(statTotalDisbursed) statTotalDisbursed.innerHTML = `$${formatNumber(totalDisbursedAmountUSDEquivalent)}`;
+        if(pendingCount) pendingCount.innerHTML = loanRequests.filter(l => l.status === 'pending').length;
+        
+        renderLoans();
+        refreshReserves();
+        updateUnreadCount();
+    }
+
+    function renderActivityLog() {
+        let html = '';
+        activityLogs.slice(0, 20).forEach(log => { 
+            let time = new Date(log.timestamp).toLocaleString(); 
+            html += `<div class="activity-item"><span>${log.action}</span><span>${time}</span></div>`; 
+        });
+        const logEl = document.getElementById('activityLog');
+        if(logEl) logEl.innerHTML = html;
+    }
+
+    function clearActivityLog() {
+        if(confirm("Limpar todos os logs?")) { 
+            activityLogs = [{ action: "Log limpo", timestamp: new Date().toISOString(), user: currentUser?.name || 'Admin' }]; 
+            saveData(); 
+            renderActivityLog(); 
+            addActivity("Log limpo"); 
+        }
+    }
 
     // ============ LOGIN ==========
     function doLogin() {
@@ -1327,8 +1838,16 @@ console.log("🏦 Integração ativa");
         }
     }
 
-    function showLogoutConfirm() { document.getElementById('logoutConfirmModal').classList.add('active'); }
-    function closeLogoutModal() { document.getElementById('logoutConfirmModal').classList.remove('active'); }
+    function showLogoutConfirm() { 
+        const modal = document.getElementById('logoutConfirmModal');
+        if(modal) modal.classList.add('active'); 
+    }
+    
+    function closeLogoutModal() { 
+        const modal = document.getElementById('logoutConfirmModal');
+        if(modal) modal.classList.remove('active'); 
+    }
+    
     function confirmLogout() { 
         closeLogoutModal(); 
         if(currentUser) addActivity(`Logout: ${currentUser.name}`); 
