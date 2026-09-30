@@ -557,163 +557,166 @@
         return null;
     }
 
-    // ============ FUNÇÃO ADD CLIENT COM COOLDOWN ==========
-    async function addClientWithCooldown() {
-        // Verificar se está em cooldown
-        const now = Date.now();
-        if (now < cooldownEndTime) {
-            const remaining = Math.ceil((cooldownEndTime - now) / 1000);
-            alert(`⏳ Aguarde ${remaining} segundos para criar outro usuário.`);
+    // ============================================
+//  CRIA CLIENTE COMPLETO (Auth + users + balances)
+// ============================================
+async function addClientWithCooldown() {
+    // 1. Verificar cooldown
+    const now = Date.now();
+    if (now < cooldownEndTime) {
+        const remaining = Math.ceil((cooldownEndTime - now) / 1000);
+        alert(`⏳ Aguarde ${remaining} segundos para criar outro usuário.`);
+        return;
+    }
+
+    // 2. Ler campos do formulário
+    const name       = document.getElementById('clientName').value.trim();
+    const email      = document.getElementById('clientEmail').value.trim();
+    const documentNum= document.getElementById('clientDocument').value.trim();
+    const address    = document.getElementById('clientAddress').value.trim();
+    const street     = document.getElementById('clientStreet').value.trim();
+    const number     = document.getElementById('clientNumber').value.trim();
+    const bankAccount= document.getElementById('clientBankAccount').value.trim();
+    const kyc        = document.getElementById('clientKyc').value;
+    const username   = document.getElementById('clientUsername').value.trim() || email.split('@')[0];
+    const password   = document.getElementById('clientPassword').value;
+    const confirmPass= document.getElementById('clientConfirmPassword').value;
+
+    // 3. Validações
+    if (!name || !email) { alert('❌ Nome e email são obrigatórios!'); return; }
+    if (!email.includes('@')) { alert('❌ Email inválido!'); return; }
+    if (!password || password.length < 6) { alert('❌ Senha precisa ter 6+ caracteres!'); return; }
+    if (password !== confirmPass) { alert('❌ As senhas não coincidem!'); return; }
+
+    const btn = document.getElementById('createClientBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> CRIANDO...';
+
+    try {
+        // 4. Verificar se email já existe
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+
+        if (existing) {
+            alert('❌ Este email já está cadastrado!');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
             return;
         }
 
-        let name = document.getElementById('clientName').value;
-        let email = document.getElementById('clientEmail').value;
-        let documentNum = document.getElementById('clientDocument').value;
-        let address = document.getElementById('clientAddress').value;
-        let street = document.getElementById('clientStreet').value;
-        let number = document.getElementById('clientNumber').value;
-        let bankAccount = document.getElementById('clientBankAccount').value;
-        let kyc = document.getElementById('clientKyc').value;
-        let username = document.getElementById('clientUsername').value || email.split('@')[0];
-        let password = document.getElementById('clientPassword').value;
-        let confirmPassword = document.getElementById('clientConfirmPassword').value;
-        
-        if(!name || !email) { alert("❌ Nome e email são obrigatórios!"); return; }
-        if(!password || password.length < 6) { alert("❌ A senha deve ter pelo menos 6 caracteres!"); return; }
-        if(password !== confirmPassword) { alert("❌ As senhas não coincidem!"); return; }
-        
-        const btn = document.getElementById('createClientBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> CRIANDO...';
-        
-        try {
-            const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-            if(existingUser) { 
-                alert("❌ Este email já está cadastrado!"); 
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
-                return; 
-            }
-            
-            // ADICIONAR DELAY DE 2 SEGUNDOS ANTES DE CRIAR
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email, password: password,
-                options: { data: { full_name: name, username: username } }
-            });
-            
-            if (authError) { 
-                const cooldownMsg = handleAuthError(authError);
-                if (cooldownMsg) {
-                    alert(cooldownMsg);
-                } else {
-                    alert("❌ Erro ao criar usuário: " + authError.message);
-                }
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
-                return; 
-            }
-            
-            if (!authData || !authData.user) { 
-                alert("❌ Erro: Não foi possível criar o usuário."); 
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
-                return; 
-            }
-            
-            const userId = authData.user.id;
-            const accountNumber = generateAccountNumber();
-            const accountId = "ZNX-" + Math.floor(100000 + Math.random() * 900000);
-            
-            const { error: insertError } = await supabase.from('users').insert({
-                id: userId, email: email, username: username, full_name: name,
-                phone: '', kyc_status: kyc || 'Pending', 
-                account_number: accountNumber,
-                account_id: accountId,
-                created_at: new Date().toISOString()
-            });
-            if (insertError) { 
-                alert("❌ Erro ao salvar dados: " + insertError.message); 
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
-                return; 
-            }
-            
-            const usd = parseFloat(document.getElementById('clientBalanceUSD').value) || 0;
-            const eur = parseFloat(document.getElementById('clientBalanceEUR').value) || 0;
-            const brl = parseFloat(document.getElementById('clientBalanceBRL').value) || 0;
-            const gbp = parseFloat(document.getElementById('clientBalanceGBP').value) || 0;
-            
-            const balances = [
-                { currency: 'USD', amount: usd }, { currency: 'EUR', amount: eur },
-                { currency: 'BRL', amount: brl }, { currency: 'GBP', amount: gbp }
-            ];
-            
-            for (const b of balances) {
-                await supabase.from('balances').insert({
-                    user_id: userId, currency: b.currency, amount: b.amount,
-                    created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-                }).catch(e => console.warn('Erro ao inserir saldo:', e));
-            }
-            
-            const newClient = {
-                id: userId, accountId: accountId, accountNumber: accountNumber,
-                name: name, email: email,
-                document: documentNum || '', address: address || '', street: street || '',
-                number: number || '', bankAccountNumber: bankAccount || '',
-                balance_usd: usd, balance_eur: eur, balance_brl: brl, balance_gbp: gbp,
-                kyc_status: kyc || 'Pending', username: username, password: password,
-                createdAt: new Date().toISOString().slice(0,10),
-                crypto_balances: { BTC: 0, ETH: 0, BRC: 0, SOL: 0, LTC: 0, USDT: 0, MATIC: 0 },
-                transactionHistory: []
-            };
-            
-            clientsList.push(newClient);
-            saveData();
-            
-            alert(`✅ CONTA CRIADA COM SUCESSO!\n\n📧 Email: ${email}\n🔑 Senha: ${password}\n🏦 Conta: ${accountNumber}\n\n⚠️ Guarde a senha! Ela será usada para o login.`);
-            
-            // Iniciar cooldown de 60 segundos
-            startCooldown(60);
-            
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientEmail').value = '';
-            document.getElementById('clientDocument').value = '';
-            document.getElementById('clientAddress').value = '';
-            document.getElementById('clientStreet').value = '';
-            document.getElementById('clientNumber').value = '';
-            document.getElementById('clientBankAccount').value = '';
-            document.getElementById('clientBalanceUSD').value = '';
-            document.getElementById('clientBalanceEUR').value = '';
-            document.getElementById('clientBalanceBRL').value = '';
-            document.getElementById('clientBalanceGBP').value = '';
-            document.getElementById('clientUsername').value = '';
-            document.getElementById('clientPassword').value = '';
-            document.getElementById('clientConfirmPassword').value = '';
-            
-            salvarClienteParaSite(email, password, name, accountNumber, usd, eur, brl, gbp);
-            
-            await carregarClientes();
-            await updateTransferSelect();
-            await updateMessageSelect();
-            updateUI();
-            syncAllWithBankSite();
-            
-        } catch (error) {
-            console.error('❌ Erro inesperado:', error);
-            const cooldownMsg = handleAuthError(error);
-            if (cooldownMsg) {
-                alert(cooldownMsg);
-            } else {
-                alert('❌ Erro ao criar cliente: ' + error.message);
-            }
+        // 5. Criar usuário em auth.users
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: { data: { full_name: name, username: username } }
+        });
+
+        if (authError) {
+            const cooldownMsg = handleAuthError(authError);
+            alert(cooldownMsg || '❌ Erro ao criar usuário: ' + authError.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
+            return;
         }
-        
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
+
+        if (!authData?.user) {
+            alert('❌ Erro: usuário não foi criado.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
+            return;
+        }
+
+        const userId = authData.user.id;
+        const accountNumber = generateAccountNumber();
+        const accountId = 'ZNX-' + Math.floor(100000 + Math.random() * 900000);
+
+        // 6. Inserir perfil em public.users
+        const { error: insertError } = await supabase.from('users').insert({
+            id: userId,
+            email: email,
+            username: username,
+            full_name: name,
+            phone: '',
+            document: documentNum || null,
+            address: address || null,
+            street: street || null,
+            number: number || null,
+            bank_account: bankAccount || null,
+            account_number: accountNumber,
+            account_id: accountId,
+            kyc_status: kyc || 'Pending',
+            password_plain: password,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        });
+
+        if (insertError) {
+            alert('❌ Erro ao salvar perfil: ' + insertError.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
+            return;
+        }
+
+        // 7. Inserir saldos
+        const usd = parseFloat(document.getElementById('clientBalanceUSD').value) || 0;
+        const eur = parseFloat(document.getElementById('clientBalanceEUR').value) || 0;
+        const brl = parseFloat(document.getElementById('clientBalanceBRL').value) || 0;
+        const gbp = parseFloat(document.getElementById('clientBalanceGBP').value) || 0;
+
+        const balances = [
+            { user_id: userId, currency: 'USD', amount: usd },
+            { user_id: userId, currency: 'EUR', amount: eur },
+            { user_id: userId, currency: 'BRL', amount: brl },
+            { user_id: userId, currency: 'GBP', amount: gbp }
+        ];
+
+        const { error: balError } = await supabase.from('balances').insert(balances);
+
+        if (balError) {
+            console.warn('⚠️ Erro ao inserir saldos:', balError.message);
+        }
+
+        // 8. Sucesso
+        alert(
+            `✅ CONTA CRIADA COM SUCESSO!\n\n` +
+            `📧 Email: ${email}\n` +
+            `🔑 Senha: ${password}\n` +
+            `🏦 Conta: ${accountNumber}\n` +
+            `👤 Username: ${username}\n\n` +
+            `⚠️ Guarde a senha!`
+        );
+
+        addActivity(`✅ Cliente criado: ${name} (${email})`);
+
+        // 9. Iniciar cooldown de 60s
+        startCooldown(60);
+
+        // 10. Limpar formulário
+        ['clientName','clientEmail','clientDocument','clientAddress','clientStreet',
+         'clientNumber','clientBankAccount','clientBalanceUSD','clientBalanceEUR',
+         'clientBalanceBRL','clientBalanceGBP','clientUsername','clientPassword',
+         'clientConfirmPassword'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+
+        // 11. Recarregar lista e selects
+        await carregarClientes();
+        await updateTransferSelect();
+        await updateMessageSelect();
+        updateUI();
+
+    } catch (err) {
+        console.error('❌ Erro inesperado:', err);
+        alert('❌ Erro: ' + err.message);
     }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> CREATE CUSTOMER';
+}
 
     // ============ DEMAIS FUNÇÕES (mantidas do código original) ==========
     // [Todas as outras funções permanecem iguais - generateAccountNumber, 
@@ -1289,40 +1292,119 @@
         }
     }
 
-    // ============ FUNÇÃO AJUSTAR SALDO ==========
-    async function adjustBalance(id, currency) {
-        let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
-        if(!valor) return;
-        if(isNaN(valor) || parseFloat(valor) <= 0) { alert("❌ Digite um valor válido!"); return; }
-        
-        try {
-            const { data: balance } = await supabase
-                .from('balances')
-                .select('id, amount')
-                .eq('user_id', id)
-                .eq('currency', currency)
-                .maybeSingle();
-            
-            const valorAtual = balance?.amount || 0;
-            const novoSaldo = valorAtual + parseFloat(valor);
-            
-            if (balance) {
-                await supabase.from('balances').update({ amount: novoSaldo, updated_at: new Date().toISOString() }).eq('id', balance.id);
-            } else {
-                await supabase.from('balances').insert({ user_id: id, currency: currency, amount: parseFloat(valor), created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-            }
-            
-            const symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-            alert(`✅ Saldo ajustado!\n\n${symbol}${novoSaldo.toFixed(2)} ${currency}`);
-            addActivity(`💰 SALDO AJUSTADO: ${symbol}${valor} para ${currency}`);
-            await carregarClientes();
-            
-        } catch(error) {
-            console.error('❌ Erro ao ajustar saldo:', error);
-            alert('❌ Erro ao ajustar saldo: ' + error.message);
-        }
+    // ============================================
+//  AJUSTAR SALDO + REGISTRAR TRANSAÇÃO
+// ============================================
+async function adjustBalance(id, currency) {
+    // 1. Perguntar valor
+    let valor = prompt(`💰 Valor para ADICIONAR em ${currency}:`, "1000");
+    if (!valor) return;
+    
+    const valorNum = parseFloat(valor);
+    if (isNaN(valorNum) || valorNum <= 0) {
+        alert("❌ Digite um valor válido!");
+        return;
     }
 
+    try {
+        // 2. Buscar cliente
+        const { data: cliente } = await supabase
+            .from('users')
+            .select('id, full_name, email')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (!cliente) {
+            alert("❌ Cliente não encontrado!");
+            return;
+        }
+
+        // 3. Buscar saldo atual
+        const { data: balance } = await supabase
+            .from('balances')
+            .select('id, amount')
+            .eq('user_id', id)
+            .eq('currency', currency)
+            .maybeSingle();
+
+        const valorAtual = Number(balance?.amount) || 0;
+        const novoSaldo = valorAtual + valorNum;
+
+        // 4. Atualizar ou inserir saldo
+        if (balance) {
+            const { error: updErr } = await supabase
+                .from('balances')
+                .update({ 
+                    amount: novoSaldo, 
+                    updated_at: new Date().toISOString() 
+                })
+                .eq('id', balance.id);
+
+            if (updErr) throw updErr;
+        } else {
+            const { error: insErr } = await supabase
+                .from('balances')
+                .insert({ 
+                    user_id: id, 
+                    currency: currency, 
+                    amount: valorNum,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
+            if (insErr) throw insErr;
+        }
+
+        // 5. Registrar transação em transactions
+        const txId = 'adj_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const { error: txErr } = await supabase.from('transactions').insert({
+            user_id: id,
+            type: 'DEPOSIT',
+            currency: currency,
+            amount: valorNum,
+            detail: `Ajuste manual pelo admin (${currentUser?.name || 'Admin'})`,
+            tx_id: txId,
+            status: 'completed'
+        });
+
+        if (txErr) {
+            console.warn('⚠️ Erro ao registrar transação:', txErr.message);
+        }
+
+        // 6. Criar mensagem automática para o cliente
+        const symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
+        const { error: msgErr } = await supabase.from('messages').insert({
+            user_id: id,
+            from_admin: true,
+            subject: `💰 Crédito recebido: ${symbol}${valorNum.toFixed(2)} ${currency}`,
+            message: `Sua conta recebeu um crédito de ${symbol}${valorNum.toFixed(2)} (${currency}).\n\nNovo saldo: ${symbol}${novoSaldo.toFixed(2)} ${currency}\n\nData: ${new Date().toLocaleString('pt-BR')}`,
+            read: false
+        });
+
+        if (msgErr) {
+            console.warn('⚠️ Erro ao enviar mensagem:', msgErr.message);
+        }
+
+        // 7. Feedback
+        alert(
+            `✅ SALDO AJUSTADO!\n\n` +
+            `👤 Cliente: ${cliente.full_name || cliente.email}\n` +
+            `💰 Valor adicionado: ${symbol}${valorNum.toFixed(2)} ${currency}\n` +
+            `📊 Saldo anterior: ${symbol}${valorAtual.toFixed(2)}\n` +
+            `📈 Novo saldo: ${symbol}${novoSaldo.toFixed(2)}`
+        );
+
+        addActivity(`💰 +${symbol}${valorNum.toFixed(2)} ${currency} para ${cliente.full_name || cliente.email}`);
+
+        // 8. Recarregar lista
+        await carregarClientes();
+
+    } catch (error) {
+        console.error('❌ Erro ao ajustar saldo:', error);
+        alert('❌ Erro: ' + error.message);
+    }
+}
+    
     // ============ ATUALIZAR SELECTS ==========
     async function updateTransferSelect() {
         let select = document.getElementById('transferClient');
@@ -1675,50 +1757,154 @@
         listEl.innerHTML = html;
     }
 
-    // ============ OPERAÇÕES ==========
-    function quickTransfer() {
-        let clientId = document.getElementById('transferClient')?.value;
-        let amount = parseFloat(document.getElementById('transferAmount')?.value);
-        let currency = document.getElementById('transferCurrency')?.value;
-        let reason = document.getElementById('transferReason')?.value;
-        let resultDiv = document.getElementById('transferResultMsg');
-        if(!clientId || isNaN(amount) || amount <= 0) { alert("Selecione cliente e valor"); return; }
-        let client = clientsList.find(c => c.id == clientId);
-        if(!client) return;
-        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-        if(confirm(`Transferir ${symbol}${formatNumber(amount)} para ${client.name}?`)) {
-            if (currency === 'USD') client.balance_usd = (client.balance_usd || 0) + amount;
-            else if (currency === 'EUR') client.balance_eur = (client.balance_eur || 0) + amount;
-            else if (currency === 'BRL') client.balance_brl = (client.balance_brl || 0) + amount;
-            else if (currency === 'GBP') client.balance_gbp = (client.balance_gbp || 0) + amount;
-            addTransaction(client, "TRANSFERENCIA", amount, currency, reason || 'Sem motivo');
-            saveData();
-            addActivity(`💰 TRANSFERÊNCIA: ${symbol}${formatNumber(amount)} para ${client.name}`);
-            if(resultDiv) {
-                resultDiv.style.display = 'block'; 
-                resultDiv.className = 'sync-status success';
-                resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${formatNumber(amount)} enviado!`;
-                setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
-            }
-            const amountEl = document.getElementById('transferAmount');
-            const reasonEl = document.getElementById('transferReason');
-            if(amountEl) amountEl.value = '';
-            if(reasonEl) reasonEl.value = '';
-            updateUI();
-            syncAllWithBankSite();
-        }
+    // ============================================
+//  TRANSFERÊNCIA ENTRE CLIENTES + TRANSAÇÃO
+// ============================================
+async function quickTransfer() {
+    // 1. Ler campos
+    const clientId = document.getElementById('transferClient')?.value;
+    const amount = parseFloat(document.getElementById('transferAmount')?.value);
+    const currency = document.getElementById('transferCurrency')?.value;
+    const reason = document.getElementById('transferReason')?.value || 'Transferência';
+    const resultDiv = document.getElementById('transferResultMsg');
+
+    // 2. Validações
+    if (!clientId) {
+        alert("❌ Selecione um cliente!");
+        return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+        alert("❌ Digite um valor válido!");
+        return;
     }
 
-    function initiateSWIFT() {
-        let clientId = document.getElementById('transferClient')?.value;
-        let amount = parseFloat(document.getElementById('transferAmount')?.value);
-        let currency = document.getElementById('transferCurrency')?.value;
-        if(!clientId || isNaN(amount) || amount <= 0) { alert("Selecione cliente e valor"); return; }
-        let client = clientsList.find(c => c.id == clientId);
-        let symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
-        alert(`🌐 SWIFT\n\nPara: ${client.name}\nConta: ${client.accountNumber || client.accountId}\nValor: ${symbol}${formatNumber(amount)}\nMoeda: ${currency}\nSWIFT: ZNTXUS33XXX`);
-        addActivity(`🌐 SWIFT: ${symbol}${formatNumber(amount)} para ${client.name}`);
+    const symbol = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : (currency === 'BRL' ? 'R$' : '£'));
+
+    try {
+        // 3. Buscar cliente no Supabase
+        const { data: cliente, error: clienteErr } = await supabase
+            .from('users')
+            .select('id, full_name, email')
+            .eq('id', clientId)
+            .maybeSingle();
+
+        if (clienteErr || !cliente) {
+            alert("❌ Cliente não encontrado!");
+            return;
+        }
+
+        // 4. Buscar saldo atual
+        const { data: balance } = await supabase
+            .from('balances')
+            .select('id, amount')
+            .eq('user_id', clientId)
+            .eq('currency', currency)
+            .maybeSingle();
+
+        const saldoAtual = Number(balance?.amount) || 0;
+        const novoSaldo = saldoAtual + amount;
+
+        // 5. Confirmar
+        const confirmMsg = 
+            `💸 CONFIRMAR TRANSFERÊNCIA?\n\n` +
+            `👤 Cliente: ${cliente.full_name || cliente.email}\n` +
+            `💰 Valor: ${symbol}${amount.toFixed(2)} ${currency}\n` +
+            `📊 Saldo atual: ${symbol}${saldoAtual.toFixed(2)}\n` +
+            `📈 Novo saldo: ${symbol}${novoSaldo.toFixed(2)}\n` +
+            `📝 Referência: ${reason}`;
+
+        if (!confirm(confirmMsg)) return;
+
+        // 6. Atualizar ou inserir saldo
+        if (balance) {
+            const { error: updErr } = await supabase
+                .from('balances')
+                .update({
+                    amount: novoSaldo,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', balance.id);
+
+            if (updErr) throw updErr;
+        } else {
+            const { error: insErr } = await supabase
+                .from('balances')
+                .insert({
+                    user_id: clientId,
+                    currency: currency,
+                    amount: amount,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
+            if (insErr) throw insErr;
+        }
+
+        // 7. Registrar transação
+        const txId = 'trf_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const { error: txErr } = await supabase.from('transactions').insert({
+            user_id: clientId,
+            type: 'TRANSFER',
+            currency: currency,
+            amount: amount,
+            detail: reason,
+            tx_id: txId,
+            status: 'completed'
+        });
+
+        if (txErr) {
+            console.warn('⚠️ Erro ao registrar transação:', txErr.message);
+        }
+
+        // 8. Criar mensagem para o cliente
+        const { error: msgErr } = await supabase.from('messages').insert({
+            user_id: clientId,
+            from_admin: true,
+            subject: `💸 Transferência recebida: ${symbol}${amount.toFixed(2)} ${currency}`,
+            message: 
+                `Você recebeu uma transferência!\n\n` +
+                `💰 Valor: ${symbol}${amount.toFixed(2)} ${currency}\n` +
+                `📝 Referência: ${reason}\n` +
+                `📊 Novo saldo: ${symbol}${novoSaldo.toFixed(2)} ${currency}\n` +
+                `📅 Data: ${new Date().toLocaleString('pt-BR')}`,
+            read: false
+        });
+
+        if (msgErr) {
+            console.warn('⚠️ Erro ao enviar mensagem:', msgErr.message);
+        }
+
+        // 9. Feedback visual
+        if (resultDiv) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'sync-status success';
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${symbol}${amount.toFixed(2)} enviado para ${cliente.full_name || cliente.email}!`;
+            setTimeout(() => { resultDiv.style.display = 'none'; }, 4000);
+        }
+
+        alert(
+            `✅ TRANSFERÊNCIA REALIZADA!\n\n` +
+            `👤 Cliente: ${cliente.full_name || cliente.email}\n` +
+            `💰 Valor: ${symbol}${amount.toFixed(2)} ${currency}\n` +
+            `📊 Novo saldo: ${symbol}${novoSaldo.toFixed(2)}`
+        );
+
+        addActivity(`💸 Transferência: ${symbol}${amount.toFixed(2)} ${currency} → ${cliente.full_name || cliente.email}`);
+
+        // 10. Limpar campos
+        const amountEl = document.getElementById('transferAmount');
+        const reasonEl = document.getElementById('transferReason');
+        if (amountEl) amountEl.value = '';
+        if (reasonEl) reasonEl.value = '';
+
+        // 11. Recarregar lista
+        await carregarClientes();
+
+    } catch (error) {
+        console.error('❌ Erro na transferência:', error);
+        alert('❌ Erro: ' + error.message);
     }
+}
 
     // ============ CRYPTO SWAP ==========
     function showSwapCryptoModal() {
